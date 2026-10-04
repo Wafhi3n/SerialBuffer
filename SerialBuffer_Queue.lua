@@ -19,7 +19,7 @@ local _, NS = ...
 NS = NS or _G.SerialBuffer
 
 -- stats : compteurs de diagnostic (SerialBuffer_Run.lua les range dans db.diag), aucun nom de joueur.
-local Q = { seq = 0, order = {}, blocked = {}, now = 0, stats = { next = 0, stopMine = 0, stopUnknown = 0 } }
+local Q = { seq = 0, order = {}, blocked = {}, cast = {}, now = 0, stats = { next = 0, stopMine = 0, stopUnknown = 0 } }
 NS.Queue = Q
 
 Q.REFRESH_BELOW = 600     -- D11 : 10 minutes (bénédictions du paladin ; les autres buffs : D28, opts.refreshBelow)
@@ -27,7 +27,7 @@ Q.OTHER_KEEP = 1800       -- D27 : la bénédiction d'un autre paladin, bien par
 Q.STRONGER_WAIT = 1200    -- D26 : « un sort plus puissant est actif » : on réessaie 20 min plus tard
 
 function Q:Reset()
-    self.seq, self.order, self.blocked, self.now = 0, {}, {}, 0
+    self.seq, self.order, self.blocked, self.cast, self.now = 0, {}, {}, {}, 0
     self.stats = { next = 0, stopMine = 0, stopUnknown = 0 }
 end
 
@@ -46,6 +46,21 @@ end
 
 function Q:Stronger(guid, buffName, now)
     block(guid, buffName, { untilT = (now or self.now) + self.STRONGER_WAIT })
+end
+
+-- Ce que J'AI posé cette session, et quand. Garde-fou de D27 : un buff que je viens de poser est le
+-- mien, même si le jeu ne dit pas qui l'a posé ; sans lui, un lanceur mal lu ferait alterner deux
+-- bénédictions sur le même joueur, chacune remplaçant l'autre.
+Q.MINE_FOR = 3600
+function Q:Cast(guid, buffName, now)
+    if not (guid and buffName) then return end
+    self.cast[guid] = self.cast[guid] or {}
+    self.cast[guid][buffName] = now or self.now
+end
+
+local function castByMe(snap, buffName)
+    local t = Q.cast[snap.guid] and Q.cast[snap.guid][buffName]
+    return t ~= nil and (Q.now - t) < Q.MINE_FOR
 end
 
 local function isBlocked(snap, buffName)
@@ -77,6 +92,7 @@ local function nextMissing(snap, wanted, probe, refreshBelow)
         if not isBlocked(snap, w.name) then
             local left, mine = probe.aura(snap.unit, w.name)
             if left == nil then return nil end
+            if mine ~= true and left ~= "absent" and castByMe(snap, w.name) then mine = true end
             if wanted.exclusive then
                 local v = blessingVerdict(left, mine)
                 local st = Q.stats
