@@ -39,7 +39,7 @@ function R:Refresh()
         return
     end
     local rows, around = NS.Queue:Build(NS.Units:Collect(), wantedFor, NS.Units.probe,
-        { showPvP = NS.db.showPvP, now = GetTime() })
+        { showPvP = NS.db.showPvP, now = GetTime(), refreshBelow = (NS.db.refreshMin or 45) * 60 })
     NS.UI:Render(rows, state, around)
 end
 
@@ -49,12 +49,12 @@ local function refreshNow()
     if NS.UI:IsVisible() and not InCombatLockdown() then R:Refresh() end
 end
 
-local function onEvent(_, event, arg1, arg2)
+local function onEvent(_, event, arg1, arg2, arg3)
     if event == "NAME_PLATE_UNIT_ADDED" then NS.Units:PlateAdded(arg1)
     elseif event == "NAME_PLATE_UNIT_REMOVED" then NS.Units:PlateRemoved(arg1)
     elseif event == "PLAYER_ENTERING_WORLD" then NS.Units:SeedPlates()
     elseif event == "SPELLS_CHANGED" then R:ResolveBuffs()
-    elseif event == "UNIT_SPELLCAST_SUCCEEDED" then refreshNow()
+    elseif event == "UNIT_SPELLCAST_SUCCEEDED" then R:OnCast(arg3); refreshNow()
     elseif event == "UI_ERROR_MESSAGE" then R:OnError(arg1, arg2)
     end
 end
@@ -83,6 +83,15 @@ function R:OnError(errorType, message)
     if kind then refreshNow() end
 end
 
+-- Un de NOS clics vient de réussir (même sort, dans la fenêtre du clic) : la file retient que ce buff
+-- sur ce joueur est le mien (garde-fou de D27).
+function R:OnCast(spellID)
+    local click = NS.Cast:Recent(GetTime())
+    if not click or not click.buff or (issecretvalue and issecretvalue(spellID)) then return end
+    local name = C_Spell.GetSpellName and C_Spell.GetSpellName(spellID)
+    if name == click.buff then NS.Queue:Cast(click.guid, click.buff, GetTime()) end
+end
+
 -- Les boutons sécurisés ne se construisent pas en combat : un /reload en plein combat attend la fin.
 function R:Start()
     if InCombatLockdown() then
@@ -92,6 +101,8 @@ function R:Start()
         return
     end
     self:ResolveBuffs()
+    -- Diagnostic de la session (D27 non mesuré) : relu dans les SavedVariables après un /reload.
+    NS.db.diag = { aura = NS.Units.stats, queue = NS.Queue.stats, since = date("%Y-%m-%d %H:%M") }
     NS.UI:Build()
     pcall(NS.Options.Register, NS.Options)   -- l'API Settings jamais éprouvée ici : elle ne casse rien
     NS.Units:SeedPlates()

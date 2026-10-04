@@ -76,6 +76,34 @@ local function priorityRow(parent, i, y)
     return row
 end
 
+-- D28 : le seuil de rafraîchissement (hors paladin), en minutes, par pas de 5, entre 10 et 55.
+local STEP, MIN_REFRESH, MAX_REFRESH = 5, 10, 55
+
+function O:StepRefresh(delta)
+    local v = (NS.db.refreshMin or 45) + delta
+    NS.db.refreshMin = math.max(MIN_REFRESH, math.min(MAX_REFRESH, v))
+    self:Refresh()
+end
+
+local function refreshRow(panel, y)
+    local row = CreateFrame("Frame", nil, panel)
+    row:SetSize(560, 26)
+    row:SetPoint("TOPLEFT", PAD, y)
+    row.minus = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+    row.minus:SetSize(28, 22)
+    row.minus:SetPoint("LEFT")
+    row.minus:SetText("-")
+    row.minus:SetScript("OnClick", function() O:StepRefresh(-STEP) end)
+    row.plus = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+    row.plus:SetSize(28, 22)
+    row.plus:SetPoint("LEFT", row.minus, "RIGHT", 4, 0)
+    row.plus:SetText("+")
+    row.plus:SetScript("OnClick", function() O:StepRefresh(STEP) end)
+    row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    row.label:SetPoint("LEFT", row.plus, "RIGHT", 8, 0)
+    return row
+end
+
 -- Construit le contenu une fois, à la première ouverture. Rend le y libre suivant.
 function O:Build(panel)
     local _, class = UnitClass("player")
@@ -97,6 +125,7 @@ function O:Build(panel)
                 function() return not (NS.db.off and NS.db.off[id]) end, function(v) setOff(id, v) end)
             y = y - LINE
         end
+        self.refreshRow = refreshRow(panel, y - 4); y = y - LINE - 4
     end
     local note = panel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     note:SetPoint("TOPLEFT", PAD, y - 4)
@@ -112,6 +141,12 @@ end
 -- Remet chaque contrôle à l'état de la base (à chaque ouverture, et après Monter / Descendre).
 function O:Refresh()
     for _, cb in ipairs(self.checks) do cb:SetChecked(cb.get() and true or false) end
+    if self.refreshRow then
+        local v = NS.db.refreshMin or 45
+        self.refreshRow.label:SetText(string.format(L["Rafraîchir un buff s'il lui reste moins de %d min"], v))
+        self.refreshRow.minus:SetEnabled(v > MIN_REFRESH)
+        self.refreshRow.plus:SetEnabled(v < MAX_REFRESH)
+    end
     local _, class = UnitClass("player")
     if class ~= "PALADIN" then return end
     local cat = NS.Buffs:Catalog("PALADIN", NS.db)
