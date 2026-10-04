@@ -99,16 +99,18 @@ function B:Useful(e, targetClass)
 end
 
 -- Les buffs voulus pour une cible, dans l'ordre. db.off[id] = true : buff décoché (D14 : rien ne
--- l'est par défaut). Paladin : UNE bénédiction, la première de la priorité qu'il connaît, qui est
--- cochée et qui sert à la cible (D22, D23) ; une bénédiction inconnue cède sa place à la suivante.
+-- l'est par défaut). Paladin : ses bénédictions connues, cochées et utiles à la cible, dans l'ordre de
+-- priorité (D22, D23), marquées EXCLUSIVES : il n'en pose qu'UNE, la première que la cible peut
+-- recevoir (une cible trop basse pour la première passe à la suivante : SerialBuffer_Queue.lua).
 function B:WantedFor(targetClass, db)
     local off = db and db.off or {}
     if self.class == "PALADIN" then
+        local out = { exclusive = true }
         for _, key in ipairs(self:Priority(db)) do
             local e = self.blessings and self.blessings[key]
-            if e and not off[e.id] and self:Useful(e, targetClass) then return { e } end
+            if e and not off[e.id] and self:Useful(e, targetClass) then out[#out + 1] = e end
         end
-        return {}
+        return out
     end
     local out = {}
     for _, e in ipairs(self.list or {}) do

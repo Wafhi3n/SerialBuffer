@@ -47,34 +47,51 @@ function C.NextRow(rows)
     return nil
 end
 
--- ---------------------------------------------------------------- sort raté → fin de file
+-- ---------------------------------------------------------------- sort raté
 
--- Seules les erreurs qui tiennent à la CIBLE renvoient le joueur en fin de file (spec, « Le sort
--- échoue »). Un « sort pas prêt » (temps de recharge global, touche martelée) ne doit pas faire
--- tourner la file. Comparées aux globales du client (traduites), lues à l'usage : une globale absente
--- ne compte pas.
-C.TARGET_ERRORS = { "SPELL_FAILED_LINE_OF_SIGHT", "SPELL_FAILED_OUT_OF_RANGE", "ERR_OUT_OF_RANGE",
-                    "SPELL_FAILED_LOWLEVEL", "SPELL_FAILED_BAD_TARGETS" }
+-- Seules les erreurs qui tiennent à la CIBLE comptent ; un « sort pas prêt » (temps de recharge global,
+-- clic martelé) ne doit pas faire tourner la file. L'erreur se reconnaît par son NOM, que rend
+-- GetGameMessageInfo(type) quelle que soit la langue du client (Blizzard_UIErrorsFrame), et à défaut
+-- par son texte comparé aux globales du client. Deux suites :
+--   "lowlevel" : la cible est trop basse pour CE buff, elle sort de la liste pour lui (D24) ;
+--   "target"   : hors de vue, hors de portée, cible invalide : le joueur repasse en fin de file.
+C.TARGET_ERRORS = { SPELL_FAILED_LINE_OF_SIGHT = true, SPELL_FAILED_OUT_OF_RANGE = true,
+                    ERR_OUT_OF_RANGE = true, SPELL_FAILED_BAD_TARGETS = true }
 
-function C.IsTargetError(msg)
-    if type(msg) ~= "string" then return false end
-    for _, key in ipairs(C.TARGET_ERRORS) do
-        local s = _G[key]
-        if type(s) == "string" and s ~= "" and (msg == s or msg == s .. ".") then return true end
+local function textIs(msg, key)
+    local s = _G[key]
+    return type(s) == "string" and s ~= "" and (msg == s or msg == s .. ".")
+end
+
+function C.Classify(errorName, msg)
+    if type(errorName) == "string" and errorName:find("LOWLEVEL", 1, true) then return "lowlevel" end
+    if type(errorName) == "string" and C.TARGET_ERRORS[errorName] then return "target" end
+    if type(msg) ~= "string" then return nil end
+    if textIs(msg, "SPELL_FAILED_LOWLEVEL") then return "lowlevel" end
+    for key in pairs(C.TARGET_ERRORS) do
+        if textIs(msg, key) then return "target" end
     end
-    return false
+    return nil
 end
 
--- Le dernier clic, noté par les boutons (SerialBuffer_UI.lua). Une ligne : le GUID de son joueur.
-function C:NoteClick(guid, now)
-    self.last = guid and { guid = guid, t = now } or nil
+-- Le dernier clic, noté par les boutons (SerialBuffer_UI.lua) : le joueur, le buff, son niveau.
+function C:NoteClick(b, now)
+    self.last = (b and b.guid) and { guid = b.guid, buff = b.buffName, level = b.level, t = now } or nil
 end
 
--- UI_ERROR_MESSAGE : rend le GUID à renvoyer en fin de file, ou nil.
-function C:OnError(msg, now)
+-- Le dernier clic, s'il date de moins de RECENT secondes.
+function C:Recent(now)
+    local last = self.last
+    if last and (now - last.t) <= self.RECENT then return last end
+    return nil
+end
+
+-- UI_ERROR_MESSAGE : rend kind ("lowlevel" | "target") et le clic qu'elle concerne, ou nil.
+function C:OnError(errorName, msg, now)
     local last = self.last
     if not last or (now - last.t) > self.RECENT then return nil end
-    if not self.IsTargetError(msg) then return nil end
+    local kind = self.Classify(errorName, msg)
+    if not kind then return nil end
     self.last = nil
-    return last.guid
+    return kind, last
 end

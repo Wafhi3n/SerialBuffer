@@ -32,9 +32,17 @@ local function classColor(class)
     return 1, 1, 1
 end
 
-local function savePosition(panel)
-    local point, _, relPoint, x, y = panel:GetPoint(1)
-    NS.db.pos = { point = point, relPoint = relPoint, x = x, y = y }
+-- Le panneau s'accroche par son COIN HAUT GAUCHE : quand la liste raccourcit, c'est le bas qui
+-- remonte, la première ligne ne bouge pas, et un clic répété dessus vide la file. Une ancienne
+-- position (centre) se convertit au premier passage. Rend false si l'écran n'est pas encore mesuré.
+local function anchorTop(panel)
+    local left, top = panel:GetLeft(), panel:GetTop()
+    if not (left and top) then return false end
+    panel:ClearAllPoints()
+    panel:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top)
+    NS.db.pos = { point = "TOPLEFT", relPoint = "BOTTOMLEFT", x = left, y = top }
+    panel.anchored = true
+    return true
 end
 
 -- Les deux sens du clic : l'action part sur l'enfoncé ou le relâché selon le réglage du joueur
@@ -43,16 +51,20 @@ local function secureMacroButton(name, parent)
     local b = CreateFrame("Button", name, parent, "SecureActionButtonTemplate")
     b:RegisterForClicks("AnyUp", "AnyDown")
     b:SetAttribute("type", "macro")
-    b:HookScript("OnClick", function(self) NS.Cast:NoteClick(self.guid, GetTime()) end)
+    b:HookScript("OnClick", function(self) NS.Cast:NoteClick(self, GetTime()) end)
     return b
 end
 
--- Pose le texte de macro s'il a changé. Jamais en combat (l'appelant le garantit).
-local function setMacro(b, text)
+-- Pose le texte de macro s'il a changé, et retient qui il vise (pour un sort raté). Jamais en combat
+-- (l'appelant le garantit).
+local function setMacro(b, text, r)
     if b.macro ~= text then
         b:SetAttribute("macrotext", text)
         b.macro = text
     end
+    b.guid = r and r.guid
+    b.buffName = r and r.buff and r.buff.name
+    b.level = r and r.level
 end
 
 local function buildRow(panel, i)
@@ -86,13 +98,13 @@ function UI:Build()
     panel:SetBackdropColor(0, 0, 0, 0.8)
     local p = NS.db.pos
     if p then panel:SetPoint(p.point, UIParent, p.relPoint, p.x, p.y)
-    else panel:SetPoint("RIGHT", UIParent, "RIGHT", -40, 60) end
+    else panel:SetPoint("TOPRIGHT", UIParent, "RIGHT", -40, 200) end
     panel:SetClampedToScreen(true)
     panel:SetMovable(true)
     panel:EnableMouse(true)
     panel:RegisterForDrag("LeftButton")
     panel:SetScript("OnDragStart", panel.StartMoving)
-    panel:SetScript("OnDragStop", function(f) f:StopMovingOrSizing(); savePosition(f) end)
+    panel:SetScript("OnDragStop", function(f) f:StopMovingOrSizing(); anchorTop(f) end)
     panel.title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     panel.title:SetPoint("TOPLEFT", PAD, -PAD)
     panel.title:SetText("Serial Buffer")
@@ -127,12 +139,11 @@ function UI:Toggle()
     if InCombatLockdown() then NS:Print(L["Pas pendant un combat."]) return end
     NS.db.shown = not self.panel:IsShown()
     self.panel:SetShown(NS.db.shown)
-    if not NS.db.shown then setMacro(self.next, nil); self.next.guid = nil end
+    if not NS.db.shown then setMacro(self.next, nil, nil) end
 end
 
 local function fillRow(row, r)
-    row.guid = r.guid
-    setMacro(row, NS.Cast.MacroFor(r))
+    setMacro(row, NS.Cast.MacroFor(r), r)
     row.icon:SetTexture(r.buff.icon)
     row.name:SetText(r.name)
     row.name:SetTextColor(classColor(r.class))
@@ -165,9 +176,9 @@ end
 
 function UI:Render(rows, state, around)
     if not self.panel or InCombatLockdown() then return end
+    if not self.panel.anchored then anchorTop(self.panel) end
     local nextRow = NS.Cast.NextRow(rows)
-    setMacro(self.next, nextRow and NS.Cast.MacroFor(nextRow))
-    self.next.guid = nextRow and nextRow.guid
+    setMacro(self.next, nextRow and NS.Cast.MacroFor(nextRow), nextRow)
     local shown = math.min(#rows, MAX_ROWS)
     for i = 1, MAX_ROWS do
         if i <= shown then fillRow(self.rows[i], rows[i]) else self.rows[i]:Hide() end

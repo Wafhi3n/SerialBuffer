@@ -55,11 +55,31 @@ local function onEvent(_, event, arg1, arg2)
     elseif event == "PLAYER_ENTERING_WORLD" then NS.Units:SeedPlates()
     elseif event == "SPELLS_CHANGED" then R:ResolveBuffs()
     elseif event == "UNIT_SPELLCAST_SUCCEEDED" then refreshNow()
-    elseif event == "UI_ERROR_MESSAGE" then
-        local msg = (issecretvalue and issecretvalue(arg2)) and nil or arg2
-        local guid = NS.Cast:OnError(msg, GetTime())
-        if guid then NS.Queue:Requeue(guid); refreshNow() end
+    elseif event == "UI_ERROR_MESSAGE" then R:OnError(arg1, arg2)
     end
+end
+
+local function plainString(v)
+    if issecretvalue and issecretvalue(v) then return nil end
+    return type(v) == "string" and v or nil
+end
+
+-- Une erreur du jeu juste après un de nos clics : trop bas (D24) ou cible (fin de file). Son NOM
+-- (GetGameMessageInfo) est noté dans db.seenErrors : pas une donnée de joueur, juste ce que le client
+-- appelle ainsi, pour vérifier après coup les noms qu'on attend.
+function R:OnError(errorType, message)
+    if not NS.Cast:Recent(GetTime()) then return end   -- pas juste après un de nos clics
+    local okName, name = pcall(GetGameMessageInfo, errorType)
+    name = okName and plainString(name) or nil
+    local msg = plainString(message)
+    if name then
+        NS.db.seenErrors = NS.db.seenErrors or {}
+        NS.db.seenErrors[name] = msg or true
+    end
+    local kind, click = NS.Cast:OnError(name, msg, GetTime())
+    if kind == "lowlevel" then NS.Queue:TooLow(click.guid, click.buff, click.level)
+    elseif kind == "target" then NS.Queue:Requeue(click.guid) end
+    if kind then refreshNow() end
 end
 
 -- Les boutons sécurisés ne se construisent pas en combat : un /reload en plein combat attend la fin.

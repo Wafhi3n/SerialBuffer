@@ -47,7 +47,7 @@ local function snapshot(unit, group)
         unit = unit, guid = guid, name = fullName(unit), class = plain(class),
         player = plain(UnitIsPlayer(unit)), assist = plain(UnitCanAssist("player", unit)),
         dead = plain(UnitIsDeadOrGhost(unit)), combat = plain(UnitAffectingCombat(unit)),
-        pvp = plain(UnitIsPVP(unit)), visible = plain(UnitIsVisible(unit)),
+        pvp = plain(UnitIsPVP(unit)), visible = plain(UnitIsVisible(unit)), level = plain(UnitLevel(unit)),
         group = group, self = (unit == "player"),
     }
 end
