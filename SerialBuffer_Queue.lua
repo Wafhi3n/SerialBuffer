@@ -6,6 +6,7 @@
 --   D8  FIFO, personne ne passe devant                               D9  hors de portée = dehors, sauf groupe
 --   D11 un buff à moins de 10 min compte comme manquant              D16 joueur en combat : dehors
 --   D18 membre du groupe invisible (autre carte) : dehors              D24 trop bas pour un buff : dehors pour CE buff
+--   D26 « sort plus puissant actif » : dehors pour CE buff, 20 min     D27 paladin : celle d'un autre (> 30 min) → la suivante
 -- AFFICHAGE : les joueurs à portée d'abord (FIFO), puis les membres du groupe hors de portée (FIFO) :
 -- la première ligne est toujours quelqu'un qu'on peut buffer, et un clic répété dessus vide la file.
 -- RÈGLE DE SÛRETÉ : « je ne sais pas » n'est JAMAIS « il lui manque ». Une aura illisible (erreur,
@@ -16,30 +17,40 @@
 local _, NS = ...
 NS = NS or _G.SerialBuffer
 
-local Q = { seq = 0, order = {}, tooLow = {} }
+local Q = { seq = 0, order = {}, blocked = {}, now = 0 }
 NS.Queue = Q
 
-Q.REFRESH_BELOW = 600   -- D11 : 10 minutes
+Q.REFRESH_BELOW = 600     -- D11 : 10 minutes
+Q.OTHER_KEEP = 1800       -- D27 : la bénédiction d'un autre paladin, bien partie, se laisse
+Q.STRONGER_WAIT = 1200    -- D26 : « un sort plus puissant est actif » : on réessaie 20 min plus tard
 
 function Q:Reset()
-    self.seq, self.order, self.tooLow = 0, {}, {}
+    self.seq, self.order, self.blocked, self.now = 0, {}, {}, 0
 end
 
--- D24 : le jeu a refusé ce buff sur ce joueur, « trop bas niveau ». On ne le lui propose plus tant
--- qu'il n'a pas gagné un niveau. Mémoire de session : rien n'est sauvegardé (spec, Contrat).
-function Q:TooLow(guid, buffName, level)
+-- Le jeu a refusé ce buff sur ce joueur. On ne le lui propose plus, jusqu'à ce qu'il gagne un niveau
+-- (D24, « trop bas ») ou pendant STRONGER_WAIT (D26, « plus puissant actif »). Mémoire de session :
+-- rien n'est sauvegardé (spec, Contrat).
+local function block(guid, buffName, rule)
     if not (guid and buffName) then return end
-    self.tooLow[guid] = self.tooLow[guid] or {}
-    self.tooLow[guid][buffName] = type(level) == "number" and level or 0
+    Q.blocked[guid] = Q.blocked[guid] or {}
+    Q.blocked[guid][buffName] = rule
 end
 
-local function isTooLow(snap, buffName)
-    local at = Q.tooLow[snap.guid] and Q.tooLow[snap.guid][buffName]
-    if not at then return false end
-    if type(snap.level) == "number" and snap.level > at then
-        Q.tooLow[snap.guid][buffName] = nil   -- il a monté de niveau : on réessaie
-        return false
-    end
+function Q:TooLow(guid, buffName, level)
+    block(guid, buffName, { level = type(level) == "number" and level or 0 })
+end
+
+function Q:Stronger(guid, buffName, now)
+    block(guid, buffName, { untilT = (now or self.now) + self.STRONGER_WAIT })
+end
+
+local function isBlocked(snap, buffName)
+    local rule = Q.blocked[snap.guid] and Q.blocked[snap.guid][buffName]
+    if not rule then return false end
+    local over = (rule.level and type(snap.level) == "number" and snap.level > rule.level)
+        or (rule.untilT and Q.now > rule.untilT)
+    if over then Q.blocked[snap.guid][buffName] = nil; return false end
     return true
 end
 
@@ -47,16 +58,29 @@ local function needs(left)
     return left == "absent" or (type(left) == "number" and left < Q.REFRESH_BELOW)
 end
 
--- Le buff à proposer, ou nil. probe.aura rend "absent", un nombre de secondes restantes (math.huge =
--- sans fin), ou nil = illisible. Une liste EXCLUSIVE (paladin) : seule la première bénédiction que la
--- cible peut recevoir compte ; les autres buffs (prêtre, mage, druide) : le premier qui manque (D7).
+-- Paladin (liste EXCLUSIVE) : il ne garde qu'UNE bénédiction à lui par joueur. Rend "take" (proposer
+-- celle-ci), "next" (passer à la suivante) ou "stop" (le joueur est servi). mine : true si c'est la
+-- sienne, false si celle d'un autre, nil si le lanceur est illisible.
+local function blessingVerdict(left, mine)
+    if needs(left) then return "take" end                    -- absente, ou qui expire (D11) : qui l'a posée importe peu
+    if mine == false then return (left > Q.OTHER_KEEP) and "next" or "take" end   -- D27
+    return "stop"   -- la mienne, ou lanceur illisible : ne jamais écraser sa propre bénédiction par une autre
+end
+
+-- Le buff à proposer, ou nil. probe.aura rend "absent" ou les secondes restantes (math.huge = sans
+-- fin), plus « est-ce la mienne » ; nil = illisible. Prêtre, mage, druide : le premier qui manque (D7).
 local function nextMissing(snap, wanted, probe)
     for _, w in ipairs(wanted) do
-        if not isTooLow(snap, w.name) then
-            local left = probe.aura(snap.unit, w.name)
+        if not isBlocked(snap, w.name) then
+            local left, mine = probe.aura(snap.unit, w.name)
             if left == nil then return nil end
-            if needs(left) then return w end
-            if wanted.exclusive then return nil end
+            if wanted.exclusive then
+                local v = blessingVerdict(left, mine)
+                if v == "take" then return w end
+                if v == "stop" then return nil end
+            elseif needs(left) then
+                return w
+            end
         end
     end
     return nil
@@ -97,6 +121,7 @@ end
 -- finie »).
 function Q:Build(snaps, wantedFor, probe, opts)
     opts = opts or {}
+    self.now = opts.now or self.now
     local rows, seen, around = {}, {}, 0
     for _, snap in ipairs(snaps) do
         if snap.guid and not seen[snap.guid] then

@@ -56,6 +56,7 @@ end
 -- « ERR_SPELL_COOLDOWN ». On compare donc surtout le texte aux globales du client (traduites : la langue
 -- n'y change rien) ; le nom ne sert que pour les erreurs qui ont le leur. Deux suites :
 --   "lowlevel" : la cible est trop basse pour CE buff, elle sort de la liste pour lui (D24) ;
+--   "stronger" : « un sort plus puissant est actif », elle sort de la liste pour CE buff un temps (D26) ;
 --   "target"   : hors de vue, hors de portée, cible invalide : le joueur repasse en fin de file.
 C.TARGET_ERRORS = { SPELL_FAILED_LINE_OF_SIGHT = true, SPELL_FAILED_OUT_OF_RANGE = true,
                     ERR_OUT_OF_RANGE = true, SPELL_FAILED_BAD_TARGETS = true }
@@ -69,6 +70,7 @@ function C.Classify(errorName, msg)
     if type(errorName) == "string" and C.TARGET_ERRORS[errorName] then return "target" end
     if type(msg) ~= "string" then return nil end
     if textIs(msg, "SPELL_FAILED_LOWLEVEL") then return "lowlevel" end
+    if textIs(msg, "SPELL_FAILED_AURA_BOUNCED") then return "stronger" end
     for key in pairs(C.TARGET_ERRORS) do
         if textIs(msg, key) then return "target" end
     end
@@ -87,7 +89,7 @@ function C:Recent(now)
     return nil
 end
 
--- UI_ERROR_MESSAGE : rend kind ("lowlevel" | "target") et le clic qu'elle concerne, ou nil.
+-- UI_ERROR_MESSAGE : rend kind ("lowlevel" | "stronger" | "target") et le clic qu'elle concerne, ou nil.
 function C:OnError(errorName, msg, now)
     local last = self.last
     if not last or (now - last.t) > self.RECENT then return nil end

@@ -74,7 +74,20 @@ end
 -- Les deux sondes de la file (SerialBuffer_Queue.lua).
 U.probe = {}
 
--- "absent", secondes restantes (math.huge : sans fin), ou nil = illisible.
+-- L'aura vient-elle de moi ? true, false, ou nil = illisible. Comme Blizzard (AuraUtil.lua) :
+-- sourceUnit comparé à "player", et à défaut isFromPlayerOrPlayerPet.
+local function fromMe(a)
+    local src = a.sourceUnit
+    if src ~= nil and not sec(src) then
+        local ok, same = pcall(UnitIsUnit, "player", src)
+        if ok and not sec(same) then return same and true or false end
+    end
+    local f = a.isFromPlayerOrPlayerPet
+    if f ~= nil and not sec(f) then return f and true or false end
+    return nil
+end
+
+-- "absent", ou les secondes restantes (math.huge : sans fin) et « est-ce la mienne » ; nil = illisible.
 function U.probe.aura(unit, buffName)
     local ok, a = pcall(C_UnitAuras.GetAuraDataBySpellName, unit, buffName, "HELPFUL")
     if not ok or sec(a) then return nil end
@@ -82,8 +95,8 @@ function U.probe.aura(unit, buffName)
     if a == nil then return "absent" end
     local e = a.expirationTime
     if sec(e) then return nil end
-    if type(e) ~= "number" or e <= 0 then return math.huge end
-    return math.max(0, e - GetTime())
+    if type(e) ~= "number" or e <= 0 then return math.huge, fromMe(a) end
+    return math.max(0, e - GetTime()), fromMe(a)
 end
 
 -- true, false, ou nil = inconnu.
