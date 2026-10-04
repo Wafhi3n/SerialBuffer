@@ -39,7 +39,7 @@ function R:Refresh()
         return
     end
     local rows, around = NS.Queue:Build(NS.Units:Collect(), wantedFor, NS.Units.probe,
-        { showPvP = NS.db.showPvP })
+        { showPvP = NS.db.showPvP, now = GetTime() })
     NS.UI:Render(rows, state, around)
 end
 
@@ -78,6 +78,7 @@ function R:OnError(errorType, message)
     end
     local kind, click = NS.Cast:OnError(name, msg, GetTime())
     if kind == "lowlevel" then NS.Queue:TooLow(click.guid, click.buff, click.level)
+    elseif kind == "stronger" then NS.Queue:Stronger(click.guid, click.buff, GetTime())
     elseif kind == "target" then NS.Queue:Requeue(click.guid) end
     if kind then refreshNow() end
 end
