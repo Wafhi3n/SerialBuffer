@@ -391,6 +391,15 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
      `tests/test_serialbuffer_list.lua`, sur la branche d'outillage `feat/serialbuffer-palier-a`
      (`bb2257e`), à fusionner le même jour que ce palier sur `main`. Hors plan : le catalogue
      non paladin (mage, prêtre, druide) n'a jamais été vu sur Forever ;
-   - (b) le clic et la touche (critères 2, 3, 8, 16) ;
+   - (b) le clic et la touche (critères 2, 3, 8, 16, 18). **Codé le 2026-10-04** (SerialBuffer
+     `72bb352`, branche `feat/palier-b-clic`, posée sur le palier a), déployé
+     (`feat/palier-b-clic@72bb352`), **pas encore vu en jeu**. Test headless :
+     `tests/test_serialbuffer_cast.lua`, branche d'outillage `feat/serialbuffer-palier-b` (`7c188eb`).
+     Jamais mesuré sur Forever : un raccourci `CLICK <bouton>:LeftButton` déclaré dans
+     `Bindings.xml` (Blizzard n'en déclare aucun) ; repli si la touche ne marche pas, une macro du
+     joueur `/click SerialBufferNextButton`. Choix de code, pas une décision du user : seules les
+     erreurs qui tiennent à la cible (hors de vue, hors de portée, trop bas, cible invalide)
+     renvoient en fin de file, pour qu'une touche martelée pendant le temps de recharge global ne
+     fasse pas tourner la file ;
    - (c) le combat (critères 4 et 15) ;
    - (d) la proposition des plaques et les options (critère 6).
