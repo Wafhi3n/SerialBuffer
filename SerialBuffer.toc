@@ -17,3 +17,11 @@ SerialBuffer_Locale_esES.lua
 
 # Socle : table d'addon, SavedVariables, commande /sbuff.
 SerialBuffer.lua
+
+# Modules (spec docs\specs\serial-buffer.md) : ce que ta classe pose, la file FIFO (logique pure),
+# la lecture du client, le tableau, la boucle qui les relie.
+SerialBuffer_Buffs.lua
+SerialBuffer_Queue.lua
+SerialBuffer_Units.lua
+SerialBuffer_UI.lua
+SerialBuffer_Run.lua

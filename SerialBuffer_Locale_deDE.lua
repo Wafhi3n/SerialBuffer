@@ -7,9 +7,24 @@ if not NS or not NS.L then return end
 if (GetLocale and GetLocale() or "enUS") ~= "deDE" then return end
 
 local T = {
-    ["chargé. Tape /%s pour l'aide."] = "geladen. Gib /%s für die Hilfe ein.",
-    ["version %s"]                    = "Version %s",
-    ["Commandes :"]                   = "Befehle:",
-    ["affiche la version"]            = "zeigt die Version",
+    ["chargé. Tape /%s aide pour l'aide."]                                          = "geladen. Gib /%s hilfe für die Hilfe ein.",
+    ["version %s"]                                                                  = "Version %s",
+    ["Commandes :"]                                                                 = "Befehle:",
+    ["affiche la version"]                                                          = "zeigt die Version",
+    ["affiche ou cache le tableau"]                                                 = "zeigt oder verbirgt die Tabelle",
+    ["montre ou cache les joueurs PvP"]                                             = "zeigt oder verbirgt PvP-Spieler",
+    ["Joueurs PvP affichés."]                                                       = "PvP-Spieler werden angezeigt.",
+    ["Joueurs PvP cachés."]                                                         = "PvP-Spieler werden ausgeblendet.",
+    ["Pas pendant un combat."]                                                      = "Nicht während eines Kampfes.",
+    ["PvP"]                                                                         = "PvP",
+    ["hors de portée"]                                                              = "außer Reichweite",
+    ["En instance : la tournée est en pause."]                                      = "In einer Instanz: die Runde pausiert.",
+    ["Ta classe n'a pas de buff à poser sur les autres."]                           = "Deine Klasse hat keinen Buff für andere.",
+    ["Plaques des joueurs amis coupées : seuls toi et ton groupe sont vus."]        = "Namensplaketten freundlicher Spieler sind aus: nur du und deine Gruppe werden gesehen.",
+    ["+%d autres"]                                                                  = "+%d weitere",
+    ["Personne à buffer autour de toi."]                                            = "Niemand in deiner Nähe braucht einen Buff.",
+    ["Tournée finie !"]                                                             = "Runde fertig!",
+    ["%d à buffer"]                                                                 = "%d zu buffen",
+    ["Aucun de tes buffs n'est reconnu (ids : %s). Préviens l'auteur de l'addon."]  = "Keiner deiner Buffs wurde erkannt (IDs: %s). Bitte melde es dem Addon-Autor.",
 }
 for k, v in pairs(T) do NS.L[k] = v end

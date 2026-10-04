@@ -11,8 +11,15 @@ _G.SerialBuffer = NS
 
 -- Réglages par défaut. CopyDefaults complète la base sans écraser ce que le joueur a changé ;
 -- schemaVer sert le jour où une migration de la base devient nécessaire.
+-- Que des RÉGLAGES (spec, Contrat) : jamais un nom de joueur ni un GUID, un secret sauvegardé
+-- empoisonnerait la base.
 NS.DEFAULTS = {
     schemaVer = 1,
+    shown = true,           -- le tableau (/sbuff)
+    showPvP = false,        -- D5 : joueurs PvP cachés par défaut
+    keepInCombat = false,   -- D12 : tableau masqué pendant ton combat (option : palier c)
+    off = {},               -- D14 : buffs décochés, par id de rang 1 (aucun par défaut)
+    paladin = {},           -- D19 : classe de la cible → clé de bénédiction (défaut : Buffs.PALADIN_DEFAULT)
 }
 
 local function CopyDefaults(dst, src)
@@ -36,10 +43,17 @@ end
 
 function NS:Slash(msg)
     local cmd = ((msg or ""):match("^%s*(%S*)") or ""):lower()
-    if cmd == "version" then
+    if cmd == "" then
+        if self.UI then self.UI:Toggle() end
+    elseif cmd == "pvp" then
+        self.db.showPvP = not self.db.showPvP
+        self:Print(self.db.showPvP and L["Joueurs PvP affichés."] or L["Joueurs PvP cachés."])
+    elseif cmd == "version" then
         self:Printf(L["version %s"], self.VERSION)
     else
         self:Print(L["Commandes :"])
+        self:Print("/sbuff - " .. L["affiche ou cache le tableau"])
+        self:Print("/sbuff pvp - " .. L["montre ou cache les joueurs PvP"])
         self:Print("/sbuff version - " .. L["affiche la version"])
     end
 end
@@ -56,6 +70,7 @@ f:SetScript("OnEvent", function(_, event, arg1)
         CopyDefaults(SerialBufferDB, NS.DEFAULTS)
         NS.db = SerialBufferDB
     elseif event == "PLAYER_LOGIN" then
-        NS:Printf(L["chargé. Tape /%s pour l'aide."], "sbuff")
+        NS:Printf(L["chargé. Tape /%s aide pour l'aide."], "sbuff")
+        NS.Run:Start()
     end
 end)
