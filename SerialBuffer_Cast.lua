@@ -50,9 +50,11 @@ end
 -- ---------------------------------------------------------------- sort raté
 
 -- Seules les erreurs qui tiennent à la CIBLE comptent ; un « sort pas prêt » (temps de recharge global,
--- clic martelé) ne doit pas faire tourner la file. L'erreur se reconnaît par son NOM, que rend
--- GetGameMessageInfo(type) quelle que soit la langue du client (Blizzard_UIErrorsFrame), et à défaut
--- par son texte comparé aux globales du client. Deux suites :
+-- clic martelé) ne doit pas faire tourner la file. MESURÉ sur Forever (build 70205, 2026-10-04,
+-- db.seenErrors) : un sort refusé arrive sous le nom GÉNÉRIQUE « ERR_SPELL_FAILED_S » (GetGameMessageInfo),
+-- la raison n'étant que dans le TEXTE (« Target is too low level ») ; « pas prêt » arrive sous
+-- « ERR_SPELL_COOLDOWN ». On compare donc surtout le texte aux globales du client (traduites : la langue
+-- n'y change rien) ; le nom ne sert que pour les erreurs qui ont le leur. Deux suites :
 --   "lowlevel" : la cible est trop basse pour CE buff, elle sort de la liste pour lui (D24) ;
 --   "target"   : hors de vue, hors de portée, cible invalide : le joueur repasse en fin de file.
 C.TARGET_ERRORS = { SPELL_FAILED_LINE_OF_SIGHT = true, SPELL_FAILED_OUT_OF_RANGE = true,
@@ -64,7 +66,6 @@ local function textIs(msg, key)
 end
 
 function C.Classify(errorName, msg)
-    if type(errorName) == "string" and errorName:find("LOWLEVEL", 1, true) then return "lowlevel" end
     if type(errorName) == "string" and C.TARGET_ERRORS[errorName] then return "target" end
     if type(msg) ~= "string" then return nil end
     if textIs(msg, "SPELL_FAILED_LOWLEVEL") then return "lowlevel" end
