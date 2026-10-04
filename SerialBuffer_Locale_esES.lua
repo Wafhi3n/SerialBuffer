@@ -27,5 +27,15 @@ local T = {
     ["Tournée finie !"]                                                             = "¡Ronda terminada!",
     ["%d à buffer"]                                                                 = "%d por bufear",
     ["Aucun de tes buffs n'est reconnu (ids : %s). Préviens l'auteur de l'addon."]  = "Ninguno de tus beneficios fue reconocido (ids: %s). Avisa al autor del addon.",
+    ["Monter"] = "Subir",
+    ["Descendre"] = "Bajar",
+    ["Priorité des bénédictions"] = "Prioridad de bendiciones",
+    ["Buffs proposés"] = "Beneficios ofrecidos",
+    ["non appris"] = "no aprendido",
+    ["non apprise"] = "no aprendida",
+    ["Les buffs de mana (Sagesse, Intelligence des Arcanes) ne vont jamais aux guerriers ni aux voleurs."] = "Los beneficios de maná (Sabiduría, Intelecto Arcano) nunca van a guerreros ni pícaros.",
+    ["Montrer les joueurs marqués PvP"] = "Mostrar jugadores marcados JcJ",
+    ["Options indisponibles sur ce client."] = "Opciones no disponibles en este cliente.",
+    ["ouvre les options"] = "abre las opciones",
 }
 for k, v in pairs(T) do NS.L[k] = v end

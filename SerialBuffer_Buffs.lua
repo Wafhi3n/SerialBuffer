@@ -1,7 +1,9 @@
 -- SerialBuffer_Buffs.lua — CE QUE TA CLASSE POSE : le catalogue des buffs longs et la table du paladin.
 --
 -- Spec docs/specs/serial-buffer.md : D4 (toutes les classes à buff), D14 (tous cochés par défaut),
--- D15/D19 (le paladin bénit selon la classe de la cible, table réglable), Q12 (bénédiction inconnue).
+-- D22 (le paladin pose la PREMIÈRE bénédiction de sa liste de priorité qu'il connaît : Rois > Sagesse >
+-- Puissance par défaut, réglable dans les options), D23 (un buff de mana ne va jamais à une classe sans
+-- mana : pas de Sagesse ni d'Intelligence des Arcanes pour un guerrier ou un voleur).
 -- On garde le RANG 1 de chaque sort : on teste qu'il est connu, puis on travaille par NOM, parce que
 -- Forever garde les rangs et qu'une aura porte l'id du rang lancé (sonde, 2026-10-04). Lancer par nom
 -- prend le rang le plus haut connu.
@@ -27,8 +29,12 @@ B.BLESSINGS = {
     SALVATION = 1038, LIGHT = 19977, SANCTUARY = 20911,
 }
 
--- D19 : Puissance aux guerriers et aux voleurs, Sagesse aux autres (« * »), jamais Salut par défaut.
-B.PALADIN_DEFAULT = { WARRIOR = "MIGHT", ROGUE = "MIGHT", ["*"] = "WISDOM" }
+-- D22 : l'ordre de priorité par défaut. Salut n'y est pas : un tank n'en veut pas.
+B.PRIORITY_DEFAULT = { "KINGS", "WISDOM", "MIGHT" }
+
+-- D23 : les buffs de mana, et les classes qui n'en ont pas l'usage.
+B.MANA_BUFFS = { [19742] = true, [1459] = true }   -- Sagesse, Intelligence des Arcanes
+B.NO_MANA = { WARRIOR = true, ROGUE = true }
 
 -- Le client, remplaçable par un test headless.
 B.client = {
@@ -79,25 +85,48 @@ function B:HasCatalog(class)
     return class == "PALADIN" or self.CATALOG[class] ~= nil
 end
 
--- La bénédiction que la table donne à une classe de cible : réglage du joueur, sinon défaut.
-function B:BlessingKeyFor(targetClass, db)
-    local mine = db and db.paladin or {}
-    return mine[targetClass] or self.PALADIN_DEFAULT[targetClass] or mine["*"] or self.PALADIN_DEFAULT["*"]
+-- L'ordre de priorité du joueur (db.priority, réglé dans les options), sinon celui par défaut.
+function B:Priority(db)
+    local p = db and db.priority
+    if type(p) == "table" and #p > 0 then return p end
+    return self.PRIORITY_DEFAULT
+end
+
+-- Ce buff sert-il à cette classe de cible ? (D23)
+function B:Useful(e, targetClass)
+    return not (self.MANA_BUFFS[e.id] and self.NO_MANA[targetClass])
 end
 
 -- Les buffs voulus pour une cible, dans l'ordre. db.off[id] = true : buff décoché (D14 : rien ne
--- l'est par défaut). Paladin dont la table pointe une bénédiction INCONNUE : rien (Q12, provisoire :
--- on ne se rabat pas en silence sur une autre bénédiction).
+-- l'est par défaut). Paladin : UNE bénédiction, la première de la priorité qu'il connaît, qui est
+-- cochée et qui sert à la cible (D22, D23) ; une bénédiction inconnue cède sa place à la suivante.
 function B:WantedFor(targetClass, db)
     local off = db and db.off or {}
     if self.class == "PALADIN" then
-        local e = self.blessings and self.blessings[self:BlessingKeyFor(targetClass, db)]
-        if e and not off[e.id] then return { e } end
+        for _, key in ipairs(self:Priority(db)) do
+            local e = self.blessings and self.blessings[key]
+            if e and not off[e.id] and self:Useful(e, targetClass) then return { e } end
+        end
         return {}
     end
     local out = {}
     for _, e in ipairs(self.list or {}) do
-        if not off[e.id] then out[#out + 1] = e end
+        if not off[e.id] and self:Useful(e, targetClass) then out[#out + 1] = e end
+    end
+    return out
+end
+
+-- Pour les options : tout le catalogue de la classe, connu ou non, dans l'ordre affiché.
+function B:Catalog(class, db)
+    local ids = {}
+    if class == "PALADIN" then
+        for _, key in ipairs(self:Priority(db)) do ids[#ids + 1] = self.BLESSINGS[key] end
+    else
+        for _, id in ipairs(self.CATALOG[class] or {}) do ids[#ids + 1] = id end
+    end
+    local out, c = {}, self.client
+    for _, id in ipairs(ids) do
+        out[#out + 1] = { id = id, name = c.name(id) or tostring(id), icon = c.icon(id), known = c.known(id) }
     end
     return out
 end

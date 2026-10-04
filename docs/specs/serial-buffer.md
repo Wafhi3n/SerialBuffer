@@ -1,7 +1,7 @@
 # Serial Buffer : la tournée des buffs en extérieur
 
-> État : **validée par le user le 2026-10-04 (D1 à D21), faisabilité prouvée par la sonde**
-> (relevés R1 à R5). Q11 reste ouverte. · Rédigée le 2026-10-04 · Idée du user le 2026-10-04,
+> État : **validée par le user le 2026-10-04 (D1 à D23), faisabilité prouvée par la sonde**
+> (relevés R1 à R5). Q11 et Q13 restent ouvertes. · Rédigée le 2026-10-04 · Idée du user le 2026-10-04,
 > périmètre tranché par lui le même jour (cf. Décisions).
 > **Le mécanisme retenu** : on **voit** les joueurs par leurs plaques (portée et buffs se lisent
 > sur le jeton), on les **buffe** par un bouton macro à leur nom complet (`/targetexact Prénom
@@ -32,8 +32,10 @@ buff sur le premier de la liste qui est à portée, sans viser personne. Un joue
 liste tout de suite** : on enchaîne. Quand elle est vide, la tournée est finie.
 
 Tous les buffs que ta classe sait poser sur un autre joueur sont cochés d'office ; tu décoches ce
-que tu ne veux pas. Le paladin pose **une bénédiction choisie selon la classe de la cible**, d'après
-une table qu'il règle classe par classe.
+que tu ne veux pas. Le paladin pose **la première bénédiction de sa liste de priorité qu'il connaît**
+(Rois > Sagesse > Puissance par défaut), réglable dans les options du jeu (Options > AddOns). **Un buff de
+mana ne va jamais à une classe sans mana** : pas de Sagesse ni d'Intelligence des Arcanes pour un
+guerrier ou un voleur.
 
 Chaque buff part **d'un clic ou d'une touche du joueur**. L'addon prépare la file, le joueur appuie.
 
@@ -241,17 +243,13 @@ Toutes prises par le user le 2026-10-04.
   serial buffer, on enchaîne. »
 - **D14 : tous les buffs de la classe sont cochés par défaut.** Les sorts écartés plus haut
   (Amplifier, Atténuer la magie) n'en font pas partie.
-- **D15 : le paladin pose une bénédiction par classe de la cible**, d'après une table réglable.
+- ~~D15 : le paladin pose une bénédiction par classe de la cible~~ : remplacée par D22.
 - **D16 : un joueur en combat n'entre pas dans la liste** (il s'agit des joueurs de la liste, pas
   de toi). Le buffer te mettrait en combat et figerait le tableau (H7).
 - **D17 : la commande est `/sbuff`.**
 - **D18 : un membre du groupe que le client ne voit pas** (autre carte, déconnecté) **est absent de
   la liste** : on ne peut pas savoir s'il lui manque un buff.
-- **D19 : la table du paladin, entièrement configurable.** Le paladin choisit la bénédiction de
-  chaque classe de cible. Par défaut :
-  - Puissance aux guerriers et aux voleurs ;
-  - Sagesse à toutes les autres classes ;
-  - jamais Salut, parce qu'un tank n'en veut pas.
+- ~~D19 : la table du paladin par classe de cible~~ : remplacée par D22 et D23 le 2026-10-04.
 - **D20 : après un buff, on passe au suivant de la file (FIFO)**, comme une pile. Rendre la cible
   que tu avais avant n'est pas un objectif. *Conséquence dérivée, non décidée par le user* : la
   macro n'a plus besoin de `/targetlasttarget`, qui ne rendait de toute façon pas la bonne cible
@@ -259,6 +257,15 @@ Toutes prises par le user le 2026-10-04.
 - **D21 : avec l'option « garder en combat », les lignes des inconnus restent cliquables**,
   comme celles du groupe. Cela remplace la conséquence tirée pour D12 avant H8 (lignes d'inconnus
   inactives en combat).
+- **D22 : le paladin suit un ordre de PRIORITÉ, Rois > Sagesse > Puissance par défaut**, réglable dans
+  les options du jeu (Options > AddOns > Serial Buffer). Chaque cible reçoit la première bénédiction
+  de la liste que le paladin connaît, qui est cochée et qui lui sert (D23). Une bénédiction que tu ne
+  connais pas encore (Rois est un talent) cède simplement sa place à la suivante. Salut n'est pas dans
+  la liste. Cela règle Q12.
+- **D23 : un buff de mana ne va jamais à une classe sans mana.** Bénédiction de sagesse et
+  Intelligence des Arcanes sautent les guerriers et les voleurs : un paladin sans Rois donne
+  Puissance au guerrier, et un mage ne liste pas les guerriers ni les voleurs. *Dérivé, à
+  confirmer* : Esprit divin (Esprit) pourrait suivre la même règle ; il ne la suit pas aujourd'hui.
 
 ## Questions ouvertes (au user)
 
@@ -271,10 +278,8 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
   - **(b)** l'addon lance un rang plus bas que tu connais, s'il en existe un ; sinon, (a).
 
   La réponse dépend aussi de H6 : si le jeu abaisse déjà le rang tout seul, (b) n'a pas d'objet.
-- **Q12 : la table du paladin vise une bénédiction que tu ne connais pas** (Rois est un talent,
-  Sagesse s'apprend plus tard). **Provisoire, codé au palier (a)** : la classe concernée n'a pas de
-  ligne. On ne se rabat pas en silence sur une autre bénédiction. Variante : se rabattre sur une
-  bénédiction connue, en le disant.
+- ~~Q12 : une bénédiction de la table que tu ne connais pas~~ : réglée par D22, la suivante de la
+  priorité prend sa place.
 - **Q13 : un joueur à qui il manque deux buffs.** Après le premier, il garde sa place en tête (le
   comportement codé au palier (a)) ou repasse en fin de file ? « On passe à la suivante » (D20)
   peut se lire des deux façons.
@@ -335,17 +340,18 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
 18. [humain] Un clic sur la ligne d'un joueur parti, ou qui a changé de nom : **rien ne part**, et
     aucun autre joueur n'est buffé. Témoin connu-bon : le relevé R4, avant la garde, où le sort
     partait sur la cible d'avant.
-16. [humain] Un paladin buffe un guerrier puis un mage : chacun reçoit la bénédiction que la table
-    donne à sa classe. Il change ensuite dans la table la bénédiction des guerriers : le guerrier
-    suivant reçoit la nouvelle, et le réglage survit à un `/reload`. Témoin connu-bon : la même
-    bénédiction lancée à la main.
-17. [test] La table du paladin donne, pour chaque classe de cible, la bénédiction réglée. Une
-    classe absente de la table reçoit la valeur par défaut.
+16. [humain] Un paladin sans Rois voit, dans le tableau, Puissance pour un guerrier et Sagesse pour
+    un mage ; avec Rois, Rois pour les deux. Dans Options > AddOns > Serial Buffer, il fait
+    descendre Rois : le tableau propose aussitôt la bénédiction suivante, et l'ordre survit à un
+    `/reload`. Témoin connu-bon : la bénédiction lancée à la main.
+17. [test] La priorité du paladin et D23 : sans Rois, Puissance au guerrier et Sagesse au mage ; avec
+    Rois, Rois pour tous ; un ordre réglé l'emporte ; une bénédiction décochée cède sa place ; un
+    mage ne propose rien aux guerriers ni aux voleurs.
 
 ## Contrat
 
-- **SavedVariables : des réglages seulement.** Ce sont les buffs cochés par classe, la table des
-  bénédictions du paladin, l'option PvP, l'option « garder en combat », la réponse à la proposition
+- **SavedVariables : des réglages seulement.** Ce sont les buffs cochés par classe (`off`), l'ordre
+  des bénédictions du paladin (`priority`), l'option PvP, l'option « garder en combat », la réponse à la proposition
   des plaques et la position du tableau. **Aucun nom de joueur, aucun GUID** : un secret sauvegardé
   empoisonne la base.
 - **Raccourci clavier** « Serial Buffer : buff suivant », dans le menu des raccourcis du jeu.

@@ -54,6 +54,7 @@ end
 function R:Start()
     self:ResolveBuffs()
     NS.UI:Build()
+    pcall(NS.Options.Register, NS.Options)   -- l'API Settings jamais éprouvée ici : elle ne casse rien
     NS.Units:SeedPlates()
     local f = CreateFrame("Frame")
     for _, ev in ipairs({ "NAME_PLATE_UNIT_ADDED", "NAME_PLATE_UNIT_REMOVED",

@@ -26,5 +26,15 @@ local T = {
     ["Tournée finie !"]                                                             = "Runde fertig!",
     ["%d à buffer"]                                                                 = "%d zu buffen",
     ["Aucun de tes buffs n'est reconnu (ids : %s). Préviens l'auteur de l'addon."]  = "Keiner deiner Buffs wurde erkannt (IDs: %s). Bitte melde es dem Addon-Autor.",
+    ["Monter"] = "Nach oben",
+    ["Descendre"] = "Nach unten",
+    ["Priorité des bénédictions"] = "Segen-Priorität",
+    ["Buffs proposés"] = "Angebotene Buffs",
+    ["non appris"] = "nicht erlernt",
+    ["non apprise"] = "nicht erlernt",
+    ["Les buffs de mana (Sagesse, Intelligence des Arcanes) ne vont jamais aux guerriers ni aux voleurs."] = "Mana-Buffs (Weisheit, Arkane Intelligenz) gehen nie an Krieger oder Schurken.",
+    ["Montrer les joueurs marqués PvP"] = "PvP-markierte Spieler anzeigen",
+    ["Options indisponibles sur ce client."] = "Optionen auf diesem Client nicht verfügbar.",
+    ["ouvre les options"] = "öffnet die Optionen",
 }
 for k, v in pairs(T) do NS.L[k] = v end

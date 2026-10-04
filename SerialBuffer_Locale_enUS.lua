@@ -27,5 +27,15 @@ local T = {
     ["Tournée finie !"]                                                             = "Round done!",
     ["%d à buffer"]                                                                 = "%d to buff",
     ["Aucun de tes buffs n'est reconnu (ids : %s). Préviens l'auteur de l'addon."]  = "None of your buffs was recognized (ids: %s). Please tell the addon author.",
+    ["Monter"] = "Move up",
+    ["Descendre"] = "Move down",
+    ["Priorité des bénédictions"] = "Blessing priority",
+    ["Buffs proposés"] = "Buffs offered",
+    ["non appris"] = "not learned",
+    ["non apprise"] = "not learned",
+    ["Les buffs de mana (Sagesse, Intelligence des Arcanes) ne vont jamais aux guerriers ni aux voleurs."] = "Mana buffs (Wisdom, Arcane Intellect) never go to warriors or rogues.",
+    ["Montrer les joueurs marqués PvP"] = "Show PvP-flagged players",
+    ["Options indisponibles sur ce client."] = "Options are unavailable on this client.",
+    ["ouvre les options"] = "opens the options",
 }
 for k, v in pairs(T) do NS.L[k] = v end

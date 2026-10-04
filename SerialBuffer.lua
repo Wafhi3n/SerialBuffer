@@ -19,7 +19,7 @@ NS.DEFAULTS = {
     showPvP = false,        -- D5 : joueurs PvP cachés par défaut
     keepInCombat = false,   -- D12 : tableau masqué pendant ton combat (option : palier c)
     off = {},               -- D14 : buffs décochés, par id de rang 1 (aucun par défaut)
-    paladin = {},           -- D19 : classe de la cible → clé de bénédiction (défaut : Buffs.PALADIN_DEFAULT)
+    priority = {},          -- D22 : ordre des bénédictions réglé dans les options (vide : Buffs.PRIORITY_DEFAULT)
 }
 
 local function CopyDefaults(dst, src)
@@ -48,12 +48,15 @@ function NS:Slash(msg)
     elseif cmd == "pvp" then
         self.db.showPvP = not self.db.showPvP
         self:Print(self.db.showPvP and L["Joueurs PvP affichés."] or L["Joueurs PvP cachés."])
+    elseif cmd == "options" then
+        if self.Options then self.Options:Open() end
     elseif cmd == "version" then
         self:Printf(L["version %s"], self.VERSION)
     else
         self:Print(L["Commandes :"])
         self:Print("/sbuff - " .. L["affiche ou cache le tableau"])
         self:Print("/sbuff pvp - " .. L["montre ou cache les joueurs PvP"])
+        self:Print("/sbuff options - " .. L["ouvre les options"])
         self:Print("/sbuff version - " .. L["affiche la version"])
     end
 end
