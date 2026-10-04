@@ -75,17 +75,19 @@ end
 -- Les deux sondes de la file (SerialBuffer_Queue.lua).
 U.probe = {}
 
--- L'aura vient-elle de moi ? true, false, ou nil = illisible. Comme Blizzard (AuraUtil.lua) :
--- sourceUnit comparé à "player", et à défaut isFromPlayerOrPlayerPet.
+-- L'aura vient-elle de moi ? true, false, ou nil = illisible. Exactement comme Blizzard
+-- (AuraUtil.lua) : « (sourceUnit ~= nil) and UnitIsUnit("player", sourceUnit) or false ». Mes propres
+-- auras portent toujours sourceUnit ; sans lui, le lanceur n'est pas moi.
+-- PAS isFromPlayerOrPlayerPet : il veut dire « posé par UN joueur », pas « par moi ». Mesuré le
+-- 2026-10-04 (db.diag, foule de la banque d'Ironforge) : avec lui en secours, 2197 lectures sur 2197
+-- passaient pour les miennes, et D27 ne pouvait jamais jouer.
 local function fromMe(a)
     local src = a.sourceUnit
-    if src ~= nil and not sec(src) then
-        local ok, same = pcall(UnitIsUnit, "player", src)
-        if ok and not sec(same) then return same and true or false end
-    end
-    local f = a.isFromPlayerOrPlayerPet
-    if f ~= nil and not sec(f) then return f and true or false end
-    return nil
+    if src == nil then return false end
+    if sec(src) then return nil end
+    local ok, same = pcall(UnitIsUnit, "player", src)
+    if not ok or sec(same) then return nil end
+    return same and true or false
 end
 
 -- "absent", ou les secondes restantes (math.huge : sans fin) et « est-ce la mienne » ; nil = illisible.
