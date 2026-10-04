@@ -1,0 +1,8 @@
+<Bindings>
+    <!-- La touche « buff suivant » clique le bouton sécurisé caché SerialBufferNextButton
+         (SerialBuffer_UI.lua). Les libellés viennent des globales BINDING_* posées (localisées) dans
+         SerialBuffer_Cast.lua. Ce fichier n'est PAS listé dans le .toc : le client le charge tout seul.
+         runOnUp : le bouton agit sur l'enfoncé ou le relâché selon ActionButtonUseKeyDown, il reçoit
+         donc les deux. -->
+    <Binding name="CLICK SerialBufferNextButton:LeftButton" header="SERIALBUFFER" category="BINDING_HEADER_SERIALBUFFER" runOnUp="true"/>
+</Bindings>

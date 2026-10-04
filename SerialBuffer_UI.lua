@@ -1,11 +1,15 @@
 -- SerialBuffer_UI.lua — LE TABLEAU SUR LE CÔTÉ (D10) : une ligne par joueur à buffer, en ordre FIFO.
 --
--- Palier (a) : le tableau se lit, il ne se clique pas encore (palier b : boutons macro au nom).
--- Deux cadres, pour que le palier (b) n'ait rien à défaire :
+-- Palier (b) : chaque ligne est un bouton SÉCURISÉ de type macro ; un clic buffe ce joueur par son nom
+-- complet (SerialBuffer_Cast.lua). Un bouton caché, « SerialBufferNextButton », porte la touche
+-- « buff suivant » (Bindings.xml) : il vise le premier de la file à portée.
+-- Trois cadres :
 --   - le PILOTE, enfant de UIParent : sa visibilité suit un pilote d'état sécurisé, « [combat] hide »
---     (D12). Un Hide() lancé depuis un événement de combat serait refusé dès qu'il portera des
---     boutons sécurisés ; le pilote d'état, lui, passe ;
---   - le PANNEAU, enfant du pilote : /sbuff l'affiche ou le cache, hors combat seulement.
+--     (D12). Un Hide() lancé depuis un événement de combat serait refusé sur un ancêtre de boutons
+--     sécurisés ; le pilote d'état, lui, passe ;
+--   - le PANNEAU, enfant du pilote : /sbuff l'affiche ou le cache, hors combat seulement ;
+--   - la TOUCHE, hors du panneau : un pilote d'attribut lui retire son action en combat (D12).
+-- Un attribut sécurisé ne se pose JAMAIS en combat : Render ne fait rien tant qu'il dure.
 -- Le tableau ne lit QUE ce que SerialBuffer_Run.lua lui passe (rows, état) : jamais le client.
 local _, NS = ...
 NS = NS or _G.SerialBuffer
@@ -33,10 +37,31 @@ local function savePosition(panel)
     NS.db.pos = { point = point, relPoint = relPoint, x = x, y = y }
 end
 
+-- Les deux sens du clic : l'action part sur l'enfoncé ou le relâché selon le réglage du joueur
+-- (ActionButtonUseKeyDown), une seule fois. C'est ce que la sonde a validé.
+local function secureMacroButton(name, parent)
+    local b = CreateFrame("Button", name, parent, "SecureActionButtonTemplate")
+    b:RegisterForClicks("AnyUp", "AnyDown")
+    b:SetAttribute("type", "macro")
+    b:HookScript("OnClick", function(self) NS.Cast:NoteClick(self.guid, GetTime()) end)
+    return b
+end
+
+-- Pose le texte de macro s'il a changé. Jamais en combat (l'appelant le garantit).
+local function setMacro(b, text)
+    if b.macro ~= text then
+        b:SetAttribute("macrotext", text)
+        b.macro = text
+    end
+end
+
 local function buildRow(panel, i)
-    local row = CreateFrame("Frame", nil, panel)
+    local row = secureMacroButton(nil, panel)
     row:SetSize(WIDTH - 2 * PAD, ROW_H)
     row:SetPoint("TOPLEFT", panel, "TOPLEFT", PAD, -(PAD + 20 + (i - 1) * ROW_H))
+    local hl = row:CreateTexture(nil, "HIGHLIGHT")
+    hl:SetAllPoints()
+    hl:SetColorTexture(1, 1, 1, 0.12)
     row.icon = row:CreateTexture(nil, "ARTWORK")
     row.icon:SetSize(ROW_H - 2, ROW_H - 2)
     row.icon:SetPoint("LEFT")
@@ -78,22 +103,36 @@ function UI:Build()
     panel.msg:SetJustifyH("LEFT")
     for i = 1, MAX_ROWS do self.rows[i] = buildRow(panel, i) end
     self.driver, self.panel = driver, panel
+    self:BuildNext()
     panel:SetShown(NS.db.shown)
+end
+
+-- La touche « buff suivant ». Caché : seul son raccourci le clique. En combat, le pilote d'attribut
+-- lui retire son type, et la touche ne fait rien (D12).
+function UI:BuildNext()
+    local b = secureMacroButton(NS.Cast.NEXT_BUTTON, UIParent)
+    b:Hide()
+    RegisterAttributeDriver(b, "type", NS.db.keepInCombat and "macro" or "[combat] nil; macro")
+    self.next = b
 end
 
 function UI:IsVisible()
     return self.panel ~= nil and self.panel:IsVisible()
 end
 
--- /sbuff : afficher ou cacher. Jamais en combat (le palier b y mettra des boutons sécurisés).
+-- /sbuff : afficher ou cacher. Jamais en combat (ancêtre de boutons sécurisés). Caché, le tableau
+-- ne se recalcule plus : la touche « buff suivant » est vidée, pour ne pas viser une file périmée.
 function UI:Toggle()
     if not self.panel then return end
     if InCombatLockdown() then NS:Print(L["Pas pendant un combat."]) return end
     NS.db.shown = not self.panel:IsShown()
     self.panel:SetShown(NS.db.shown)
+    if not NS.db.shown then setMacro(self.next, nil); self.next.guid = nil end
 end
 
 local function fillRow(row, r)
+    row.guid = r.guid
+    setMacro(row, NS.Cast.MacroFor(r))
     row.icon:SetTexture(r.buff.icon)
     row.name:SetText(r.name)
     row.name:SetTextColor(classColor(r.class))
@@ -125,7 +164,10 @@ local function footer(rows, state, around)
 end
 
 function UI:Render(rows, state, around)
-    if not self.panel then return end
+    if not self.panel or InCombatLockdown() then return end
+    local nextRow = NS.Cast.NextRow(rows)
+    setMacro(self.next, nextRow and NS.Cast.MacroFor(nextRow))
+    self.next.guid = nextRow and nextRow.guid
     local shown = math.min(#rows, MAX_ROWS)
     for i = 1, MAX_ROWS do
         if i <= shown then fillRow(self.rows[i], rows[i]) else self.rows[i]:Hide() end

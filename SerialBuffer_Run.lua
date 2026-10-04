@@ -43,24 +43,43 @@ function R:Refresh()
     NS.UI:Render(rows, state, around)
 end
 
-local function onEvent(_, event, arg1)
+-- Après un sort ou une erreur : recalcule tout de suite, pour que la touche « buff suivant » vise
+-- déjà le joueur d'après (D13). Rien en combat : Render n'y touche à aucun attribut sécurisé.
+local function refreshNow()
+    if NS.UI:IsVisible() and not InCombatLockdown() then R:Refresh() end
+end
+
+local function onEvent(_, event, arg1, arg2)
     if event == "NAME_PLATE_UNIT_ADDED" then NS.Units:PlateAdded(arg1)
     elseif event == "NAME_PLATE_UNIT_REMOVED" then NS.Units:PlateRemoved(arg1)
     elseif event == "PLAYER_ENTERING_WORLD" then NS.Units:SeedPlates()
     elseif event == "SPELLS_CHANGED" then R:ResolveBuffs()
+    elseif event == "UNIT_SPELLCAST_SUCCEEDED" then refreshNow()
+    elseif event == "UI_ERROR_MESSAGE" then
+        local msg = (issecretvalue and issecretvalue(arg2)) and nil or arg2
+        local guid = NS.Cast:OnError(msg, GetTime())
+        if guid then NS.Queue:Requeue(guid); refreshNow() end
     end
 end
 
+-- Les boutons sécurisés ne se construisent pas en combat : un /reload en plein combat attend la fin.
 function R:Start()
+    if InCombatLockdown() then
+        local wait = CreateFrame("Frame")
+        wait:RegisterEvent("PLAYER_REGEN_ENABLED")
+        wait:SetScript("OnEvent", function(f) f:UnregisterAllEvents(); R:Start() end)
+        return
+    end
     self:ResolveBuffs()
     NS.UI:Build()
     pcall(NS.Options.Register, NS.Options)   -- l'API Settings jamais éprouvée ici : elle ne casse rien
     NS.Units:SeedPlates()
     local f = CreateFrame("Frame")
     for _, ev in ipairs({ "NAME_PLATE_UNIT_ADDED", "NAME_PLATE_UNIT_REMOVED",
-                          "PLAYER_ENTERING_WORLD", "SPELLS_CHANGED" }) do
+                          "PLAYER_ENTERING_WORLD", "SPELLS_CHANGED", "UI_ERROR_MESSAGE" }) do
         f:RegisterEvent(ev)
     end
+    f:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
     f:SetScript("OnEvent", onEvent)
     self.frame = f
     self.ticker = C_Timer.NewTicker(TICK, function()
