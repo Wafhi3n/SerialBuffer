@@ -262,10 +262,12 @@ Toutes prises par le user le 2026-10-04.
   de la liste que le paladin connaît, qui est cochée et qui lui sert (D23). Une bénédiction que tu ne
   connais pas encore (Rois est un talent) cède simplement sa place à la suivante. Salut n'est pas dans
   la liste. Cela règle Q12.
-- **D23 : un buff de mana ne va jamais à une classe sans mana.** Bénédiction de sagesse et
-  Intelligence des Arcanes sautent les guerriers et les voleurs : un paladin sans Rois donne
-  Puissance au guerrier, et un mage ne liste pas les guerriers ni les voleurs. *Dérivé, à
-  confirmer* : Esprit divin (Esprit) pourrait suivre la même règle ; il ne la suit pas aujourd'hui.
+- **D23 : un buff de mana ne va jamais à une classe sans mana.** Bénédiction de sagesse,
+  Intelligence des Arcanes et **Esprit divin** (ajouté par le user le même jour) sautent les
+  guerriers et les voleurs : un paladin sans Rois donne Puissance au guerrier, un mage ne liste pas
+  les guerriers ni les voleurs, et un prêtre ne leur propose que Robustesse et Protection contre
+  l'Ombre. Rappel du user : seul le **paladin** ne pose qu'une bénédiction par joueur ; un prêtre, un
+  mage ou un druide posent tous leurs buffs, l'un après l'autre (D7).
 
 ## Questions ouvertes (au user)
 

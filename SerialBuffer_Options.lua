@@ -102,7 +102,7 @@ function O:Build(panel)
     note:SetPoint("TOPLEFT", PAD, y - 4)
     note:SetWidth(560)
     note:SetJustifyH("LEFT")
-    note:SetText(L["Les buffs de mana (Sagesse, Intelligence des Arcanes) ne vont jamais aux guerriers ni aux voleurs."])
+    note:SetText(L["Les buffs de mana (Sagesse, Intelligence des Arcanes, Esprit divin) ne vont jamais aux guerriers ni aux voleurs."])
     y = y - 36
     self.checks[#self.checks + 1] = checkbox(panel, PAD, y, L["Montrer les joueurs marqués PvP"],
         function() return NS.db.showPvP end, function(v) NS.db.showPvP = v end)

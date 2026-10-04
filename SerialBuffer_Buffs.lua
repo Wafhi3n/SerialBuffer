@@ -32,8 +32,9 @@ B.BLESSINGS = {
 -- D22 : l'ordre de priorité par défaut. Salut n'y est pas : un tank n'en veut pas.
 B.PRIORITY_DEFAULT = { "KINGS", "WISDOM", "MIGHT" }
 
--- D23 : les buffs de mana, et les classes qui n'en ont pas l'usage.
-B.MANA_BUFFS = { [19742] = true, [1459] = true }   -- Sagesse, Intelligence des Arcanes
+-- D23 : les buffs de mana, et les classes qui n'en ont pas l'usage. Un paladin ne pose qu'UNE
+-- bénédiction par cible ; un prêtre, un mage ou un druide posent tous leurs buffs, l'un après l'autre.
+B.MANA_BUFFS = { [19742] = true, [1459] = true, [14752] = true }   -- Sagesse, Intelligence, Esprit divin
 B.NO_MANA = { WARRIOR = true, ROGUE = true }
 
 -- Le client, remplaçable par un test headless.
