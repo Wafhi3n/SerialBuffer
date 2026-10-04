@@ -271,6 +271,13 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
   - **(b)** l'addon lance un rang plus bas que tu connais, s'il en existe un ; sinon, (a).
 
   La réponse dépend aussi de H6 : si le jeu abaisse déjà le rang tout seul, (b) n'a pas d'objet.
+- **Q12 : la table du paladin vise une bénédiction que tu ne connais pas** (Rois est un talent,
+  Sagesse s'apprend plus tard). **Provisoire, codé au palier (a)** : la classe concernée n'a pas de
+  ligne. On ne se rabat pas en silence sur une autre bénédiction. Variante : se rabattre sur une
+  bénédiction connue, en le disant.
+- **Q13 : un joueur à qui il manque deux buffs.** Après le premier, il garde sa place en tête (le
+  comportement codé au palier (a)) ou repasse en fin de file ? « On passe à la suivante » (D20)
+  peut se lire des deux façons.
 
 ## Critères d'acceptation
 
@@ -370,7 +377,12 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
 3. ~~Création~~ : faite le 2026-10-04. Déclaration dans l'outillage (`a6993af` sur `master`,
    inactif), squelette créé (`c886176`), spec déménagée ici.
 4. **Les paliers**, chacun testé au banc :
-   - (a) la liste seule, sans clic (critères 1, 5, 7, 14) ;
+   - (a) la liste seule, sans clic (critères 1, 5, 7, 14). **Codé le 2026-10-04** (SerialBuffer
+     `2b40b0b`, branche `feat/palier-a-tableau`), déployé au jeu (`feat/palier-a-tableau@2b40b0b`),
+     **pas encore vu en jeu**. Test headless des critères 9, 10, 11 et 17 :
+     `tests/test_serialbuffer_list.lua`, sur la branche d'outillage `feat/serialbuffer-palier-a`
+     (`bb2257e`), à fusionner le même jour que ce palier sur `main`. Hors plan : le catalogue
+     non paladin (mage, prêtre, druide) n'a jamais été vu sur Forever ;
    - (b) le clic et la touche (critères 2, 3, 8, 16) ;
    - (c) le combat (critères 4 et 15) ;
    - (d) la proposition des plaques et les options (critère 6).
