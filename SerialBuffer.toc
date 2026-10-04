@@ -4,6 +4,7 @@
 ## Author: Wafhien
 ## Version: 0.1.0
 ## SavedVariables: SerialBufferDB
+## IconTexture: Interface\AddOns\SerialBuffer\Textures\icon.tga
 
 # Genere par scripts\new_addon.ps1 le 2026-10-04 - client vise : forever.
 # Un .lua ajoute ici : sur Forever, /reload suffit (mesure le 2026-09-26) ; sur l'Era il fallait
