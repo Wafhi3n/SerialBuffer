@@ -398,7 +398,12 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
 2. ~~Le user tranche les questions ouvertes~~ : fait le 2026-10-04 (D1 à D19).
 3. ~~Création~~ : faite le 2026-10-04. Déclaration dans l'outillage (`a6993af` sur `master`,
    inactif), squelette créé (`c886176`), spec déménagée ici.
-4. **Les paliers**, chacun testé au banc :
+4. **Fusion du 2026-10-04 (accord du user)** : les paliers (a) et (b) et l'icône sont dans `main`
+   (`5df56f7`) ; les tests `test_serialbuffer_list.lua` et `test_serialbuffer_cast.lua` et
+   SerialBuffer **actif** dans `master` de l'outillage (`0e78231`) ; adresse CurseForge déclarée.
+   Dépôt GitHub `Wafhi3n/SerialBuffer` créé par le user, avec le webhook CurseForge
+   (`serial-buffer`, page en préparation). Rien de poussé à cette date.
+5. **Les paliers**, chacun testé au banc :
    - (a) la liste seule, sans clic (critères 1, 5, 7, 14). **Codé le 2026-10-04** (SerialBuffer
      `2b40b0b`, branche `feat/palier-a-tableau`), déployé au jeu (`feat/palier-a-tableau@2b40b0b`),
      **pas encore vu en jeu**. Test headless des critères 9, 10, 11 et 17 :
