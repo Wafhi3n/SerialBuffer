@@ -1,6 +1,6 @@
 # Serial Buffer : la tournée des buffs en extérieur
 
-> État : **validée par le user le 2026-10-04 (D1 à D27), faisabilité prouvée par la sonde**
+> État : **validée par le user le 2026-10-04 (D1 à D28), faisabilité prouvée par la sonde**
 > (relevés R1 à R5). Q13 reste ouverte. · Rédigée le 2026-10-04 · Idée du user le 2026-10-04,
 > périmètre tranché par lui le même jour (cf. Décisions).
 > **Le mécanisme retenu** : on **voit** les joueurs par leurs plaques (portée et buffs se lisent
@@ -287,6 +287,12 @@ Toutes prises par le user le 2026-10-04.
   - la sienne, ou un lanceur illisible : le joueur est servi, sauf si elle expire (D11).
   Le lanceur se lit comme le fait Blizzard (`sourceUnit` comparé à `"player"`). Ce n'est **pas
   encore mesuré** sur Forever pour un buff posé par un autre joueur.
+- **D28 : hors paladin, un joueur dont le buff a encore plus de 45 minutes n'apparaît pas**
+  (demande du user, 2026-10-04 : « idem pour les sorts des autres classes, si un sort a plus de
+  45-50 min il n'apparaît pas, sauf config dans les options »). En dessous du seuil, il revient
+  dans la liste pour être rafraîchi, quel que soit le lanceur du buff. Le seuil se règle dans les
+  options (− / +, par pas de 5 min, de 10 à 55) ; 45 par défaut, le bas de la fourchette du user.
+  Remplace D11 pour le prêtre, le mage et le druide ; le paladin garde D11 (10 min) et D27.
 - **D23 : un buff de mana ne va jamais à une classe sans mana.** Bénédiction de sagesse,
   Intelligence des Arcanes et **Esprit divin** (ajouté par le user le même jour) sautent les
   guerriers et les voleurs : un paladin sans Rois donne Puissance au guerrier, un mage ne liste pas
