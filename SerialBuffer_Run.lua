@@ -43,24 +43,63 @@ function R:Refresh()
     NS.UI:Render(rows, state, around)
 end
 
-local function onEvent(_, event, arg1)
+-- Après un sort ou une erreur : recalcule tout de suite, pour que la touche « buff suivant » vise
+-- déjà le joueur d'après (D13). Rien en combat : Render n'y touche à aucun attribut sécurisé.
+local function refreshNow()
+    if NS.UI:IsVisible() and not InCombatLockdown() then R:Refresh() end
+end
+
+local function onEvent(_, event, arg1, arg2)
     if event == "NAME_PLATE_UNIT_ADDED" then NS.Units:PlateAdded(arg1)
     elseif event == "NAME_PLATE_UNIT_REMOVED" then NS.Units:PlateRemoved(arg1)
     elseif event == "PLAYER_ENTERING_WORLD" then NS.Units:SeedPlates()
     elseif event == "SPELLS_CHANGED" then R:ResolveBuffs()
+    elseif event == "UNIT_SPELLCAST_SUCCEEDED" then refreshNow()
+    elseif event == "UI_ERROR_MESSAGE" then R:OnError(arg1, arg2)
     end
 end
 
+local function plainString(v)
+    if issecretvalue and issecretvalue(v) then return nil end
+    return type(v) == "string" and v or nil
+end
+
+-- Une erreur du jeu juste après un de nos clics : trop bas (D24) ou cible (fin de file). Son NOM
+-- (GetGameMessageInfo) est noté dans db.seenErrors : pas une donnée de joueur, juste ce que le client
+-- appelle ainsi, pour vérifier après coup les noms qu'on attend.
+function R:OnError(errorType, message)
+    if not NS.Cast:Recent(GetTime()) then return end   -- pas juste après un de nos clics
+    local okName, name = pcall(GetGameMessageInfo, errorType)
+    name = okName and plainString(name) or nil
+    local msg = plainString(message)
+    if name then
+        NS.db.seenErrors = NS.db.seenErrors or {}
+        NS.db.seenErrors[name] = msg or true
+    end
+    local kind, click = NS.Cast:OnError(name, msg, GetTime())
+    if kind == "lowlevel" then NS.Queue:TooLow(click.guid, click.buff, click.level)
+    elseif kind == "target" then NS.Queue:Requeue(click.guid) end
+    if kind then refreshNow() end
+end
+
+-- Les boutons sécurisés ne se construisent pas en combat : un /reload en plein combat attend la fin.
 function R:Start()
+    if InCombatLockdown() then
+        local wait = CreateFrame("Frame")
+        wait:RegisterEvent("PLAYER_REGEN_ENABLED")
+        wait:SetScript("OnEvent", function(f) f:UnregisterAllEvents(); R:Start() end)
+        return
+    end
     self:ResolveBuffs()
     NS.UI:Build()
     pcall(NS.Options.Register, NS.Options)   -- l'API Settings jamais éprouvée ici : elle ne casse rien
     NS.Units:SeedPlates()
     local f = CreateFrame("Frame")
     for _, ev in ipairs({ "NAME_PLATE_UNIT_ADDED", "NAME_PLATE_UNIT_REMOVED",
-                          "PLAYER_ENTERING_WORLD", "SPELLS_CHANGED" }) do
+                          "PLAYER_ENTERING_WORLD", "SPELLS_CHANGED", "UI_ERROR_MESSAGE" }) do
         f:RegisterEvent(ev)
     end
+    f:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
     f:SetScript("OnEvent", onEvent)
     self.frame = f
     self.ticker = C_Timer.NewTicker(TICK, function()

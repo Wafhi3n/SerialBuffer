@@ -5,7 +5,9 @@
 --   D5  PvP caché par défaut (pas toi : te buffer ne te marque pas)  D7  une ligne, le PROCHAIN buff qui manque
 --   D8  FIFO, personne ne passe devant                               D9  hors de portée = dehors, sauf groupe
 --   D11 un buff à moins de 10 min compte comme manquant              D16 joueur en combat : dehors
---   D18 membre du groupe invisible (autre carte) : dehors
+--   D18 membre du groupe invisible (autre carte) : dehors              D24 trop bas pour un buff : dehors pour CE buff
+-- AFFICHAGE : les joueurs à portée d'abord (FIFO), puis les membres du groupe hors de portée (FIFO) :
+-- la première ligne est toujours quelqu'un qu'on peut buffer, et un clic répété dessus vide la file.
 -- RÈGLE DE SÛRETÉ : « je ne sais pas » n'est JAMAIS « il lui manque ». Une aura illisible (erreur,
 -- valeur secrète) ou une portée inconnue pour un inconnu écartent le joueur : sinon une restriction
 -- du client ferait passer tout le monde pour non buffé.
@@ -14,24 +16,50 @@
 local _, NS = ...
 NS = NS or _G.SerialBuffer
 
-local Q = { seq = 0, order = {} }
+local Q = { seq = 0, order = {}, tooLow = {} }
 NS.Queue = Q
 
 Q.REFRESH_BELOW = 600   -- D11 : 10 minutes
 
 function Q:Reset()
-    self.seq, self.order = 0, {}
+    self.seq, self.order, self.tooLow = 0, {}, {}
 end
 
--- Le premier buff voulu qui manque. probe.aura rend "absent", un nombre de secondes restantes
--- (math.huge = sans fin), ou nil = illisible. Rend buff, ou nil + "buffed" / "unknown".
+-- D24 : le jeu a refusé ce buff sur ce joueur, « trop bas niveau ». On ne le lui propose plus tant
+-- qu'il n'a pas gagné un niveau. Mémoire de session : rien n'est sauvegardé (spec, Contrat).
+function Q:TooLow(guid, buffName, level)
+    if not (guid and buffName) then return end
+    self.tooLow[guid] = self.tooLow[guid] or {}
+    self.tooLow[guid][buffName] = type(level) == "number" and level or 0
+end
+
+local function isTooLow(snap, buffName)
+    local at = Q.tooLow[snap.guid] and Q.tooLow[snap.guid][buffName]
+    if not at then return false end
+    if type(snap.level) == "number" and snap.level > at then
+        Q.tooLow[snap.guid][buffName] = nil   -- il a monté de niveau : on réessaie
+        return false
+    end
+    return true
+end
+
+local function needs(left)
+    return left == "absent" or (type(left) == "number" and left < Q.REFRESH_BELOW)
+end
+
+-- Le buff à proposer, ou nil. probe.aura rend "absent", un nombre de secondes restantes (math.huge =
+-- sans fin), ou nil = illisible. Une liste EXCLUSIVE (paladin) : seule la première bénédiction que la
+-- cible peut recevoir compte ; les autres buffs (prêtre, mage, druide) : le premier qui manque (D7).
 local function nextMissing(snap, wanted, probe)
     for _, w in ipairs(wanted) do
-        local left = probe.aura(snap.unit, w.name)
-        if left == nil then return nil, "unknown" end
-        if left == "absent" or (type(left) == "number" and left < Q.REFRESH_BELOW) then return w end
+        if not isTooLow(snap, w.name) then
+            local left = probe.aura(snap.unit, w.name)
+            if left == nil then return nil end
+            if needs(left) then return w end
+            if wanted.exclusive then return nil end
+        end
     end
-    return nil, "buffed"
+    return nil
 end
 
 -- Les filtres qui ne dépendent pas des buffs. Rend true si le joueur peut entrer dans la file.
@@ -58,14 +86,15 @@ function Q:Eligible(snap, wantedFor, probe, opts)
             outOfRange = (r == false)
         end
     end
-    return { guid = snap.guid, name = snap.name, class = snap.class, unit = snap.unit,
+    return { guid = snap.guid, name = snap.name, class = snap.class, unit = snap.unit, level = snap.level,
              buff = buff, group = snap.group, self = snap.self, outOfRange = outOfRange,
              pvp = (snap.pvp and not snap.self) or false }
 end
 
--- Construit les lignes, triées FIFO. Un joueur qui sort de la file (buffé, parti, en combat…) perd sa
--- place : s'il revient, il entre en fin de file (D8, D11). Rend rows, around (joueurs admis autour,
--- toi non compris : il distingue « personne autour » de « tournée finie »).
+-- Construit les lignes, triées FIFO, les joueurs à portée d'abord. Un joueur qui sort de la file
+-- (buffé, parti, en combat…) perd sa place : s'il revient, il entre en fin de file (D8, D11). Rend
+-- rows, around (joueurs admis autour, toi non compris : il distingue « personne autour » de « tournée
+-- finie »).
 function Q:Build(snaps, wantedFor, probe, opts)
     opts = opts or {}
     local rows, seen, around = {}, {}, 0
@@ -89,7 +118,10 @@ function Q:Build(snaps, wantedFor, probe, opts)
     for guid in pairs(self.order) do
         if not keep[guid] then self.order[guid] = nil end
     end
-    table.sort(rows, function(a, b) return a.seq < b.seq end)
+    table.sort(rows, function(a, b)
+        if a.outOfRange ~= b.outOfRange then return not a.outOfRange end
+        return a.seq < b.seq
+    end)
     return rows, around
 end
 

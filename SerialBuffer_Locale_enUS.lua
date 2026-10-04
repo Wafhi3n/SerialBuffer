@@ -37,5 +37,6 @@ local T = {
     ["Montrer les joueurs marqués PvP"] = "Show PvP-flagged players",
     ["Options indisponibles sur ce client."] = "Options are unavailable on this client.",
     ["ouvre les options"] = "opens the options",
+    ["Buff suivant"] = "Next buff",
 }
 for k, v in pairs(T) do NS.L[k] = v end

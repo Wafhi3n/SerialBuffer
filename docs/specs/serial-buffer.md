@@ -1,7 +1,7 @@
 # Serial Buffer : la tournée des buffs en extérieur
 
-> État : **validée par le user le 2026-10-04 (D1 à D23), faisabilité prouvée par la sonde**
-> (relevés R1 à R5). Q11 et Q13 restent ouvertes. · Rédigée le 2026-10-04 · Idée du user le 2026-10-04,
+> État : **validée par le user le 2026-10-04 (D1 à D25), faisabilité prouvée par la sonde**
+> (relevés R1 à R5). Q13 reste ouverte. · Rédigée le 2026-10-04 · Idée du user le 2026-10-04,
 > périmètre tranché par lui le même jour (cf. Décisions).
 > **Le mécanisme retenu** : on **voit** les joueurs par leurs plaques (portée et buffs se lisent
 > sur le jeton), on les **buffe** par un bouton macro à leur nom complet (`/targetexact Prénom
@@ -201,10 +201,10 @@ est celle du build 70205, lue le 2026-10-04.
   combat.
 - **Joueur mort ou fantôme, PNJ, joueur de l'autre faction** : jamais dans la liste.
 - **Joueur marqué PvP** : absent par défaut (D5).
-- **Le sort échoue** (ligne de vue, mana, interruption) : le joueur reste dans la liste mais repasse
-  en fin de file, pour ne pas bloquer la touche « buff suivant ». Le jeu affiche sa propre erreur,
-  comme d'habitude. **Cible trop basse (H6)** : avec cette règle, le joueur tournerait dans la file
-  sans fin. Voir Q11.
+- **Le sort échoue** (hors de vue, hors de portée, cible invalide) : le joueur reste dans la liste
+  mais repasse en fin de file, pour ne pas bloquer la touche « buff suivant ». Le jeu affiche sa
+  propre erreur, comme d'habitude. Un « sort pas prêt » (clic martelé pendant le temps de recharge
+  global) ne fait rien. **Cible trop basse** : D24.
 - **Une plaque disparaît et son jeton passe à un autre joueur** : une ligne suit **son joueur**,
   jamais un jeton. La plaque ne sert qu'à lire ; le lancer passe par le nom complet (H8). Un clic ne
   doit jamais buffer quelqu'un d'autre que le nom affiché.
@@ -262,6 +262,17 @@ Toutes prises par le user le 2026-10-04.
   de la liste que le paladin connaît, qui est cochée et qui lui sert (D23). Une bénédiction que tu ne
   connais pas encore (Rois est un talent) cède simplement sa place à la suivante. Salut n'est pas dans
   la liste. Cela règle Q12.
+- **D24 : une cible trop basse pour un buff sort de la liste POUR CE BUFF**, jusqu'à ce qu'elle monte
+  de niveau (retour du user en jeu, 2026-10-04 : « malgré l'erreur target too low elle reste dans la
+  liste »). Un paladin passe à la bénédiction suivante de sa priorité ; un prêtre au buff suivant ;
+  si tout est refusé, le joueur sort de la liste. Cela règle Q11. L'erreur se reconnaît par son nom
+  (`GetGameMessageInfo`, quelle que soit la langue), sinon par son texte.
+- **D25 : la première ligne ne bouge pas** (retour du user : « pour qu'on puisse spammer le clic sur
+  la première ligne et buffer tout le monde »). Le tableau s'accroche par son coin haut, et le bas
+  remonte quand la liste raccourcit. *Conséquence dérivée, non décidée par le user* : les membres du
+  groupe hors de portée passent en bas de l'AFFICHAGE, sous les joueurs à portée, pour que la
+  première ligne soit toujours quelqu'un qu'on peut buffer. L'ordre FIFO tient à l'intérieur de
+  chaque partie.
 - **D23 : un buff de mana ne va jamais à une classe sans mana.** Bénédiction de sagesse,
   Intelligence des Arcanes et **Esprit divin** (ajouté par le user le même jour) sautent les
   guerriers et les voleurs : un paladin sans Rois donne Puissance au guerrier, un mage ne liste pas
@@ -282,6 +293,7 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
   La réponse dépend aussi de H6 : si le jeu abaisse déjà le rang tout seul, (b) n'a pas d'objet.
 - ~~Q12 : une bénédiction de la table que tu ne connais pas~~ : réglée par D22, la suivante de la
   priorité prend sa place.
+- ~~Q11 : un joueur trop bas pour ton buff~~ : réglée par D24.
 - **Q13 : un joueur à qui il manque deux buffs.** Après le premier, il garde sa place en tête (le
   comportement codé au palier (a)) ou repasse en fin de file ? « On passe à la suivante » (D20)
   peut se lire des deux façons.
@@ -354,8 +366,10 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
 
 - **SavedVariables : des réglages seulement.** Ce sont les buffs cochés par classe (`off`), l'ordre
   des bénédictions du paladin (`priority`), l'option PvP, l'option « garder en combat », la réponse à la proposition
-  des plaques et la position du tableau. **Aucun nom de joueur, aucun GUID** : un secret sauvegardé
-  empoisonne la base.
+  des plaques et la position du tableau (son coin haut gauche). Pour le diagnostic, `seenErrors` : le
+  nom et le texte des erreurs du jeu vues juste après un de nos clics. **Aucun nom de joueur, aucun
+  GUID** : un secret sauvegardé empoisonne la base. Le refus « trop bas » (D24) vit en mémoire de
+  session, jamais sauvegardé.
 - **Raccourci clavier** « Serial Buffer : buff suivant », dans le menu des raccourcis du jeu.
 - **Commande** : `/sbuff` (D17).
 
@@ -391,6 +405,17 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
      `tests/test_serialbuffer_list.lua`, sur la branche d'outillage `feat/serialbuffer-palier-a`
      (`bb2257e`), à fusionner le même jour que ce palier sur `main`. Hors plan : le catalogue
      non paladin (mage, prêtre, druide) n'a jamais été vu sur Forever ;
-   - (b) le clic et la touche (critères 2, 3, 8, 16) ;
+   - (b) le clic et la touche (critères 2, 3, 8, 16, 18). **Codé le 2026-10-04** (SerialBuffer
+     `72bb352`, branche `feat/palier-b-clic`, posée sur le palier a), déployé
+     (`feat/palier-b-clic@72bb352`), **pas encore vu en jeu**. Test headless :
+     `tests/test_serialbuffer_cast.lua`, branche d'outillage `feat/serialbuffer-palier-b` (`7c188eb`).
+     Jamais mesuré sur Forever : un raccourci `CLICK <bouton>:LeftButton` déclaré dans
+     `Bindings.xml` (Blizzard n'en déclare aucun) ; repli si la touche ne marche pas, une macro du
+     joueur `/click SerialBufferNextButton`. Choix de code, pas une décision du user : seules les
+     erreurs qui tiennent à la cible (hors de vue, hors de portée, trop bas, cible invalide)
+     renvoient en fin de file, pour qu'une touche martelée pendant le temps de recharge global ne
+     fasse pas tourner la file. **Revu après le 1er essai du user (Rédemption, 18:00)** : D24 et D25,
+     `b497d03`, déployé, pas encore revu en jeu. Le relevé de cet essai reste à écrire : le clic
+     a-t-il buffé ? ;
    - (c) le combat (critères 4 et 15) ;
    - (d) la proposition des plaques et les options (critère 6).
