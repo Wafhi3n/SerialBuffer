@@ -18,7 +18,8 @@
 local _, NS = ...
 NS = NS or _G.SerialBuffer
 
-local Q = { seq = 0, order = {}, blocked = {}, now = 0 }
+-- stats : compteurs de diagnostic (SerialBuffer_Run.lua les range dans db.diag), aucun nom de joueur.
+local Q = { seq = 0, order = {}, blocked = {}, now = 0, stats = { next = 0, stopMine = 0, stopUnknown = 0 } }
 NS.Queue = Q
 
 Q.REFRESH_BELOW = 600     -- D11 : 10 minutes (bénédictions du paladin ; les autres buffs : D28, opts.refreshBelow)
@@ -27,6 +28,7 @@ Q.STRONGER_WAIT = 1200    -- D26 : « un sort plus puissant est actif » : on r�
 
 function Q:Reset()
     self.seq, self.order, self.blocked, self.now = 0, {}, {}, 0
+    self.stats = { next = 0, stopMine = 0, stopUnknown = 0 }
 end
 
 -- Le jeu a refusé ce buff sur ce joueur. On ne le lui propose plus, jusqu'à ce qu'il gagne un niveau
@@ -77,6 +79,10 @@ local function nextMissing(snap, wanted, probe, refreshBelow)
             if left == nil then return nil end
             if wanted.exclusive then
                 local v = blessingVerdict(left, mine)
+                local st = Q.stats
+                if v == "next" then st.next = st.next + 1
+                elseif v == "stop" and mine == nil then st.stopUnknown = st.stopUnknown + 1
+                elseif v == "stop" then st.stopMine = st.stopMine + 1 end
                 if v == "take" then return w end
                 if v == "stop" then return nil end
             elseif needs(left, refreshBelow) then   -- D28 : seuil réglable hors paladin

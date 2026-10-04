@@ -92,6 +92,8 @@ function R:Start()
         return
     end
     self:ResolveBuffs()
+    -- Diagnostic de la session (D27 non mesuré) : relu dans les SavedVariables après un /reload.
+    NS.db.diag = { aura = NS.Units.stats, queue = NS.Queue.stats, since = date("%Y-%m-%d %H:%M") }
     NS.UI:Build()
     pcall(NS.Options.Register, NS.Options)   -- l'API Settings jamais éprouvée ici : elle ne casse rien
     NS.Units:SeedPlates()

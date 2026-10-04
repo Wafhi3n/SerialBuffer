@@ -11,7 +11,8 @@
 local _, NS = ...
 NS = NS or _G.SerialBuffer
 
-local U = { plates = {} }
+-- stats : qui a posé les buffs lus (moi / un autre / illisible), pour db.diag ; aucun nom de joueur.
+local U = { plates = {}, stats = { me = 0, other = 0, unknown = 0 } }
 NS.Units = U
 
 local function sec(v) return issecretvalue ~= nil and issecretvalue(v) end
@@ -95,8 +96,12 @@ function U.probe.aura(unit, buffName)
     if a == nil then return "absent" end
     local e = a.expirationTime
     if sec(e) then return nil end
-    if type(e) ~= "number" or e <= 0 then return math.huge, fromMe(a) end
-    return math.max(0, e - GetTime()), fromMe(a)
+    local mine = fromMe(a)
+    local st = U.stats
+    if mine == true then st.me = st.me + 1 elseif mine == false then st.other = st.other + 1
+    else st.unknown = st.unknown + 1 end
+    if type(e) ~= "number" or e <= 0 then return math.huge, mine end
+    return math.max(0, e - GetTime()), mine
 end
 
 -- true, false, ou nil = inconnu.
