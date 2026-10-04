@@ -1,6 +1,6 @@
 # Serial Buffer : la tournée des buffs en extérieur
 
-> État : **validée par le user le 2026-10-04 (D1 à D25), faisabilité prouvée par la sonde**
+> État : **validée par le user le 2026-10-04 (D1 à D27), faisabilité prouvée par la sonde**
 > (relevés R1 à R5). Q13 reste ouverte. · Rédigée le 2026-10-04 · Idée du user le 2026-10-04,
 > périmètre tranché par lui le même jour (cf. Décisions).
 > **Le mécanisme retenu** : on **voit** les joueurs par leurs plaques (portée et buffs se lisent
@@ -273,6 +273,20 @@ Toutes prises par le user le 2026-10-04.
   groupe hors de portée passent en bas de l'AFFICHAGE, sous les joueurs à portée, pour que la
   première ligne soit toujours quelqu'un qu'on peut buffer. L'ordre FIFO tient à l'intérieur de
   chaque partie.
+- **D26 : « un sort plus puissant est actif » écarte le joueur pour CE buff, 20 minutes** (retour
+  du user en jeu, 2026-10-04 : l'erreur « empêche le nôtre de se mettre et n'enlève pas la personne
+  de la liste »). Il passe au buff suivant, ou sort de la liste. L'erreur se reconnaît par son texte
+  (`SPELL_FAILED_AURA_BOUNCED`). *Le délai de 20 min est un choix de code* : on ne sait pas quand le
+  sort plus puissant expire.
+- **D27 : paladin, la bénédiction voulue déjà posée par un AUTRE paladin avec plus de 30 minutes
+  restantes fait passer à la suivante** (décision du user, 2026-10-04 : « le mage a déjà Rois, l'addon
+  doit nous faire mettre Sagesse » ; « plus d'une demi-heure » est son exemple de seuil). Un paladin
+  ne garde qu'une bénédiction à lui par joueur, d'où trois cas :
+  - celle d'un autre, plus de 30 min : la suivante de la priorité ;
+  - celle d'un autre, 30 min ou moins : on la refait (*interprétation, à confirmer avec le user*) ;
+  - la sienne, ou un lanceur illisible : le joueur est servi, sauf si elle expire (D11).
+  Le lanceur se lit comme le fait Blizzard (`sourceUnit` comparé à `"player"`). Ce n'est **pas
+  encore mesuré** sur Forever pour un buff posé par un autre joueur.
 - **D23 : un buff de mana ne va jamais à une classe sans mana.** Bénédiction de sagesse,
   Intelligence des Arcanes et **Esprit divin** (ajouté par le user le même jour) sautent les
   guerriers et les voleurs : un paladin sans Rois donne Puissance au guerrier, un mage ne liste pas
