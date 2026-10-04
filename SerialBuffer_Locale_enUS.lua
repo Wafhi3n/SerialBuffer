@@ -38,5 +38,6 @@ local T = {
     ["Options indisponibles sur ce client."] = "Options are unavailable on this client.",
     ["ouvre les options"] = "opens the options",
     ["Buff suivant"] = "Next buff",
+    ["Rafraîchir un buff s'il lui reste moins de %d min"] = "Refresh a buff with less than %d min left",
 }
 for k, v in pairs(T) do NS.L[k] = v end

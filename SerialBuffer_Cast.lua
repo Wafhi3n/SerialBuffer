@@ -58,8 +58,9 @@ end
 --   "lowlevel" : la cible est trop basse pour CE buff, elle sort de la liste pour lui (D24) ;
 --   "stronger" : « un sort plus puissant est actif », elle sort de la liste pour CE buff un temps (D26) ;
 --   "target"   : hors de vue, hors de portée, cible invalide : le joueur repasse en fin de file.
+-- ERR_SPELL_OUT_OF_RANGE : le nom MESURÉ de « Out of range. » sur Forever (2026-10-04, db.seenErrors).
 C.TARGET_ERRORS = { SPELL_FAILED_LINE_OF_SIGHT = true, SPELL_FAILED_OUT_OF_RANGE = true,
-                    ERR_OUT_OF_RANGE = true, SPELL_FAILED_BAD_TARGETS = true }
+                    ERR_OUT_OF_RANGE = true, ERR_SPELL_OUT_OF_RANGE = true, SPELL_FAILED_BAD_TARGETS = true }
 
 local function textIs(msg, key)
     local s = _G[key]

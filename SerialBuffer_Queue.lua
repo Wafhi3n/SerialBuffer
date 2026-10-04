@@ -7,6 +7,7 @@
 --   D11 un buff à moins de 10 min compte comme manquant              D16 joueur en combat : dehors
 --   D18 membre du groupe invisible (autre carte) : dehors              D24 trop bas pour un buff : dehors pour CE buff
 --   D26 « sort plus puissant actif » : dehors pour CE buff, 20 min     D27 paladin : celle d'un autre (> 30 min) → la suivante
+--   D28 hors paladin : un buff qui a plus que le seuil des options (45 min par défaut) : servi
 -- AFFICHAGE : les joueurs à portée d'abord (FIFO), puis les membres du groupe hors de portée (FIFO) :
 -- la première ligne est toujours quelqu'un qu'on peut buffer, et un clic répété dessus vide la file.
 -- RÈGLE DE SÛRETÉ : « je ne sais pas » n'est JAMAIS « il lui manque ». Une aura illisible (erreur,
@@ -20,7 +21,7 @@ NS = NS or _G.SerialBuffer
 local Q = { seq = 0, order = {}, blocked = {}, now = 0 }
 NS.Queue = Q
 
-Q.REFRESH_BELOW = 600     -- D11 : 10 minutes
+Q.REFRESH_BELOW = 600     -- D11 : 10 minutes (bénédictions du paladin ; les autres buffs : D28, opts.refreshBelow)
 Q.OTHER_KEEP = 1800       -- D27 : la bénédiction d'un autre paladin, bien partie, se laisse
 Q.STRONGER_WAIT = 1200    -- D26 : « un sort plus puissant est actif » : on réessaie 20 min plus tard
 
@@ -54,8 +55,8 @@ local function isBlocked(snap, buffName)
     return true
 end
 
-local function needs(left)
-    return left == "absent" or (type(left) == "number" and left < Q.REFRESH_BELOW)
+local function needs(left, below)
+    return left == "absent" or (type(left) == "number" and left < (below or Q.REFRESH_BELOW))
 end
 
 -- Paladin (liste EXCLUSIVE) : il ne garde qu'UNE bénédiction à lui par joueur. Rend "take" (proposer
@@ -69,7 +70,7 @@ end
 
 -- Le buff à proposer, ou nil. probe.aura rend "absent" ou les secondes restantes (math.huge = sans
 -- fin), plus « est-ce la mienne » ; nil = illisible. Prêtre, mage, druide : le premier qui manque (D7).
-local function nextMissing(snap, wanted, probe)
+local function nextMissing(snap, wanted, probe, refreshBelow)
     for _, w in ipairs(wanted) do
         if not isBlocked(snap, w.name) then
             local left, mine = probe.aura(snap.unit, w.name)
@@ -78,7 +79,7 @@ local function nextMissing(snap, wanted, probe)
                 local v = blessingVerdict(left, mine)
                 if v == "take" then return w end
                 if v == "stop" then return nil end
-            elseif needs(left) then
+            elseif needs(left, refreshBelow) then   -- D28 : seuil réglable hors paladin
                 return w
             end
         end
@@ -100,7 +101,7 @@ end
 -- Une ligne pour ce joueur, ou nil. wantedFor(classe) → buffs voulus, dans l'ordre.
 function Q:Eligible(snap, wantedFor, probe, opts)
     if not admissible(snap, opts or {}) then return nil end
-    local buff = nextMissing(snap, wantedFor(snap.class), probe)
+    local buff = nextMissing(snap, wantedFor(snap.class), probe, (opts or {}).refreshBelow)
     if not buff then return nil end
     local outOfRange = false
     if not snap.self then

@@ -19,6 +19,7 @@ NS.DEFAULTS = {
     showPvP = false,        -- D5 : joueurs PvP cachés par défaut
     keepInCombat = false,   -- D12 : tableau masqué pendant ton combat (option : palier c)
     off = {},               -- D14 : buffs décochés, par id de rang 1 (aucun par défaut)
+    refreshMin = 45,        -- D28 : hors paladin, un buff qui a moins de ces minutes se rafraîchit
     priority = {},          -- D22 : ordre des bénédictions réglé dans les options (vide : Buffs.PRIORITY_DEFAULT)
 }
 

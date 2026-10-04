@@ -39,7 +39,7 @@ function R:Refresh()
         return
     end
     local rows, around = NS.Queue:Build(NS.Units:Collect(), wantedFor, NS.Units.probe,
-        { showPvP = NS.db.showPvP, now = GetTime() })
+        { showPvP = NS.db.showPvP, now = GetTime(), refreshBelow = (NS.db.refreshMin or 45) * 60 })
     NS.UI:Render(rows, state, around)
 end
 
