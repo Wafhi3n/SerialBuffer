@@ -1,0 +1,4 @@
+# Doc de code REGENEREE a chaque deploiement (scripts\gen_docs.ps1) : elle vient du .toc et des
+# en-tetes de fichiers, donc elle n'a rien a faire dans l'historique. On vise le FICHIER, pas le
+# dossier : un `/docs/` avalerait aussi le registre de verification, qui lui se versionne.
+/docs/CODEBASE.md

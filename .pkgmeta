@@ -1,0 +1,8 @@
+package-as: SerialBuffer
+ignore:
+  - CURSEFORGE.md
+  - .gitignore
+  - .gitattributes
+  - .pkgmeta
+  - docs
+  - tools

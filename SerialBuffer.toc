@@ -1,0 +1,19 @@
+## Interface: 16001
+## Title: Serial Buffer
+## Notes: Serial Buffer - /sbuff
+## Author: Wafhien
+## Version: 0.1.0
+## SavedVariables: SerialBufferDB
+
+# Genere par scripts\new_addon.ps1 le 2026-10-04 - client vise : forever.
+# Un .lua ajoute ici : sur Forever, /reload suffit (mesure le 2026-09-26) ; sur l'Era il fallait
+# relancer le client. Un addon TOUT NEUF dans le dossier demande toujours de relancer le client.
+
+# Localisation : la CLE est le texte FRANCAIS, chaque autre langue est un overlay charge APRES.
+SerialBuffer_Locale.lua
+SerialBuffer_Locale_enUS.lua
+SerialBuffer_Locale_deDE.lua
+SerialBuffer_Locale_esES.lua
+
+# Socle : table d'addon, SavedVariables, commande /sbuff.
+SerialBuffer.lua
