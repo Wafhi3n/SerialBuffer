@@ -1,7 +1,7 @@
 # Serial Buffer : la tournée des buffs en extérieur
 
-> État : **validée par le user le 2026-10-04 (D1 à D28), faisabilité prouvée par la sonde**
-> (relevés R1 à R5). Q13 reste ouverte. · Rédigée le 2026-10-04 · Idée du user le 2026-10-04,
+> État : **validée par le user le 2026-10-04 (D1 à D29), faisabilité prouvée par la sonde**
+> (relevés R1 à R5). Aucune question ouverte. · Rédigée le 2026-10-04 · Idée du user le 2026-10-04,
 > périmètre tranché par lui le même jour (cf. Décisions).
 > **Le mécanisme retenu** : on **voit** les joueurs par leurs plaques (portée et buffs se lisent
 > sur le jeton), on les **buffe** par un bouton macro à leur nom complet (`/targetexact Prénom
@@ -283,7 +283,8 @@ Toutes prises par le user le 2026-10-04.
   doit nous faire mettre Sagesse » ; « plus d'une demi-heure » est son exemple de seuil). Un paladin
   ne garde qu'une bénédiction à lui par joueur, d'où trois cas :
   - celle d'un autre, plus de 30 min : la suivante de la priorité ;
-  - celle d'un autre, 30 min ou moins : on la refait (*interprétation, à confirmer avec le user*) ;
+  - celle d'un autre, 30 min ou moins : on la refait, pour la rafraîchir (confirmé par le user le
+    2026-10-04) ;
   - la sienne, ou un lanceur illisible : le joueur est servi, sauf si elle expire (D11).
   Le lanceur se lit comme le fait Blizzard (`sourceUnit` comparé à `"player"`). Ce n'est **pas
   encore mesuré** sur Forever pour un buff posé par un autre joueur.
@@ -293,6 +294,11 @@ Toutes prises par le user le 2026-10-04.
   dans la liste pour être rafraîchi, quel que soit le lanceur du buff. Le seuil se règle dans les
   options (− / +, par pas de 5 min, de 10 à 55) ; 45 par défaut, le bas de la fourchette du user.
   Remplace D11 pour le prêtre, le mage et le druide ; le paladin garde D11 (10 min) et D27.
+- **D29 : un joueur à qui il manque plusieurs buffs garde sa place en tête** jusqu'à les avoir tous :
+  le clic suivant sur la première ligne lui donne le buff d'après. Le user n'avait pas de
+  préférence (2026-10-04) ; l'agent a gardé ce comportement, déjà codé : un joueur qui s'en va ne
+  repart pas à moitié buffé. L'autre voie (fin de file après chaque buff, donc des tours) reste
+  possible si le user la demande.
 - **D23 : un buff de mana ne va jamais à une classe sans mana.** Bénédiction de sagesse,
   Intelligence des Arcanes et **Esprit divin** (ajouté par le user le même jour) sautent les
   guerriers et les voleurs : un paladin sans Rois donne Puissance au guerrier, un mage ne liste pas
@@ -314,9 +320,7 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
 - ~~Q12 : une bénédiction de la table que tu ne connais pas~~ : réglée par D22, la suivante de la
   priorité prend sa place.
 - ~~Q11 : un joueur trop bas pour ton buff~~ : réglée par D24.
-- **Q13 : un joueur à qui il manque deux buffs.** Après le premier, il garde sa place en tête (le
-  comportement codé au palier (a)) ou repasse en fin de file ? « On passe à la suivante » (D20)
-  peut se lire des deux façons.
+- ~~Q13 : un joueur à qui il manque deux buffs~~ : réglée par D29.
 
 ## Critères d'acceptation
 
