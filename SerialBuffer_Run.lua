@@ -30,7 +30,7 @@ function R:ResolveBuffs()
     end
 end
 
-local function wantedFor(class) return NS.Buffs:WantedFor(class, NS.db) end
+local function wantedFor(class, inGroup) return NS.Buffs:WantedFor(class, NS.db, inGroup) end
 
 -- En instance, la liste ne lit que toi et ton groupe ou ton raid (D31) : pas de plaques.
 function R:Refresh()

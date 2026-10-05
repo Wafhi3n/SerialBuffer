@@ -274,7 +274,9 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
 - **D21 : avec l'option « garder en combat », les lignes des inconnus restent cliquables**,
   comme celles du groupe. Cela remplace la conséquence tirée pour D12 avant H8 (lignes d'inconnus
   inactives en combat).
-- **D22 : le paladin suit un ordre de PRIORITÉ, Rois > Sagesse > Puissance par défaut**, réglable dans
+- **D22 : le paladin suit un ordre de PRIORITÉ, Rois > Sagesse > Puissance par défaut**
+  (*depuis D34, le 2026-10-05 : un ordre par classe de la cible, dans la grille ; le défaut reste
+  celui-ci*), réglable dans
   les options du jeu (Options > AddOns > Serial Buffer). Chaque cible reçoit la première bénédiction
   de la liste que le paladin connaît, qui est cochée et qui lui sert (D23). Une bénédiction que tu ne
   connais pas encore (Rois est un talent) cède simplement sa place à la suivante. Salut n'est pas dans
@@ -356,6 +358,54 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   - *Conséquence dérivée* : la case à cocher globale d'un buff (D14) disparaît au profit de la
     grille. Un buff décoché avant la grille l'est pour toutes les classes après la mise à jour (la
     base passe à `schemaVer` 2).
+
+  **La forme de D33 (cases à cocher, priorité globale à flèches) est remplacée par D34 le jour
+  même**, après la capture du user. Restent de D33 : une colonne par classe, les six bénédictions,
+  Salut, Lumière et Sanctuaire absentes par défaut, D23 jamais.
+- **D34 : chaque case de la grille est une ICÔNE qu'on change au clic ou à la molette**, de « vide »
+  à chacun des buffs disponibles (demande du user, 2026-10-05, sur sa capture : « pour simplifier
+  chaque case est une icône qu'on change au clic ou à la molette, on va de vide à tous les buffs
+  dispo »). Choix du user sur maquette, le même jour : **plusieurs choix par classe**, une ligne par
+  rang (1er choix, 2e, 3e) :
+  - **paladin** : chaque classe reçoit le 1er choix de SA colonne ; s'il ne passe pas (pas appris,
+    trop bas D24, déjà posé par un autre paladin D27), le 2e, puis le 3e. **Remplace la priorité
+    globale de D22** (une liste réglée par flèches) : la priorité est maintenant par classe ;
+  - **prêtre, mage, druide** : la colonne donne les buffs à poser sur cette classe, dans l'ordre
+    (D7) ; une case vide = un buff de moins ;
+  - une première colonne **« Toutes »** : on y choisit une icône, puis le bouton **Remplir** de la
+    ligne la recopie sur toutes les classes ;
+  - un bouton **↺ sous chaque classe** remet sa colonne par défaut (« un bouton pour remettre les
+    choix pour la classe par défaut »), et **« Tout par défaut »** remet toutes les colonnes de ta
+    classe.
+
+  *Conséquences dérivées, non décidées par le user :*
+  - trois rangs pour le paladin, comme sur la maquette ; pour les autres, autant de rangs que de
+    buffs (prêtre 3, druide 2, mage 1) ;
+  - clic gauche et molette vers le bas : buff suivant ; clic droit et molette vers le haut : buff
+    précédent ;
+  - une case ne propose que vide, puis les buffs qui ne sont ni interdits à la classe (D23) ni déjà
+    pris à un autre rang de la même colonne ;
+  - Remplir **laisse telle quelle** une case où le buff est interdit (Sagesse sur un guerrier) et,
+    si le buff est déjà à un autre rang de la colonne, **échange** les deux cases ;
+  - la colonne « Toutes » n'est qu'un modèle de la séance (non sauvegardé), qui part du défaut ;
+  - un buff que le client ne sait pas nommer n'apparaît pas dans la grille (Sanctuaire, id 20911,
+    relevé du 2026-10-05 09:55) ;
+  - le réglage est rangé **par classe du lanceur** : la base est commune au compte, un paladin et un
+    prêtre du même compte ont chacun leur grille ;
+  - la base passe à `schemaVer` 3 : les réglages d'avant (cases décochées de la v0.1.0, priorité
+    du paladin, grille D33) deviennent les colonnes équivalentes.
+- **D35 : une ligne « Groupe / raid » à part, un CHOIX UNIQUE par classe, « au cas où »** (demande
+  du user, 2026-10-05 : « on pourrait rajouter une table spéciale pour le groupe/raid avec un choix
+  unique du coup ? au cas où »). Pour un membre de ton groupe ou de ton raid (toi compris quand tu
+  es groupé), la case de sa classe donne LE buff à poser, sans repli. C'est l'usage d'un raid où les
+  paladins se partagent les bénédictions. *Conséquences dérivées, non décidées par le user :*
+  - la ligne est **vide par défaut**, et une case vide laisse la grille du dessus s'appliquer : « au
+    cas où », elle ne change rien tant qu'on ne la remplit pas ;
+  - même interaction que la grille (clic, molette), sa propre case « Toutes » et son Remplir ; ↺
+    remet aussi cette case ; D23 tient (pas de Sagesse proposée aux guerriers) ;
+  - un choix pas encore appris laisse la grille du dessus s'appliquer ;
+  - paladin : le choix unique déjà posé par un autre paladin depuis plus de 30 minutes vaut « servi »
+    (D27 n'a pas de suivante à proposer) ; trop bas (D24) : le joueur sort de la liste.
 
 ## Questions ouvertes (au user)
 
@@ -449,20 +499,30 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     compte des illisibles. Témoin connu-bon : le même membre, buffé à la main.
 22. [humain] (D32) Un clic sur le rouage, hors combat, ouvre Options > AddOns > Serial Buffer ; en
     combat, un message dit « pas pendant un combat ».
-23. [humain] (D33) Dans la grille, décocher Rois dans la colonne Guerrier : le tableau propose
-    aussitôt la bénédiction suivante aux guerriers, et Rois aux autres classes. Les cases Sagesse ×
-    Guerrier et Voleur sont grisées. Le réglage survit à un `/reload`.
-24. [test] (D33) Une case décochée retire ce buff à cette classe seulement ; Salut, Lumière et
-    Sanctuaire sont décochés par défaut ; une case de D23 ne se coche jamais ; un `off` d'avant la
-    grille devient décoché pour toutes les classes ; une priorité sauvée à trois bénédictions
-    reçoit les trois nouvelles à la fin.
+23. [humain] (D34) Dans la grille, passer le 1er choix de la colonne Guerrier de Rois à Puissance
+    (clic ou molette) : le tableau propose aussitôt Puissance aux guerriers, et Rois aux autres
+    classes. La molette sur une case change la case sans faire défiler le panneau. Dans la colonne
+    Guerrier, Sagesse n'est jamais proposée. Choisir Salut dans « Toutes » puis Remplir : Salut en
+    1er choix partout. ↺ sous Guerrier remet sa colonne. Le réglage survit à un `/reload`.
+24. [test] (D34) Le défaut de chaque colonne ; le cycle d'une case (vide → buffs → vide), qui saute
+    les buffs interdits (D23) et ceux déjà pris dans la colonne ; Remplir, qui laisse une case
+    interdite et échange un doublon ; ↺ et « Tout par défaut » ; une case vide ne propose rien ;
+    seul le paladin pose UNE bénédiction ; la grille d'un paladin ne change pas ce que propose un
+    prêtre du même compte ; la migration vers `schemaVer` 3 depuis la v0.1.0 (`off`, `priority`) et
+    depuis D33 (`classBuffs`), une seule fois.
+25. [test] (D35) Vide, la ligne « Groupe / raid » ne change rien ; remplie, un membre du groupe de
+    cette classe ne se voit proposer que ce buff, et un inconnu de la même classe garde la grille ;
+    un choix pas appris laisse la grille s'appliquer ; D23 tient.
+26. [humain] (D35) Groupé, choisir Puissance dans la case Guerrier de la ligne « Groupe / raid » :
+    le guerrier du groupe se voit proposer Puissance, un guerrier inconnu dehors garde Rois.
 
 ## Contrat
 
-- **SavedVariables : des réglages seulement.** Ce sont les cases de la grille (`classBuffs`, classe
-  de la cible → id de sort → coché ou non ; des jetons de classe et des ids, aucune donnée de joueur ;
-  il remplace `off`, migré par `schemaVer` 2), l'ordre
-  des bénédictions du paladin (`priority`), l'option PvP, l'option « garder en combat », la réponse à la proposition
+- **SavedVariables : des réglages seulement.** Ce sont les colonnes de la grille (`orders`, classe
+  du lanceur → classe de la cible → ids de sort par rang, 0 = case vide ; seules les colonnes qui
+  s'écartent du défaut ; des jetons de classe et des ids, aucune donnée de joueur ; elles remplacent
+  `off`, `priority` et `classBuffs`, migrés par `schemaVer` 3), la ligne « Groupe / raid »
+  (`groupPick`, classe du lanceur → classe de la cible → id ; D35), l'option PvP, l'option « garder en combat », la réponse à la proposition
   des plaques et la position du tableau (son coin haut gauche). Pour le diagnostic, `seenErrors` : le
   nom et le texte des erreurs du jeu vues juste après un de nos clics. **Aucun nom de joueur, aucun
   GUID** : un secret sauvegardé empoisonne la base. Le refus « trop bas » (D24) vit en mémoire de

@@ -128,11 +128,11 @@ local function admissible(snap, opts)
 end
 
 -- Une ligne pour ce joueur, ou nil (plus "unread" si son nom ou une de ses auras est illisible).
--- wantedFor(classe) → buffs voulus, dans l'ordre.
+-- wantedFor(classe, membre du groupe) → buffs voulus, dans l'ordre (D35 : le groupe a sa ligne à lui).
 function Q:Eligible(snap, wantedFor, probe, opts)
     local ok, why = admissible(snap, opts or {})
     if not ok then return nil, why end
-    local buff, unread = nextMissing(snap, wantedFor(snap.class), probe, (opts or {}).refreshBelow)
+    local buff, unread = nextMissing(snap, wantedFor(snap.class, snap.group), probe, (opts or {}).refreshBelow)
     if not buff then return nil, unread end
     local outOfRange = false
     if not snap.self then

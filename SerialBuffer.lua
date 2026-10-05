@@ -14,13 +14,13 @@ _G.SerialBuffer = NS
 -- Que des RÉGLAGES (spec, Contrat) : jamais un nom de joueur ni un GUID, un secret sauvegardé
 -- empoisonnerait la base.
 NS.DEFAULTS = {
-    schemaVer = 2,          -- 2 : la grille (D33) remplace la case globale « off » (Buffs:Migrate)
+    schemaVer = 3,          -- 3 : la grille D34 remplace off, priority et classBuffs (Buffs:Migrate)
     shown = true,           -- le tableau (/sbuff)
     showPvP = false,        -- D5 : joueurs PvP cachés par défaut
     keepInCombat = false,   -- D12 : tableau masqué pendant ton combat (option : palier c)
-    classBuffs = {},        -- D33 : la grille, classe de la cible -> id de rang 1 -> coché ; seuls les écarts au défaut
+    orders = {},            -- D34 : lanceur -> classe de la cible -> ids par rang (0 = vide) ; seuls les écarts au défaut
+    groupPick = {},         -- D35 : lanceur -> classe de la cible -> id du choix unique pour le groupe (absent = vide)
     refreshMin = 45,        -- D28 : hors paladin, un buff qui a moins de ces minutes se rafraîchit
-    priority = {},          -- D22 : ordre des bénédictions réglé dans les options (vide : Buffs.PRIORITY_DEFAULT)
 }
 
 local function CopyDefaults(dst, src)
@@ -71,7 +71,7 @@ f:RegisterEvent("PLAYER_LOGIN")
 f:SetScript("OnEvent", function(_, event, arg1)
     if event == "ADDON_LOADED" and arg1 == ADDON then
         SerialBufferDB = SerialBufferDB or {}
-        CopyDefaults(SerialBufferDB, NS.DEFAULTS)   -- une base neuve naît en schemaVer 2 : rien à migrer
+        CopyDefaults(SerialBufferDB, NS.DEFAULTS)   -- une base neuve naît en schemaVer 3 : rien à migrer
         NS.Buffs:Migrate(SerialBufferDB)
         NS.db = SerialBufferDB
     elseif event == "PLAYER_LOGIN" then

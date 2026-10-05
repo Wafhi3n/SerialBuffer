@@ -1,8 +1,8 @@
 -- SerialBuffer_Options.lua — LES OPTIONS, dans le panneau d'options du jeu (Options > AddOns).
 --
--- Spec docs/specs/serial-buffer.md : D33 (la grille buffs × classes, SerialBuffer_Grid.lua, qui porte
--- aussi la priorité des bénédictions de D22), D28 (seuil de rafraîchissement hors paladin), D5
--- (joueurs PvP), D32 (le rouage du tableau ouvre ce panneau : O:Open).
+-- Spec docs/specs/serial-buffer.md : D34 et D35 (la grille par classe et sa ligne « Groupe / raid »,
+-- SerialBuffer_Grid.lua), D28 (seuil de rafraîchissement hors paladin), D5 (joueurs PvP), D32 (le
+-- rouage du tableau ouvre ce panneau : O:Open).
 -- Prudences, toutes deux liées au client Forever (skill public wow-forever-api) :
 --   - AUCUN menu déroulant : ouvrir un menu du système Menu depuis un addon fait planter le client
 --     (taint-and-protected-frames.md, « Menus »). L'ordre se règle avec les flèches de la grille ;
@@ -70,7 +70,7 @@ function O:Build(panel)
         note:SetPoint("TOPLEFT", PAD, y - 6)
         note:SetWidth(600)
         note:SetJustifyH("LEFT")
-        note:SetText(L["Une case cochée : ce buff se pose sur cette classe. Grisée : buff de mana, jamais aux guerriers ni aux voleurs."])
+        note:SetText(L["Groupe / raid : un choix unique pour les membres de ton groupe ou raid ; vide, la grille du dessus s'applique. Un buff de mana n'est jamais proposé aux guerriers ni aux voleurs."])
         y = y - 36
         if class ~= "PALADIN" then
             self.refreshRow = refreshRow(panel, y); y = y - LINE - 4
