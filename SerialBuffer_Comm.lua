@@ -32,17 +32,22 @@ local function sec(v) return issecretvalue ~= nil and issecretvalue(v) end
 
 -- « 1|A|PALADIN|20217|0|1243+976|…|<since> » : la classe du lanceur, ses neuf entrées (plan[classe]
 -- = ids) et, ajout du palier 2 compatible v1, l'heure du serveur de son arrivée dans le groupe.
-function C.Encode(caster, plan, since, who)
+function C.Encode(caster, plan, since, who, picked)
     local parts = { C.VERSION, "A", caster }
     for _, cl in ipairs(C.WIRE_CLASSES) do
         local ids, s = plan and plan[cl], {}
         for i, id in ipairs(ids or {}) do s[i] = tostring(id) end
         parts[#parts + 1] = (#s > 0) and table.concat(s, "+") or "0"
     end
-    if type(since) == "number" or who then
+    if type(since) == "number" or who or picked then
         parts[#parts + 1] = (type(since) == "number") and tostring(math.floor(since)) or "0"
     end
-    if who then parts[#parts + 1] = who end   -- palier 3 : N, L ou A (qui peut régler ma ligne)
+    if who or picked then parts[#parts + 1] = who or "N" end   -- palier 3 : N, L ou A
+    if picked then                                            -- palier 4 : 1 = choix unique
+        local bits = {}
+        for i, cl in ipairs(C.WIRE_CLASSES) do bits[i] = picked[cl] and "1" or "0" end
+        parts[#parts + 1] = table.concat(bits)
+    end
     return table.concat(parts, "|")
 end
 
@@ -105,7 +110,12 @@ function C.Decode(msg)
     -- Palier 3 : qui peut régler la ligne du lanceur ; absent ou autre : N (personne).
     local w = f[5 + #C.WIRE_CLASSES]
     local who = (w == "L" or w == "A") and w or "N"
-    return { kind = "A", caster = f[3], plan = plan, since = since, who = who }
+    -- Palier 4 : neuf 0 / 1, le choix unique par classe ; absent ou mal formé : aucun connu.
+    local bits, picked = f[6 + #C.WIRE_CLASSES], {}
+    if bits and #bits == #C.WIRE_CLASSES and bits:match("^[01]+$") then
+        for i, cl in ipairs(C.WIRE_CLASSES) do picked[cl] = (bits:sub(i, i) == "1") or nil end
+    end
+    return { kind = "A", caster = f[3], plan = plan, since = since, who = who, picked = picked }
 end
 
 -- Le jeton du membre du groupe qui a envoyé ce message, ou nil plus la raison ("self" : ton propre
@@ -200,8 +210,8 @@ function C:Flush()
     end
     if self.wantR and self:SendRaw(C.Request(), ch) then self.wantR = false end
     if self.wantA then
-        local msg = C.Encode(NS.Buffs.class, NS.Buffs:GroupPlan(NS.db), self.since,
-                             C.WHO_LETTER[NS.db.coordWho] or "N")
+        local plan, picked = NS.Buffs:GroupPlan(NS.db)
+        local msg = C.Encode(NS.Buffs.class, plan, self.since, C.WHO_LETTER[NS.db.coordWho] or "N", picked)
         if (msg ~= self.lastA or self.forceA) and self:SendRaw(msg, ch) then self.lastA = msg end
         self.wantA, self.forceA = false, false
         self.stats.seniors, self.stats.juniors = NS.Share.Rank(self.peers, self:Me())
@@ -261,7 +271,8 @@ function C:OnMessage(prefix, msg, ch, sender)
         return
     end
     if m.kind == "S" then self:OnSet(m, sender, unit) return end
-    self.peers[sender] = { caster = m.caster, plan = m.plan, unit = unit, since = m.since, who = m.who }
+    self.peers[sender] = { caster = m.caster, plan = m.plan, unit = unit, since = m.since, who = m.who,
+                           picked = m.picked }
     self:Announce()   -- palier 2 : la répartition d'un plus ancien a pu changer la tienne
     if NS.Grid then NS.Grid:RefreshPeers() end
 end
@@ -306,6 +317,8 @@ function C:EditPeer(name, class, id)
     local p = self.peers[name]
     if not (p and self:CanEdit(name)) then return end
     p.plan[class] = (id and id ~= 0) and { id } or {}
+    p.picked = p.picked or {}
+    p.picked[class] = (id and id ~= 0) or nil   -- palier 4 : vide = il repose tout (vrai plan à sa réannonce)
     self.pendingSet = self.pendingSet or {}
     self.pendingSet[name .. "|" .. class] = { target = name, class = class, id = id or 0 }
     if self.setTimer then self.setTimer:Cancel() end

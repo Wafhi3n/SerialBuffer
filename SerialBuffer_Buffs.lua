@@ -342,8 +342,10 @@ end
 -- plan[classe] = { ids de rang 1 } (vide : rien).
 -- Palier 2 : c'est la MÊME liste que celle que ton tableau propose au groupe (WantedFor), pour
 -- qu'on n'annonce jamais une bénédiction en en proposant une autre.
+-- Palier 4 : rend aussi picked[classe] = true quand l'entrée est le choix unique (le sien, ou réglé
+-- par le chef) ; pour un paladin, un choix unique qu'un plus ancien tient déjà ne compte pas.
 function B:GroupPlan(db)
-    local out = {}
+    local out, picked = {}, {}
     for _, t in ipairs(self.CLASSES) do
         local w, ids = self:WantedFor(t, db, true), {}
         for _, e in ipairs(w) do
@@ -351,8 +353,10 @@ function B:GroupPlan(db)
             if w.exclusive or w.single then break end
         end
         out[t] = ids
+        local pick = self:GroupPick(self.class, t, db)
+        picked[t] = (pick ~= 0 and ids[1] == pick) or nil
     end
-    return out
+    return out, picked
 end
 
 -- ---------------------------------------------------------------- migration (schemaVer 3)

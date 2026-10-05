@@ -48,6 +48,8 @@ local T = {
     ["Qui peut régler ta ligne Groupe / raid :"] = "Quién puede ajustar tu fila Grupo / banda:",
     ["personne"] = "nadie",
     [" (réglable)"] = " (ajustable)",
+    ["Choix unique pour cette classe."] = "Opción única para esta clase.",
+    ["Pas de choix unique : sa grille s'applique."] = "Sin opción única: se aplica su tabla.",
     ["Toi : chef ou assistant = %s, ton option = %s"] = "Tú: líder o asistente = %s, tu opción = %s",
     ["oui"] = "sí",
     ["non"] = "no",

@@ -210,6 +210,21 @@ uniques) ; les prêtres, mages et druides posent tout, comme avant.
     guise, le chef règle donc tous les paladins (comme avec PallyPower). L'autre lecture, « un choix
     du chef passe avant l'ancienneté », reste possible si le user la demande.
 
+## Palier 4 : voir ce qui est assigné (C2, 2026-10-05)
+
+*Choix de l'agent, le user ayant dit « continue avec le palier 4 pour avancer vers une stable ».* Le
+palier 3 permet déjà au chef de régler la ligne d'un prêtre, d'un mage ou d'un druide. Ce qui
+manquait : sur la ligne d'un prêtre, « il pose tous ses buffs » (rien d'assigné, le défaut de C2) et
+« il ne pose que Robustesse » (un choix unique) affichaient la même première icône.
+
+- **Chaque annonce dit, classe par classe, si l'entrée vient d'un choix unique** (le sien, ou réglé
+  par le chef). Pour un paladin, un choix unique qu'un plus ancien tient déjà ne compte pas : son
+  entrée vient alors de sa colonne.
+- **À l'écran**, une case qui porte un choix unique a une petite marque dorée dans son coin ; une
+  case sans choix unique montre le premier buff et « +N » (il pose tout). L'infobulle le dit en clair.
+- **Régler la case d'un autre** part de « vide = il pose tout » : le premier clic lui assigne le
+  premier buff, la molette fait défiler les autres, et revenir à vide lui rend « tout poser ».
+
 ## Contrat
 
 **Message d'addon, préfixe `SBUF`, version 1.** Champs séparés par `|`, en ASCII :
@@ -239,6 +254,11 @@ compte comme le plus ancien.
   ligne Groupe / raid » ; `<classe>` est l'un des neuf jetons de `WIRE_CLASSES`, `<id>` un id de
   sort de rang 1, ou `0` pour vider la case.
 - **SavedVariables** : `coordWho` (`none`, `leader` ou `anyone` ; `none` par défaut).
+
+**Ajout du palier 4, compatible avec la version 1** : un 15e champ facultatif dans l'annonce, neuf
+caractères `0` ou `1` dans l'ordre de `WIRE_CLASSES` : `1` quand l'entrée de cette classe est un choix
+unique (`…|1759662000|L|010000100`). Absent ou mal formé : aucun choix unique connu. Un client qui
+écrit ce champ écrit aussi les 13e et 14e (`0` et `N` à défaut).
 
 ## Plan (2026-10-05, volatile)
 

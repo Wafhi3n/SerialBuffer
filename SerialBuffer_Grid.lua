@@ -246,6 +246,12 @@ local function peerTooltip(self)
     else
         GameTooltip:SetText(L["Vide"])
     end
+    -- Palier 4 : un choix unique (le sien ou réglé par le chef), ou sa grille par défaut.
+    if self.picked then
+        GameTooltip:AddLine(L["Choix unique pour cette classe."], 1, 0.82, 0)
+    elseif has then
+        GameTooltip:AddLine(L["Pas de choix unique : sa grille s'applique."], 0.8, 0.8, 0.8)
+    end
     if self.editable then
         GameTooltip:AddLine(L["Clic ou molette : régler sa ligne (il te le permet)."], 0.6, 0.6, 0.6, true)
     end
@@ -256,7 +262,8 @@ end
 local function peerStep(self, delta)
     if not (self.editable and self.peerName) then return end
     local B = NS.Buffs
-    local cur = self.ids and self.ids[1] or 0
+    -- Palier 4 : sans choix unique, la case part de « vide = il pose tout ».
+    local cur = (self.picked and self.ids and self.ids[1]) or 0
     local v = B:Cycle(B:Choices(self.caster, self.class, nil, nil), cur, delta)
     NS.Comm:EditPeer(self.peerName, self.class, v)
     G:RefreshPeers()
@@ -278,6 +285,11 @@ local function peerCell(parent, x, y, class)
     f.icon:SetAllPoints()
     f.more = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     f.more:SetPoint("BOTTOMRIGHT", 4, -2)
+    f.pin = f:CreateTexture(nil, "OVERLAY")   -- palier 4 : la marque d'un choix unique
+    f.pin:SetSize(7, 7)
+    f.pin:SetPoint("TOPRIGHT", 2, 2)
+    f.pin:SetColorTexture(1, 0.82, 0, 1)
+    f.pin:Hide()
     f:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     f:SetScript("OnClick", function(self, button) peerStep(self, button == "RightButton" and -1 or 1) end)
     f:EnableMouseWheel(true)
@@ -325,7 +337,9 @@ local function paintPeer(row, e)
     for _, pc in ipairs(row.cells) do
         local ids = e and e.p.plan[pc.class]
         pc.ids, pc.peerName, pc.caster, pc.editable = ids, e and e.peerName, e and e.p.caster, editable
+        pc.picked = (e and e.p.picked and e.p.picked[pc.class]) and true or false
         local has = ids and #ids > 0
+        pc.pin:SetShown((has and pc.picked) and true or false)
         pc.bg:SetShown(editable)
         if has then
             pc.icon:SetTexture(NS.Buffs.client.icon(ids[1]))
@@ -349,7 +363,8 @@ function G:RefreshPeers()
     table.sort(others, function(a, b) return a.name < b.name end)
     local list = {}
     if NS.Comm.grouped and NS.Comm:CanSpeak() then
-        list[1] = { name = L["Toi, après répartition"], p = { caster = NS.Buffs.class, plan = NS.Buffs:GroupPlan(NS.db) } }
+        local plan, picked = NS.Buffs:GroupPlan(NS.db)
+        list[1] = { name = L["Toi, après répartition"], p = { caster = NS.Buffs.class, plan = plan, picked = picked } }
     end
     for _, e in ipairs(others) do list[#list + 1] = e end
     for i, row in ipairs(self.peerRows) do paintPeer(row, list[i]) end

@@ -47,6 +47,8 @@ local T = {
     ["Qui peut régler ta ligne Groupe / raid :"] = "Wer darf deine Zeile Gruppe / Schlachtzug einstellen:",
     ["personne"] = "niemand",
     [" (réglable)"] = " (einstellbar)",
+    ["Choix unique pour cette classe."] = "Einzige Wahl für diese Klasse.",
+    ["Pas de choix unique : sa grille s'applique."] = "Keine einzige Wahl: sein Raster gilt.",
     ["Toi : chef ou assistant = %s, ton option = %s"] = "Du: Anführer oder Assistent = %s, deine Option = %s",
     ["oui"] = "ja",
     ["non"] = "nein",
