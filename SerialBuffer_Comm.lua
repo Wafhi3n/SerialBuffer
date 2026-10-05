@@ -380,8 +380,12 @@ function C:PrintPeers()
         if p.caster == "PALADIN" then
             rank = NS.Share.Senior({ since = p.since, name = name }, self:Me()) and L[" (avant toi)"] or L[" (après toi)"]
         end
-        NS:Printf("%s%s : %s", name, rank, planText(p.plan))
+        -- Palier 3 : son option (N / L / A, annoncée) et si tu peux régler sa ligne maintenant.
+        local edit = self:CanEdit(name) and L[" (réglable)"] or ""
+        NS:Printf("%s%s [%s]%s : %s", name, rank, p.who or "?", edit, planText(p.plan))
     end
+    NS:Printf(L["Toi : chef ou assistant = %s, ton option = %s"], isChief("player") and L["oui"] or L["non"],
+        C.WHO_LETTER[NS.db.coordWho] or "N")
 end
 
 -- Démarre après la boucle (SerialBuffer_Run.lua), quand la classe est lue.

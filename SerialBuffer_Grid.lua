@@ -269,9 +269,11 @@ local function peerCell(parent, x, y, class)
     f:SetPoint("TOPLEFT", x + (COL_W - PEER_ICON) / 2, y)
     f.class = class
     f.bg = f:CreateTexture(nil, "BACKGROUND")
-    f.bg:SetPoint("TOPLEFT", -2, 2)
-    f.bg:SetPoint("BOTTOMRIGHT", 2, -2)
-    f.bg:SetColorTexture(0.3, 0.25, 0, 0.6)   -- case réglable : un fond doré
+    -- Case réglable : un liseré doré franc autour de l'icône (un fond brun sombre ne se voyait pas,
+    -- capture du user, 2026-10-05).
+    f.bg:SetPoint("TOPLEFT", -3, 3)
+    f.bg:SetPoint("BOTTOMRIGHT", 3, -3)
+    f.bg:SetColorTexture(1, 0.82, 0, 0.9)
     f.icon = f:CreateTexture(nil, "ARTWORK")
     f.icon:SetAllPoints()
     f.more = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -317,9 +319,9 @@ end
 
 -- e = { name (libellé), p = { caster, plan }, peerName (nil pour ta propre ligne) }.
 local function paintPeer(row, e)
-    row.label:SetText(e and e.name or "")
-    if e then row.label:SetTextColor(classRGB(e.p.caster)) end
     local editable = e ~= nil and e.peerName ~= nil and NS.Comm:CanEdit(e.peerName)
+    row.label:SetText(e and (e.name .. (editable and L[" (réglable)"] or "")) or "")
+    if e then row.label:SetTextColor(classRGB(e.p.caster)) end
     for _, pc in ipairs(row.cells) do
         local ids = e and e.p.plan[pc.class]
         pc.ids, pc.peerName, pc.caster, pc.editable = ids, e and e.peerName, e and e.p.caster, editable
