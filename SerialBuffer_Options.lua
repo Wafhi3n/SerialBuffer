@@ -99,6 +99,8 @@ function O:Build(panel)
         if class ~= "PALADIN" then
             self.refreshRow = refreshRow(panel, y); y = y - LINE - 4
         end
+    else
+        y = NS.Grid:BuildWatch(panel, y)   -- palier 3 : un chef sans buff voit et règle les lignes
     end
     self.checks[#self.checks + 1] = checkbox(panel, PAD, y, L["Montrer les joueurs marqués PvP"],
         function() return NS.db.showPvP end, function(v) NS.db.showPvP = v end)

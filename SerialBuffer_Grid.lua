@@ -286,6 +286,17 @@ local function peerCell(parent, x, y, class)
     return f
 end
 
+-- Palier 3 : une classe sans buff (guerrier, voleur…), souvent chef de raid, n'a pas de grille à elle
+-- mais voit « qui pose quoi » et, si les autres le permettent, règle leurs lignes (C1).
+function G:BuildWatch(parent, y)
+    local head = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    head:SetPoint("TOPLEFT", PAD, y)
+    head:SetText(L["Groupe / raid : qui pose quoi"])
+    y = y - 22
+    for i, cl in ipairs(NS.Buffs.CLASSES) do classHeader(parent, cl, CLS_X + (i - 1) * COL_W, y) end
+    return self:BuildPeers(parent, y - HEAD_H)
+end
+
 function G:BuildPeers(parent, y)
     self.peerRows, self.peerY0 = {}, y
     for i = 1, self.MAX_PEERS do
@@ -354,7 +365,7 @@ end
 
 -- Remet chaque case à l'état de la base (à l'ouverture, et après chaque geste).
 function G:Refresh()
-    if not self.caster then return end
+    if not self.caster then self:RefreshPeers() return end   -- classe sans buff : « qui pose quoi » seul
     local B, c, db = NS.Buffs, self.caster, NS.db
     for _, row in ipairs(self.rows) do
         local a = row.all

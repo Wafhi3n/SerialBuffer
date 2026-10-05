@@ -198,6 +198,17 @@ uniques) ; les prêtres, mages et druides posent tout, comme avant.
   un prêtre pour une classe (C2). Par défaut, personne n'a de choix unique : chacun pose tout.
 - Rien ne se lance tout seul (D2) : régler la ligne de quelqu'un change ce que SON tableau propose,
   c'est toujours lui qui clique.
+- *Conséquences dérivées, non décidées par le user :*
+  - **un chef sans buff** (un guerrier, souvent chef de raid) voit « qui pose quoi » dans ses
+    options et règle les lignes qu'on lui permet ; il demande les annonces en arrivant dans le
+    groupe, mais n'annonce jamais rien et ne répond pas aux demandes ;
+  - accepté ou refusé, un réglage fait **réannoncer** la cible, même inchangée : l'éditeur, qui a
+    affiché son choix d'avance, voit tout de suite le vrai résultat ;
+  - **réglage du chef et ancienneté (C1 × C4)** : un choix unique réglé par le chef passe par la
+    même répartition que les autres. Si un paladin plus ancien tient déjà cette bénédiction pour la
+    classe, le plus récent passe quand même à la suivante, et le chef le voit. Pour répartir à sa
+    guise, le chef règle donc tous les paladins (comme avec PallyPower). L'autre lecture, « un choix
+    du chef passe avant l'ancienneté », reste possible si le user la demande.
 
 ## Contrat
 

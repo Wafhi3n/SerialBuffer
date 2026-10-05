@@ -186,9 +186,13 @@ end
 
 -- Envoie ce qui attend. Une annonce identique à la dernière ne repart pas, sauf en réponse à une
 -- demande (forceA).
+-- Palier 3 : une classe sans buff (un chef de raid guerrier) DEMANDE les annonces, pour voir et
+-- régler les lignes des autres, mais n'annonce jamais rien et ne répond pas aux demandes.
 function C:Flush()
     local ch = channel()
-    if not ch or not self:CanSpeak() then self.wantA, self.wantR = false, false; return end
+    if not ch then self.wantA, self.wantR = false, false; return end
+    if not self:CanSpeak() then self.wantA, self.forceA = false, false end
+    if not (self.wantA or self.wantR) then return end
     if locked() then
         self.stats.deferred = self.stats.deferred + 1
         self:Schedule(C.RETRY)
@@ -273,17 +277,21 @@ end
 -- Un réglage reçu : s'applique à TA ligne seulement, si l'expéditeur en a le droit à cet instant
 -- (ton option, son rang dans le groupe). Même contrôle qu'un clic (Buffs:SetGroupPick : ids de ta
 -- classe, D23).
+-- Accepté ou refusé, la cible RÉANNONCE son vrai plan (forceA, même inchangé) : sinon l'éditeur, qui
+-- a affiché son choix d'avance, garderait une case fausse (réglage refusé, ou un plus ancien qui
+-- tient déjà cette bénédiction, palier 2).
 function C:OnSet(m, sender, unit)
     if m.target ~= self.me then return end
-    if not C.Allowed(C.WHO_LETTER[NS.db.coordWho] or "N", isChief(unit)) then
-        self.stats.denied = (self.stats.denied or 0) + 1
-        return
+    if C.Allowed(C.WHO_LETTER[NS.db.coordWho] or "N", isChief(unit)) then
+        NS.Buffs:SetGroupPick(NS.Buffs.class, m.class, m.id, NS.db)
+        self.stats.applied = self.stats.applied + 1
+        NS:Printf(NS.L["%s a réglé ta ligne Groupe / raid."], sender)
+        if NS.Grid then NS.Grid:Refresh() end
+    else
+        self.stats.denied = self.stats.denied + 1
     end
-    NS.Buffs:SetGroupPick(NS.Buffs.class, m.class, m.id, NS.db)
-    self.stats.applied = (self.stats.applied or 0) + 1
-    NS:Printf(NS.L["%s a réglé ta ligne Groupe / raid."], sender)
-    if NS.Grid then NS.Grid:Refresh() end
-    self:Announce()
+    self.wantA, self.forceA = true, true
+    self:Schedule(C.DEBOUNCE)
 end
 
 -- Peux-tu régler la ligne de ce joueur ? (son option, annoncée, et ton rang à toi)
