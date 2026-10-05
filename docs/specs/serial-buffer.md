@@ -28,6 +28,9 @@ Hors combat, en extérieur, **un tableau sur le côté de l'écran** liste les j
 - ceux qui sont **à portée de sort** ;
 - **les membres de ton groupe ou de ton raid, même hors de portée**, marqués comme tels.
 
+En instance (donjon, raid), le tableau ne liste que ton groupe ou ton raid (D31) : les inconnus
+sont une affaire d'extérieur, le groupe se buffe partout.
+
 Les joueurs y sont rangés **dans l'ordre où ils sont entrés dans la liste** : le premier entré est en
 tête (FIFO). **Les membres de ton groupe ou de ton raid passent devant**, dans une partie à eux en
 haut du tableau (D30) ; les autres suivent. Un clic sur une ligne lance le buff sur ce joueur. Une touche « buff suivant » lance le
@@ -177,8 +180,9 @@ est celle du build 70205, lue le 2026-10-04.
 
 ## Cas particuliers
 
-- **Liste vide** : trois causes, trois messages distincts. Les plaques amies sont coupées ;
-  personne n'est autour ; tout le monde est buffé (« Tournée finie »).
+- **Liste vide** : quatre causes, quatre messages distincts. Les plaques amies sont coupées ;
+  personne n'est autour ; tout le monde est buffé (« Tournée finie ») ; des joueurs sont illisibles
+  (nom ou buffs cachés par le jeu, surtout en instance : D31), comptés dans le pied.
 - **Entrée en combat** (D12) : par défaut, le tableau se masque, puis revient recalculé à la sortie.
   Avec l'option, il reste affiché, figé tel qu'avant le combat :
   - **toutes les lignes restent cliquables, inconnus compris** (D21). Le bouton cible par le nom,
@@ -233,7 +237,8 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
 - **D1 : le nom est « Serial Buffer ».** « Buffomatic » a été écarté parce qu'il est trop proche de
   Buffomat Classic, qui existe déjà sur CurseForge.
 - **D2 : une liste hors combat, un clic par buff, et le joueur buffé sort de la liste.**
-- **D3 : le terrain, c'est l'extérieur.** Le but est de buffer tout le monde dehors.
+- **D3 : le terrain, c'est l'extérieur.** Le but est de buffer tout le monde dehors. Pour les
+  inconnus seulement depuis D31 (2026-10-05) : le groupe et le raid se buffent aussi en instance.
 - **D4 : toutes les classes qui ont des buffs entrent dès la v1.** Selon le user, tous les buffs
   durent 1 h sur Forever. L'addon n'en dépend pas : il lit sur l'aura **le temps qui reste**, et ne
   code aucune durée.
@@ -399,7 +404,8 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
 6. [humain] Plaques amies coupées : à la première ouverture, l'addon propose de les activer. Sur
    « oui », les plaques amies passent en noms seuls. Sur « non », la question ne revient pas, et la
    liste dit pourquoi elle est vide.
-7. [humain] En donjon, un message remplace la liste, sans erreur.
+7. ~~[humain] En donjon, un message remplace la liste, sans erreur.~~ Remplacé par le critère 21
+   (D31, 2026-10-05) : en donjon, la liste montre le groupe.
 8. [humain] À un joueur il manque deux buffs cochés : il n'a qu'une ligne, qui propose l'un puis
    l'autre, et il sort de la liste quand il a les deux.
 9. [test] La liste se construit à partir d'unités simulées (ami, ennemi, PNJ, mort, PvP, en combat,
