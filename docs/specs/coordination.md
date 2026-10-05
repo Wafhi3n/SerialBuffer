@@ -63,6 +63,10 @@ Dit autrement, avec les décisions C1 à C5 :
     Rédemption, `CHAT_MSG_ADDON` est arrivé avec `bonjour`, `PARTY` et l'expéditeur **« Gnomi
     Short »** (le nom complet, avec l'espace : le même que `GetUnitName(unité, true)`, de quoi
     relier un message à un membre du groupe). Captures du user.
+  - **R1 bis, quelques minutes après** : le groupe converti en raid (« Party converted to Raid »),
+    la même ligne, toujours en `PARTY`, arrive encore deux fois chez Rédemption. En raid, `PARTY`
+    vise le sous-groupe (les deux étaient dans le groupe 1). Le canal écrit dans le message est
+    celui que l'envoi demande, pas le type du groupe. `RAID` reste à mesurer.
 - **H2 : en combat de BOSS, les envois d'addon sont bloqués** (verrou `Chat`, mesuré le 2026-09-30
   pour `SendChatMessage` sur un canal, `secret-values-and-lockdowns.md`). La coordination doit donc
   se faire hors combat de boss ; à vérifier pour `SendAddonMessage` en groupe.
