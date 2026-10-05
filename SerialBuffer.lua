@@ -6,7 +6,7 @@
 local ADDON, NS = ...
 local L = NS.L
 
-NS.VERSION = "0.3.0-beta"   -- = ## Version du .toc ; scripts\bump_version.ps1 -Addon SerialBuffer la tient égale
+NS.VERSION = "0.3.1-beta"   -- = ## Version du .toc ; scripts\bump_version.ps1 -Addon SerialBuffer la tient égale
 _G.SerialBuffer = NS
 
 -- Réglages par défaut. CopyDefaults complète la base sans écraser ce que le joueur a changé ;

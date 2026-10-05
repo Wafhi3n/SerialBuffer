@@ -1,5 +1,22 @@
 # Changelog - Serial Buffer
 
+## v0.3.1-beta - 2026-10-05
+
+Paladins in the same group now split their blessings. The one who joined the group first keeps
+what they picked; the others take, class by class, the first blessing from their own choices that
+nobody ahead of them has already claimed. If you and an earlier paladin both put Kings first for
+mages, your panel offers Wisdom to the mages in your group instead, and strangers outside the group
+still get your usual column. A /reload doesn't lose you your place in the queue.
+
+The options show your actual split at the top of "Group / raid: who casts what" ("You, after the
+split"), since it can differ from the row you set. /sbuff group also says whether each other
+paladin comes before or after you.
+
+The time left on a line now rounds up like the game's own buff bar ("7 min", not "6 min"), and a
+long name gets cut short instead of running under the buff name.
+
+This is still a beta: the split needs two paladins to show, and hasn't been tried in game yet.
+
 ## v0.3.0-beta - 2026-10-05
 
 Lines now show how long the buff they'd refresh has left ("8 min"). In combat that time keeps

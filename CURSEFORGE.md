@@ -50,6 +50,8 @@ left ("8 min"), and that keeps counting down during a fight until it says "expir
 
 If other people in your group run Serial Buffer too, you'll see what they cast on each class, under
 the grid in the options ("Group / raid: who casts what"), and /sbuff group lists them in the chat.
+Paladins split their blessings on their own: whoever joined the group first keeps their pick, and
+the others move to their next choice for that class instead of casting the same blessing twice.
 
 Clicking a stranger's line targets them, and they stay targeted afterwards. Clicking someone in
 your group leaves your target alone.
