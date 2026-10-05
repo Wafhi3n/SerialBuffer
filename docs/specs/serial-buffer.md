@@ -430,8 +430,11 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   - **Relevé R6, rapporté par le user le 2026-10-05** : `/cast [@Prénom Nom] Blessing of Might`, tapé,
     « ne fonctionne pas avec le nom d'un gars devant moi ». On ne sait pas s'il était du groupe
     (`[@nom]` ne vise qu'un membre du groupe) : ce n'est pas un fait mesuré, seulement la raison de
-    passer par le jeton. **Jamais mesuré** : un jeton `partyN` / `raidN` dans une condition de macro
-    sur Forever (les plaques échouent, `target` et `player` marchent).
+    passer par le jeton.
+  - **Relevé R7, 2026-10-05 12:07** (rapporté par le user, registre) : depuis Gnomi, un clic sur la
+    ligne de Rédemption, du groupe, l'a buffée par `/cast [@party1,help,nodead] Arcane Intellect`
+    **sans changer la cible de Gnomi**. Un jeton `partyN` dans une condition de macro marche sur
+    Forever. **Pas encore mesuré** : `raidN`, et le même clic en combat.
 - **D37 : le choix unique de la ligne « Groupe / raid » se replie sur la colonne de la classe quand
   il ne passe pas** (user, 2026-10-05, après Gnomi, mage niveau 2, groupée avec Rédemption : Rois
   est son choix unique, le jeu le refuse « Target is too low level », et elle n'avait plus rien).
