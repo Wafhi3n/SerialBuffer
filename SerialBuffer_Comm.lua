@@ -29,14 +29,16 @@ local function sec(v) return issecretvalue ~= nil and issecretvalue(v) end
 
 -- ---------------------------------------------------------------- le codec (pur)
 
--- « 1|A|PALADIN|20217|0|1243+976|… » : la classe du lanceur et ses neuf entrées (plan[classe] = ids).
-function C.Encode(caster, plan)
+-- « 1|A|PALADIN|20217|0|1243+976|…|<since> » : la classe du lanceur, ses neuf entrées (plan[classe]
+-- = ids) et, ajout du palier 2 compatible v1, l'heure du serveur de son arrivée dans le groupe.
+function C.Encode(caster, plan, since)
     local parts = { C.VERSION, "A", caster }
     for _, cl in ipairs(C.WIRE_CLASSES) do
         local ids, s = plan and plan[cl], {}
         for i, id in ipairs(ids or {}) do s[i] = tostring(id) end
         parts[#parts + 1] = (#s > 0) and table.concat(s, "+") or "0"
     end
+    if type(since) == "number" then parts[#parts + 1] = tostring(math.floor(since)) end
     return table.concat(parts, "|")
 end
 
@@ -69,7 +71,10 @@ function C.Decode(msg)
         if not ids then return nil end
         plan[cl] = ids
     end
-    return { kind = "A", caster = f[3], plan = plan }
+    -- Palier 2 : l'heure d'arrivée, chiffres seulement ; absente ou mal formée : 0, le plus ancien.
+    local s = f[4 + #C.WIRE_CLASSES]
+    local since = (s and s:match("^%d+$")) and tonumber(s) or 0
+    return { kind = "A", caster = f[3], plan = plan, since = since }
 end
 
 -- Le jeton du membre du groupe qui a envoyé ce message, ou nil plus la raison ("self" : ton propre
@@ -107,9 +112,11 @@ function C:BuildRoster()
         for i = 1, GetNumSubgroupMembers() do add("party" .. i) end
     end
     self.roster, self.me = map, fullName("player")
+    local gone = false
     for name in pairs(self.peers) do
-        if not map[name] then self.peers[name] = nil end
+        if not map[name] then self.peers[name], gone = nil, true end
     end
+    if gone then self:Announce() end   -- palier 2 : un plus ancien parti libère sa bénédiction
 end
 
 local function channel()
@@ -158,9 +165,32 @@ function C:Flush()
     end
     if self.wantR and self:SendRaw(C.Request(), ch) then self.wantR = false end
     if self.wantA then
-        local msg = C.Encode(NS.Buffs.class, NS.Buffs:GroupPlan(NS.db))
+        local msg = C.Encode(NS.Buffs.class, NS.Buffs:GroupPlan(NS.db), self.since)
         if (msg ~= self.lastA or self.forceA) and self:SendRaw(msg, ch) then self.lastA = msg end
         self.wantA, self.forceA = false, false
+        self.stats.seniors, self.stats.juniors = NS.Share.Rank(self.peers, self:Me())
+    end
+end
+
+-- Toi, pour la répartition (palier 2) : ton nom complet et ton heure d'arrivée dans le groupe.
+function C:Me()
+    return { name = self.me, since = self.since or math.huge }
+end
+
+-- Ton heure d'arrivée dans le groupe : gardée dans la base tant que tu restes groupé, pour qu'un
+-- /reload ne fasse pas de toi le plus récent (toute la répartition se décalerait). Elle expire au
+-- bout de COORD_TTL : c'est une valeur déduite, elle ne doit pas survivre à une autre soirée.
+C.COORD_TTL = 6 * 3600
+local function now()
+    return (GetServerTime and GetServerTime()) or time()
+end
+
+function C:LoadSince()
+    local s = NS.db.coordSince
+    if IsInGroup() and type(s) == "number" and now() - s < C.COORD_TTL then
+        self.since = s
+    else
+        self.since, NS.db.coordSince = nil, nil
     end
 end
 
@@ -194,14 +224,21 @@ function C:OnMessage(prefix, msg, ch, sender)
         end
         return
     end
-    self.peers[sender] = { caster = m.caster, plan = m.plan, unit = unit }
+    self.peers[sender] = { caster = m.caster, plan = m.plan, unit = unit, since = m.since }
+    self:Announce()   -- palier 2 : la répartition d'un plus ancien a pu changer la tienne
     if NS.Grid then NS.Grid:RefreshPeers() end
 end
 
+-- Arrivée dans un groupe : ton heure est posée (sauf si un /reload l'a déjà relue) ; départ : effacée.
 function C:OnRoster()
     local was = self.grouped
     self.grouped = channel() ~= nil
     self:BuildRoster()
+    if self.grouped and not self.since then
+        self.since = now()
+        NS.db.coordSince = self.since
+    end
+    if was and not self.grouped then self.since, NS.db.coordSince = nil, nil end
     if not self.grouped then self.peers = {} end
     if self.grouped and not was then self:Hello() end
     if NS.Grid then NS.Grid:RefreshPeers() end
@@ -217,27 +254,37 @@ end
 
 -- /sbuff groupe : les autres Serial Buffer reçus, et les buffs qu'ils posent au groupe (dans le chat,
 -- pour toi seul).
+-- Les noms des buffs d'un plan, sans doublon (« Rois, Sagesse »), ou « - ».
+local function planText(plan)
+    local seen, buffs = {}, {}
+    for _, cl in ipairs(C.WIRE_CLASSES) do
+        for _, id in ipairs(plan and plan[cl] or {}) do
+            if not seen[id] then
+                seen[id] = true
+                buffs[#buffs + 1] = NS.Buffs.client.name(id) or tostring(id)
+            end
+        end
+    end
+    return #buffs > 0 and table.concat(buffs, ", ") or "-"
+end
+
+-- /sbuff groupe : ta répartition, puis les autres Serial Buffer reçus (palier 2 : un paladin dit
+-- s'il passe avant ou après toi), dans le chat, pour toi seul.
 function C:PrintPeers()
     local L = NS.L
+    if not self.grouped then NS:Print(L["Pas de groupe."]) return end
+    if self:CanSpeak() then NS:Printf("%s : %s", L["Toi, après répartition"], planText(NS.Buffs:GroupPlan(NS.db))) end
     local names = {}
     for name in pairs(self.peers) do names[#names + 1] = name end
     table.sort(names)
-    if #names == 0 then
-        NS:Print(self.grouped and L["Aucun autre Serial Buffer dans ton groupe."] or L["Pas de groupe."])
-        return
-    end
+    if #names == 0 then NS:Print(L["Aucun autre Serial Buffer dans ton groupe."]) return end
     NS:Print(L["Serial Buffer dans ton groupe :"])
     for _, name in ipairs(names) do
-        local seen, buffs = {}, {}
-        for _, cl in ipairs(C.WIRE_CLASSES) do
-            for _, id in ipairs(self.peers[name].plan[cl] or {}) do
-                if not seen[id] then
-                    seen[id] = true
-                    buffs[#buffs + 1] = NS.Buffs.client.name(id) or tostring(id)
-                end
-            end
+        local p, rank = self.peers[name], ""
+        if p.caster == "PALADIN" then
+            rank = NS.Share.Senior({ since = p.since, name = name }, self:Me()) and L[" (avant toi)"] or L[" (après toi)"]
         end
-        NS:Printf("%s : %s", name, #buffs > 0 and table.concat(buffs, ", ") or "-")
+        NS:Printf("%s%s : %s", name, rank, planText(p.plan))
     end
 end
 
@@ -252,6 +299,9 @@ function C:Start()
     end
     f:SetScript("OnEvent", onEvent)
     self.frame = f
+    -- Palier 2 : ce que les paladins plus anciens ont pris, pour Buffs (tableau et annonce).
+    NS.Buffs.taken = function(targetClass) return NS.Share.Taken(C.peers, C:Me(), targetClass) end
+    self:LoadSince()  -- AVANT le premier OnRoster : un /reload garde ta place
     self.grouped = false
     self:OnRoster()   -- déjà groupé au /reload : demande aux autres
 end

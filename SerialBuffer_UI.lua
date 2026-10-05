@@ -22,7 +22,7 @@ local L = NS.L
 local UI = { rows = {}, heads = {} }
 NS.UI = UI
 
-local WIDTH, ROW_H, HEAD_H, MAX_ROWS, PAD, TOP = 270, 18, 16, 16, 8, 20
+local WIDTH, ROW_H, HEAD_H, MAX_ROWS, PAD, TOP = 300, 18, 16, 16, 8, 20   -- 300 : place pour le temps restant
 -- Le rouage (D32) : le premier de ces atlas que le client connaît (une mention dans la source
 -- Blizzard ne prouve pas qu'il existe sur Forever), sinon une texture de fichier.
 local GEAR_ATLASES = { "questlog-icon-setting", "OptionsIcon-Brown", "GM-icon-settings" }
@@ -84,12 +84,16 @@ local function buildRow(panel)
     row.icon = row:CreateTexture(nil, "ARTWORK")
     row.icon:SetSize(ROW_H - 2, ROW_H - 2)
     row.icon:SetPoint("LEFT")
-    row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    row.name:SetPoint("LEFT", row.icon, "RIGHT", 4, 0)
-    row.name:SetJustifyH("LEFT")
+    -- La note (buff, temps restant) d'abord, à droite ; le nom prend la place qui reste et se tronque
+    -- au lieu de passer dessous (vu le 2026-10-05 avec « Blessing of Wisdom · 6 min »).
     row.note = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     row.note:SetPoint("RIGHT")
     row.note:SetJustifyH("RIGHT")
+    row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    row.name:SetPoint("LEFT", row.icon, "RIGHT", 4, 0)
+    row.name:SetPoint("RIGHT", row.note, "LEFT", -6, 0)
+    row.name:SetJustifyH("LEFT")
+    row.name:SetWordWrap(false)
     row.noteRGB = { row.note:GetTextColor() }
     row:Hide()
     return row
@@ -187,11 +191,12 @@ function UI:Toggle()
 end
 
 -- Hors combat seulement (Render). Remet aussi ce que le combat a changé (D36 : gris, note).
--- D39 : « 8 min », « 40 s », ou « expiré » à zéro.
+-- D39 : « 8 min », « 40 s », ou « expiré » à zéro. Arrondi vers le HAUT, comme la barre de buffs du
+-- jeu (6 min 30 s s'y lit « 7 m » : vu le 2026-10-05, la ligne disait « 6 min » à côté).
 local function leftText(sec)
     if sec <= 0 then return L["expiré"] end
-    if sec >= 60 then return string.format(L["%d min"], math.floor(sec / 60)) end
-    return string.format(L["%d s"], math.floor(sec))
+    if sec > 60 then return string.format(L["%d min"], math.ceil(sec / 60)) end
+    return string.format(L["%d s"], math.ceil(sec))
 end
 
 -- La note : PvP, hors de portée, le buff, puis le temps restant s'il y en a un (D39).
