@@ -336,10 +336,11 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   raid), la liste montre ton groupe ou ton raid, au lieu de se mettre en pause. Les inconnus restent
   une affaire d'extérieur (plaques interdites en instance). *Interprétation de l'agent* de la réponse
   du user (2026-10-05) à « en instance, pause ou groupe seul ? » : « l'addon doit se comporter
-  différemment avec les membres de groupe/raid qu'avec les randoms ». **Jamais mesuré** : la lecture
-  des noms et des buffs sur `raidN` / `partyN` en instance (le verrou `Map` rend des noms secrets en
-  donjon), et `/targetexact` en instance. Un nom ou un buff illisible écarte le joueur (règle de
-  sûreté) et le pied du tableau compte les illisibles.
+  différemment avec les membres de groupe/raid qu'avec les randoms ». Un nom ou un buff illisible
+  écarte le joueur (règle de sûreté) et le pied du tableau compte les illisibles. **Mesuré le
+  2026-10-05 12:12** (registre) : en donjon, hors combat, 1644 buffs de membres du groupe lus par
+  leur jeton de groupe, aucun illisible, et le user a buffé tout le groupe. Le clic part par le jeton
+  de groupe (D36), pas par `/targetexact`.
 - **D32 : un rouage sur le tableau ouvre les options** (demande du user, 2026-10-05). Pas en combat :
   le panneau d'options du jeu ne s'ouvre pas pendant un combat.
 - **D33 : une grille buffs × classes dans les options, « comme un tableur »** (demande du user,
@@ -402,8 +403,9 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   - même interaction que la grille (clic, molette), sa propre case « Toutes » et son Remplir ; ↺
     remet aussi cette case ; D23 tient (pas de Sagesse proposée aux guerriers) ;
   - un choix pas encore appris laisse la grille du dessus s'appliquer ;
-  - paladin : le choix unique déjà posé par un autre paladin depuis plus de 30 minutes vaut « servi »
-    (D27 n'a pas de suivante à proposer) ; trop bas (D24) : le joueur sort de la liste.
+  - ~~paladin : le choix unique déjà posé par un autre paladin depuis plus de 30 minutes vaut
+    « servi » ; trop bas (D24) : le joueur sort de la liste~~ : remplacé par D37 le 2026-10-05 (repli
+    sur la colonne).
 - **D36 : en combat, le tableau reste affiché, figé, « comme PallyPower »** (user, 2026-10-05 : « en
   combat on doit juste voir le tableau pour rebuff, c'est tout » ; « on a juste les noms des joueurs
   à rebuff et on peut cliquer dessus pour cast, quitte à rafraîchir après le combat »). Remplace D12
@@ -429,8 +431,31 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   - **Relevé R6, rapporté par le user le 2026-10-05** : `/cast [@Prénom Nom] Blessing of Might`, tapé,
     « ne fonctionne pas avec le nom d'un gars devant moi ». On ne sait pas s'il était du groupe
     (`[@nom]` ne vise qu'un membre du groupe) : ce n'est pas un fait mesuré, seulement la raison de
-    passer par le jeton. **Jamais mesuré** : un jeton `partyN` / `raidN` dans une condition de macro
-    sur Forever (les plaques échouent, `target` et `player` marchent).
+    passer par le jeton.
+  - **Relevé R7, 2026-10-05 12:07** (rapporté par le user, registre) : depuis Gnomi, un clic sur la
+    ligne de Rédemption, du groupe, l'a buffée par `/cast [@party1,help,nodead] Arcane Intellect`
+    **sans changer la cible de Gnomi**. Un jeton `partyN` dans une condition de macro marche sur
+    Forever. **Pas encore mesuré** : `raidN`, et le même clic en combat.
+- **D37 : le choix unique de la ligne « Groupe / raid » se replie sur la colonne de la classe quand
+  il ne passe pas** (user, 2026-10-05, après Gnomi, mage niveau 2, groupée avec Rédemption : Rois
+  est son choix unique, le jeu le refuse « Target is too low level », et elle n'avait plus rien).
+  Le choix unique d'abord ; s'il est trop bas (D24, D38), pas appris, ou déjà posé par un autre
+  paladin (D27), les choix de la colonne, dans l'ordre. Gnomi : Rois refusé → Sagesse refusée →
+  Puissance. Pour un prêtre, un mage ou un druide, un choix unique présent sur le joueur vaut
+  « servi » : la colonne ne sert que si le choix ne peut pas passer. Remplace « sans repli » de D35.
+- **D38 : l'addon APPREND les refus « trop bas » et les garde** (user, 2026-10-05, « apprendre des
+  refus »). Après « Target is too low level » sur un joueur de niveau N, il retient « ce rang de ce
+  sort est refusé jusqu'au niveau N » dans ses réglages (`tooLow`, rang du sort → niveau ; aucune
+  donnée de joueur) : le refus survit au `/reload`, et ce buff n'est plus proposé à personne de ce
+  niveau ou moins, on passe directement au suivant. *Conséquences dérivées, non décidées par le
+  user :*
+  - la clé est le rang que le jeu lance (`C_Spell.GetSpellInfo(nom).spellID`, le plus haut connu) :
+    un nouveau rang appris repart de zéro, puisque son niveau requis est plus haut ;
+  - un buff réussi sur un niveau N que l'addon croyait refusé corrige le seuil (N − 1) ;
+  - aucun niveau codé en dur : le vrai seuil s'apprend un refus à la fois. Un joueur qui monte d'un
+    niveau sous le seuil coûte un clic de plus (Rois, sans doute refusé jusqu'au niveau 9 selon la
+    règle de vanilla « niveau du sort − 10 », jamais mesurée sur Forever) ;
+  - le refus « trop bas » d'un joueur précis pendant la séance (D24) reste, en plus.
 
 ## Questions ouvertes (au user)
 
@@ -541,6 +566,14 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     un choix pas appris laisse la grille s'appliquer ; D23 tient.
 26. [humain] (D35) Groupé, choisir Puissance dans la case Guerrier de la ligne « Groupe / raid » :
     le guerrier du groupe se voit proposer Puissance, un guerrier inconnu dehors garde Rois.
+27. [test] (D37, D38) Un choix unique trop bas (appris) passe à la colonne ; un choix unique présent
+    sur un mage du groupe vaut « servi » pour un mage lanceur ; un seuil appris écarte le buff
+    jusqu'à ce niveau compris et pas au-dessus ; un refus ne fait que monter le seuil ; un succès
+    au-dessous du seuil le corrige ; la clé est le rang lancé.
+28. [humain] (D37, D38) Paladin groupé avec Gnomi (niveau 2), Rois en choix unique des mages : un
+    clic sur Gnomi → « too low level » → la ligne passe à Sagesse, refusée → Puissance, qui passe.
+    Après un `/reload`, Gnomi se voit proposer Puissance d'emblée. `SerialBufferDB.tooLow` porte les
+    rangs de Rois et de Sagesse à 2. Témoin connu-bon : la v0.2.0-beta, où Gnomi n'avait plus rien.
 
 ## Contrat
 
@@ -548,7 +581,8 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
   du lanceur → classe de la cible → ids de sort par rang, 0 = case vide ; seules les colonnes qui
   s'écartent du défaut ; des jetons de classe et des ids, aucune donnée de joueur ; elles remplacent
   `off`, `priority` et `classBuffs`, migrés par `schemaVer` 3), la ligne « Groupe / raid »
-  (`groupPick`, classe du lanceur → classe de la cible → id ; D35), l'option PvP, la réponse à la
+  (`groupPick`, classe du lanceur → classe de la cible → id ; D35), les refus « trop bas » appris
+  (`tooLow`, rang de sort → niveau ; D38), l'option PvP, la réponse à la
   proposition des plaques et la position du tableau (son coin haut gauche). Pour le diagnostic, `seenErrors` : le
   nom et le texte des erreurs du jeu vues juste après un de nos clics. **Aucun nom de joueur, aucun
   GUID** : un secret sauvegardé empoisonne la base. Le refus « trop bas » (D24) vit en mémoire de

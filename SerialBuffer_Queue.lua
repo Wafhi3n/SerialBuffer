@@ -9,6 +9,7 @@
 --   D26 « sort plus puissant actif » : dehors pour CE buff, 20 min     D27 paladin : celle d'un autre (> 30 min) → la suivante
 --   D28 hors paladin : un buff qui a plus que le seuil des options (45 min par défaut) : servi
 --   D30 le groupe passe devant (remplace « ni ton groupe » de D8)
+--   D37 le choix unique du groupe, puis la colonne en repli        D38 refus « trop bas » APPRIS (db.tooLow)
 -- AFFICHAGE, trois parties, FIFO dans chacune (D30, D25) : « group » (ton groupe ou ton raid, à
 -- portée), « around » (les autres, à portée), « far » (le groupe hors de portée), tout en bas : la
 -- première ligne est toujours quelqu'un qu'on peut buffer, et un clic répété dessus vide la file.
@@ -91,9 +92,18 @@ end
 -- Le buff à proposer, ou nil (plus "unread" si une aura est illisible). probe.aura rend "absent" ou
 -- les secondes restantes (math.huge = sans fin), plus « est-ce la mienne » ; nil = illisible. Prêtre,
 -- mage, druide : le premier qui manque (D7).
-local function nextMissing(snap, wanted, probe, refreshBelow)
-    for _, w in ipairs(wanted) do
-        if not isBlocked(snap, w.name) then
+-- D38 : le jeu a déjà refusé ce rang « trop bas » jusqu'à un niveau ≥ celui du joueur.
+local function learnedLow(snap, w, low)
+    local max = low and low[w.rank or w.id]
+    return max ~= nil and type(snap.level) == "number" and snap.level > 0 and snap.level <= max
+end
+
+-- low : les refus « trop bas » appris (db.tooLow). wanted.single (D37) : le 1er est le choix unique
+-- du groupe ; présent sur le joueur, il vaut « servi » pour un lanceur non paladin (la colonne qui
+-- suit n'est qu'un repli s'il ne peut pas passer).
+local function nextMissing(snap, wanted, probe, refreshBelow, low)
+    for i, w in ipairs(wanted) do
+        if not isBlocked(snap, w.name) and not learnedLow(snap, w, low) then
             local left, mine = probe.aura(snap.unit, w.name)
             if left == nil then return nil, "unread" end
             if mine ~= true and left ~= "absent" and castByMe(snap, w.name) then mine = true end
@@ -107,10 +117,27 @@ local function nextMissing(snap, wanted, probe, refreshBelow)
                 if v == "stop" then return nil end
             elseif needs(left, refreshBelow) then   -- D28 : seuil réglable hors paladin
                 return w
+            elseif wanted.single and i == 1 then     -- D37 : le choix unique est là
+                return nil
             end
         end
     end
     return nil
+end
+
+-- D38 : un refus « trop bas » sur un joueur de ce niveau. Le seuil ne fait que monter. key = le rang
+-- lancé (Buffs, entry.rank). Rien d'autre que des ids et des niveaux : aucune donnée de joueur.
+function Q.LearnLow(db, key, level)
+    if not (db and key and type(level) == "number" and level > 0) then return end
+    db.tooLow = db.tooLow or {}
+    if (db.tooLow[key] or 0) < level then db.tooLow[key] = level end
+end
+
+-- Un buff de ce rang a RÉUSSI sur ce niveau : un seuil qui disait le contraire redescend en dessous.
+function Q.LearnOk(db, key, level)
+    local t = db and db.tooLow
+    if not (t and key and type(level) == "number" and t[key] and t[key] >= level) then return end
+    t[key] = (level > 1) and (level - 1) or nil
 end
 
 -- Les filtres qui ne dépendent pas des buffs. Rend true si le joueur peut entrer dans la file, sinon
@@ -130,9 +157,10 @@ end
 -- Une ligne pour ce joueur, ou nil (plus "unread" si son nom ou une de ses auras est illisible).
 -- wantedFor(classe, membre du groupe) → buffs voulus, dans l'ordre (D35 : le groupe a sa ligne à lui).
 function Q:Eligible(snap, wantedFor, probe, opts)
-    local ok, why = admissible(snap, opts or {})
+    opts = opts or {}
+    local ok, why = admissible(snap, opts)
     if not ok then return nil, why end
-    local buff, unread = nextMissing(snap, wantedFor(snap.class, snap.group), probe, (opts or {}).refreshBelow)
+    local buff, unread = nextMissing(snap, wantedFor(snap.class, snap.group), probe, opts.refreshBelow, opts.tooLow)
     if not buff then return nil, unread end
     local outOfRange = false
     if not snap.self then

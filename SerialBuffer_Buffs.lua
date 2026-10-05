@@ -64,6 +64,14 @@ B.client = {
     end,
     name = function(id) return C_Spell and C_Spell.GetSpellName and C_Spell.GetSpellName(id) end,
     icon = function(id) return C_Spell and C_Spell.GetSpellTexture and C_Spell.GetSpellTexture(id) end,
+    -- D38 : le rang que le jeu lance pour ce nom (le plus haut connu ; mesuré R1 : « Blessing of
+    -- Might » → 19834, rang 2). nil si illisible : la clé retombe sur l'id de rang 1.
+    rank = function(name)
+        if not (C_Spell and C_Spell.GetSpellInfo) then return nil end
+        local ok, info = pcall(C_Spell.GetSpellInfo, name)
+        if ok and type(info) == "table" and type(info.spellID) == "number" then return info.spellID end
+        return nil
+    end,
 }
 
 -- ---------------------------------------------------------------- le catalogue
@@ -88,12 +96,21 @@ function B:Casters()
     return out
 end
 
+-- rank : la clé des refus « trop bas » appris (D38), le rang lancé, sinon l'id de rang 1.
 local function entry(id)
     local c = B.client
     if not c.known(id) then return nil end
     local name = c.name(id)
     if type(name) ~= "string" or name == "" then return nil end
-    return { id = id, name = name, icon = c.icon(id) }
+    return { id = id, name = name, icon = c.icon(id), rank = (c.rank and c.rank(name)) or id }
+end
+
+-- Le buff connu de ce nom, ou nil (Run : relier un clic à son rang).
+function B:ByName(name)
+    for _, e in pairs(self.known or {}) do
+        if e.name == name then return e end
+    end
+    return nil
 end
 
 -- Lit ce que le personnage connaît (self.known : id → buff). Rend le nombre de buffs reconnus.
@@ -274,14 +291,23 @@ end
 
 -- ---------------------------------------------------------------- ce que la file demande
 
--- Les buffs voulus pour une cible, dans l'ordre de sa colonne ; un membre du groupe prend le choix
--- unique de la ligne « Groupe / raid » s'il est rempli et appris (D35). Le paladin n'en pose qu'UNE :
--- la liste est EXCLUSIVE, la file prend la première que la cible peut recevoir (D24, D27).
+-- Les buffs voulus pour une cible, dans l'ordre de sa colonne. Le paladin n'en pose qu'UNE : la liste
+-- est EXCLUSIVE, la file prend la première que la cible peut recevoir (D24, D27, D38).
+-- Un membre du groupe prend d'abord le choix unique de la ligne « Groupe / raid » s'il est rempli et
+-- appris (D35), puis la colonne en repli (D37) ; la liste est alors marquée SINGLE : pour un lanceur
+-- non paladin, le choix unique présent vaut « servi », la colonne ne sert que s'il ne peut pas passer.
 function B:WantedFor(targetClass, db, inGroup)
     local c = self.class
     local out = { exclusive = (c == "PALADIN") or nil }
     local pick = inGroup and self:GroupPick(c, targetClass, db) or 0
-    local ids = (pick ~= 0 and self.known and self.known[pick]) and { pick } or self:Order(c, targetClass, db)
+    local ids = self:Order(c, targetClass, db)
+    if pick ~= 0 and self.known and self.known[pick] then
+        local col = ids
+        ids, out.single = { pick }, true
+        for _, id in ipairs(col) do
+            if id ~= pick then ids[#ids + 1] = id end
+        end
+    end
     for _, id in ipairs(ids) do
         local e = id ~= 0 and self.known and self.known[id]
         if e then out[#out + 1] = e end

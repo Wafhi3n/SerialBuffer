@@ -19,6 +19,7 @@ NS.DEFAULTS = {
     showPvP = false,        -- D5 : joueurs PvP cachés par défaut
     orders = {},            -- D34 : lanceur -> classe de la cible -> ids par rang (0 = vide) ; seuls les écarts au défaut
     groupPick = {},         -- D35 : lanceur -> classe de la cible -> id du choix unique pour le groupe (absent = vide)
+    tooLow = {},            -- D38 : rang de sort lancé -> niveau max refusé « Target is too low level » (appris)
     refreshMin = 45,        -- D28 : hors paladin, un buff qui a moins de ces minutes se rafraîchit
 }
 
