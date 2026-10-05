@@ -1,8 +1,9 @@
 -- SerialBuffer_Run.lua — LA BOUCLE : événements, rafraîchissement, et le lien entre les modules.
 --
--- client (Units) → file (Queue) → tableau (UI). Le tableau ne se recalcule que s'il est VISIBLE : il
--- ne l'est pas en combat (pilote d'état, D12) ni quand le joueur l'a caché (/sbuff). La portée n'a
--- pas d'événement : un minuteur de 0,5 s rafraîchit tant que le tableau se voit.
+-- client (Units) → file (Queue) → tableau (UI). Le tableau ne se recalcule que s'il est VISIBLE (pas
+-- caché par /sbuff) et HORS COMBAT : en combat il reste affiché mais figé (D36), ses lignes se grisent
+-- au fil de nos sorts, et il se recalcule à la sortie. La portée n'a pas d'événement : un minuteur de
+-- 0,5 s rafraîchit tant que le tableau se voit.
 -- Démarre sur PLAYER_LOGIN (SerialBuffer.lua), quand tous les fichiers du .toc sont chargés.
 local _, NS = ...
 NS = NS or _G.SerialBuffer
@@ -33,7 +34,10 @@ end
 local function wantedFor(class, inGroup) return NS.Buffs:WantedFor(class, NS.db, inGroup) end
 
 -- En instance, la liste ne lit que toi et ton groupe ou ton raid (D31) : pas de plaques.
+-- Jamais en combat (D36, tableau figé) : rien n'est relu, et la file garde l'ordre d'avant le pull
+-- (sinon D16 écarterait chaque joueur en combat, qui reviendrait en fin de file après).
 function R:Refresh()
+    if InCombatLockdown() then return end
     if self.noBuffs then
         NS.UI:Render({}, { state = "nobuffs", around = 0, unread = 0 })
         return
@@ -57,6 +61,10 @@ local function onEvent(_, event, arg1, arg2, arg3)
     elseif event == "SPELLS_CHANGED" then R:ResolveBuffs()
     elseif event == "UNIT_SPELLCAST_SUCCEEDED" then R:OnCast(arg3); refreshNow()
     elseif event == "UI_ERROR_MESSAGE" then R:OnError(arg1, arg2)
+    elseif event == "PLAYER_REGEN_DISABLED" then NS.UI:CombatStart()          -- D36 : le tableau se fige
+    elseif event == "PLAYER_REGEN_ENABLED" then refreshNow()                    -- D36 : il se recalcule
+    elseif event == "GROUP_ROSTER_UPDATE" then
+        if InCombatLockdown() then NS.UI:MarkStale() else refreshNow() end    -- jetons de groupe à jour
     end
 end
 
@@ -90,7 +98,10 @@ function R:OnCast(spellID)
     local click = NS.Cast:Recent(GetTime())
     if not click or not click.buff or (issecretvalue and issecretvalue(spellID)) then return end
     local name = C_Spell.GetSpellName and C_Spell.GetSpellName(spellID)
-    if name == click.buff then NS.Queue:Cast(click.guid, click.buff, GetTime()) end
+    if name == click.buff then
+        NS.Queue:Cast(click.guid, click.buff, GetTime())
+        if InCombatLockdown() then NS.UI:MarkDone(click.guid) end   -- D36 : la ligne se grise
+    end
 end
 
 -- Les boutons sécurisés ne se construisent pas en combat : un /reload en plein combat attend la fin.
@@ -109,7 +120,8 @@ function R:Start()
     NS.Units:SeedPlates()
     local f = CreateFrame("Frame")
     for _, ev in ipairs({ "NAME_PLATE_UNIT_ADDED", "NAME_PLATE_UNIT_REMOVED",
-                          "PLAYER_ENTERING_WORLD", "SPELLS_CHANGED", "UI_ERROR_MESSAGE" }) do
+                          "PLAYER_ENTERING_WORLD", "SPELLS_CHANGED", "UI_ERROR_MESSAGE",
+                          "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED", "GROUP_ROSTER_UPDATE" }) do
         f:RegisterEvent(ev)
     end
     f:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")

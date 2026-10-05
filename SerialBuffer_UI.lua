@@ -4,12 +4,13 @@
 -- complet (SerialBuffer_Cast.lua). Un bouton caché, « SerialBufferNextButton », porte la touche
 -- « buff suivant » (Bindings.xml) : il vise le premier de la file à portée.
 -- Trois cadres :
---   - le PILOTE, enfant de UIParent : sa visibilité suit un pilote d'état sécurisé, « [combat] hide »
---     (D12). Un Hide() lancé depuis un événement de combat serait refusé sur un ancêtre de boutons
---     sécurisés ; le pilote d'état, lui, passe ;
+--   - le PILOTE, enfant de UIParent : il porte le panneau (D36 : le tableau reste affiché en combat ;
+--     avant, un pilote d'état le masquait, D12) ;
 --   - le PANNEAU, enfant du pilote : /sbuff l'affiche ou le cache, hors combat seulement ;
---   - la TOUCHE, hors du panneau : un pilote d'attribut lui retire son action en combat (D12).
--- Un attribut sécurisé ne se pose JAMAIS en combat : Render ne fait rien tant qu'il dure.
+--   - la TOUCHE, hors du panneau : un pilote d'attribut lui retire son action en combat.
+-- Un attribut sécurisé ne se pose JAMAIS en combat : Render ne fait rien tant qu'il dure. En combat
+-- (D36), le tableau est FIGÉ : on ne touche qu'aux régions enfants d'une ligne (couleur du nom, icône
+-- désaturée, texte de la note), jamais au bouton lui-même (Show, Hide, SetPoint, SetAlpha).
 -- Le tableau ne lit QUE ce que SerialBuffer_Run.lua lui passe (rows, état) : jamais le client.
 -- D30 : groupé, les lignes se rangent sous trois titres (Raid ou Groupe, Autour de toi, Hors de
 -- portée) ; les lignes se replacent donc à chaque rendu, hors combat. Groupé, un titre précède
@@ -89,6 +90,7 @@ local function buildRow(panel)
     row.note = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     row.note:SetPoint("RIGHT")
     row.note:SetJustifyH("RIGHT")
+    row.noteRGB = { row.note:GetTextColor() }
     row:Hide()
     return row
 end
@@ -127,7 +129,6 @@ function UI:Build()
     if self.panel then return end
     local driver = CreateFrame("Frame", "SerialBufferDriver", UIParent)
     driver:SetAllPoints(UIParent)
-    RegisterStateDriver(driver, "visibility", NS.db.keepInCombat and "show" or "[combat] hide; show")
     local panel = CreateFrame("Frame", "SerialBufferPanel", driver, "BackdropTemplate")
     panel:SetSize(WIDTH, 60)
     panel:SetBackdrop(BACKDROP)
@@ -163,11 +164,11 @@ function UI:Build()
 end
 
 -- La touche « buff suivant ». Caché : seul son raccourci le clique. En combat, le pilote d'attribut
--- lui retire son type, et la touche ne fait rien (D12).
+-- lui retire son type, et la touche ne fait rien (D36 : elle viserait toujours le même joueur).
 function UI:BuildNext()
     local b = secureMacroButton(NS.Cast.NEXT_BUTTON, UIParent)
     b:Hide()
-    RegisterAttributeDriver(b, "type", NS.db.keepInCombat and "macro" or "[combat] nil; macro")
+    RegisterAttributeDriver(b, "type", "[combat] nil; macro")
     self.next = b
 end
 
@@ -185,9 +186,12 @@ function UI:Toggle()
     if not NS.db.shown then setMacro(self.next, nil, nil) end
 end
 
+-- Hors combat seulement (Render). Remet aussi ce que le combat a changé (D36 : gris, note).
 local function fillRow(row, r)
     setMacro(row, NS.Cast.MacroFor(r), r)
+    row.combatOK, row.isSelf = NS.Cast.CombatClickable(r), r.self
     row.icon:SetTexture(r.buff.icon)
+    row.icon:SetDesaturated(false)
     row.name:SetText(r.name)
     row.name:SetTextColor(classColor(r.class))
     local notes = {}
@@ -195,8 +199,43 @@ local function fillRow(row, r)
     if r.outOfRange then notes[#notes + 1] = L["hors de portée"] end
     notes[#notes + 1] = r.buff.name
     row.note:SetText(table.concat(notes, " · "))
+    row.note:SetTextColor(unpack(row.noteRGB))
     row:SetAlpha(r.outOfRange and 0.5 or 1)
     row:Show()
+end
+
+-- D36 : une ligne éteinte ou faite, en combat. Régions enfants seulement : le bouton est protégé.
+local function dim(row, note, r, g, b)
+    row.name:SetTextColor(0.45, 0.45, 0.45)
+    row.icon:SetDesaturated(true)
+    if note then
+        row.note:SetText(note)
+        row.note:SetTextColor(r or 0.5, g or 0.5, b or 0.5)
+    end
+end
+
+-- Au pull : les lignes d'inconnus s'éteignent (elles ne lancent plus rien : /stopmacro [combat]).
+function UI:CombatStart()
+    for _, row in ipairs(self.rows) do
+        if row:IsShown() and not row.combatOK then dim(row, nil) end
+    end
+end
+
+-- Notre sort sur ce joueur a réussi pendant le combat : sa ligne se grise, sans sortir du tableau.
+function UI:MarkDone(guid)
+    for _, row in ipairs(self.rows) do
+        if row:IsShown() and row.guid == guid then dim(row, L["buffé"], 0.4, 0.8, 0.4) end
+    end
+end
+
+-- Le groupe a changé pendant le combat : un jeton peut désigner un autre joueur (exception de D36).
+function UI:MarkStale()
+    for _, row in ipairs(self.rows) do
+        if row:IsShown() and row.combatOK and not row.isSelf then
+            row.note:SetText(L["groupe changé"])
+            row.note:SetTextColor(1, 0.4, 0.3)
+        end
+    end
 end
 
 -- Clés écrites en toutes lettres : la porte de localisation ne voit pas un L[variable].

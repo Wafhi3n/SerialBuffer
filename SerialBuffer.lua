@@ -17,7 +17,6 @@ NS.DEFAULTS = {
     schemaVer = 3,          -- 3 : la grille D34 remplace off, priority et classBuffs (Buffs:Migrate)
     shown = true,           -- le tableau (/sbuff)
     showPvP = false,        -- D5 : joueurs PvP cachés par défaut
-    keepInCombat = false,   -- D12 : tableau masqué pendant ton combat (option : palier c)
     orders = {},            -- D34 : lanceur -> classe de la cible -> ids par rang (0 = vide) ; seuls les écarts au défaut
     groupPick = {},         -- D35 : lanceur -> classe de la cible -> id du choix unique pour le groupe (absent = vide)
     refreshMin = 45,        -- D28 : hors paladin, un buff qui a moins de ces minutes se rafraîchit
