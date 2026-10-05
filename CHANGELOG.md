@@ -1,5 +1,19 @@
 # Changelog - Serial Buffer
 
+## v0.2.0 - 2026-10-05
+
+The 0.2.0 beta, tried in a dungeon and in combat, plus two fixes for low-level players.
+
+When the game refuses a buff with "Target is too low level", Serial Buffer now remembers it. A
+level 2 mage who can't take Kings or Wisdom gets Might straight away the next time, even after a
+/reload, instead of you clicking through two refusals again. It learns this per spell rank, so
+learning a higher rank starts fresh, and a buff that later lands on a player it thought was too
+low corrects what it had remembered.
+
+The Group / raid row in the options no longer leaves someone with nothing. If the blessing you
+picked for their class can't go on them (too low, not learned yet, or another paladin already put
+it there), you're offered the next choice from that class's column.
+
 ## v0.2.0-beta - 2026-10-05
 
 Your group and raid now come first. When you're grouped, the panel splits into Group (or Raid),

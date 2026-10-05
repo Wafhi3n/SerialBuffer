@@ -38,7 +38,8 @@ The gear icon on the panel opens the options: a grid with one column per class, 
 a buff icon you change with a click or the mouse wheel.
 
 Players who can't take a buff don't stay stuck at the top. If the game answers "Target is too low
-level" or "A more powerful spell is already active", they leave the list for that buff. Players
+level" or "A more powerful spell is already active", you're offered their next buff instead. Too
+low is remembered for good, per spell rank: a level 2 player won't be offered Kings again. Players
 flagged for PvP are hidden by default, since buffing them flags you too (/sbuff pvp shows them).
 
 You'll need friendly player nameplates turned on (Options, Nameplates): that's how the addon sees
