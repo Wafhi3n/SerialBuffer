@@ -55,8 +55,8 @@ Dit autrement, avec les décisions C1 à C5 :
 - **H1 : un message d'addon en `PARTY`, `RAID` ou `INSTANCE_CHAT` arrive sur Forever.** Le skill
   public `wow-forever-api` (`chat-channels-and-communities.md`) ne couvrait que le canal perso
   (livré), les canaux du jeu et les communautés (avalés en silence), `SAY` / `YELL` (refusés hors
-  instance) et le chuchotement (livré). **`PARTY` TIENT dehors (relevé R1)** ; restent le donjon,
-  `RAID`, `INSTANCE_CHAT` et le combat de boss.
+  instance) et le chuchotement (livré). **`PARTY` et `RAID` TIENNENT dehors (relevés R1 à R1 ter)** ;
+  restent le donjon, `INSTANCE_CHAT` et le combat de boss.
   - **R1, 2026-10-05 vers 13:00, Hurlevent (canaux), dehors, hors combat**, Gnomi Short et
     Rédemption groupées, sans addon, par deux `/run` : chez Gnomi,
     `C_ChatInfo.SendAddonMessage("SBUF", "bonjour", "PARTY")` a rendu **0** (accepté) ; chez
@@ -66,7 +66,13 @@ Dit autrement, avec les décisions C1 à C5 :
   - **R1 bis, quelques minutes après** : le groupe converti en raid (« Party converted to Raid »),
     la même ligne, toujours en `PARTY`, arrive encore deux fois chez Rédemption. En raid, `PARTY`
     vise le sous-groupe (les deux étaient dans le groupe 1). Le canal écrit dans le message est
-    celui que l'envoi demande, pas le type du groupe. `RAID` reste à mesurer.
+    celui que l'envoi demande, pas le type du groupe.
+  - **R1 ter, juste après** : Gnomi déplacée dans le groupe 2 du raid, Rédemption dans le groupe 1.
+    Rapporté : « plus de message » (la ligne envoyée n'est pas dite ; avec `PARTY`, c'est attendu,
+    le sous-groupe ne contient plus Rédemption). Puis `SendAddonMessage("SBUF", "bonjour", "RAID")`
+    depuis Gnomi : reçu deux fois chez Rédemption, « bonjour RAID Gnomi Short ». **`RAID` traverse
+    les sous-groupes.** D'où la règle du palier 1 : `RAID` en raid, `PARTY` en groupe.
+    `INSTANCE_CHAT` (groupe formé par la recherche de groupe) n'est pas mesuré.
 - **H2 : en combat de BOSS, les envois d'addon sont bloqués** (verrou `Chat`, mesuré le 2026-09-30
   pour `SendChatMessage` sur un canal, `secret-values-and-lockdowns.md`). La coordination doit donc
   se faire hors combat de boss ; à vérifier pour `SendAddonMessage` en groupe.
