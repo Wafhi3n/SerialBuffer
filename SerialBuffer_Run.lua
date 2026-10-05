@@ -32,15 +32,16 @@ end
 
 local function wantedFor(class) return NS.Buffs:WantedFor(class, NS.db) end
 
+-- En instance, la liste ne lit que toi et ton groupe ou ton raid (D31) : pas de plaques.
 function R:Refresh()
-    local state = self.noBuffs and "nobuffs" or NS.Units:State()
-    if state == "instance" or state == "nobuffs" then
-        NS.UI:Render({}, state, 0)
+    if self.noBuffs then
+        NS.UI:Render({}, { state = "nobuffs", around = 0, unread = 0 })
         return
     end
-    local rows, around = NS.Queue:Build(NS.Units:Collect(), wantedFor, NS.Units.probe,
-        { showPvP = NS.db.showPvP, now = GetTime(), refreshBelow = (NS.db.refreshMin or 45) * 60 })
-    NS.UI:Render(rows, state, around)
+    local state = NS.Units:State()
+    local rows, around, unread = NS.Queue:Build(NS.Units:Collect(state ~= "instance"), wantedFor,
+        NS.Units.probe, { showPvP = NS.db.showPvP, now = GetTime(), refreshBelow = (NS.db.refreshMin or 45) * 60 })
+    NS.UI:Render(rows, { state = state, around = around, unread = unread, group = NS.Units:GroupKind() })
 end
 
 -- Après un sort ou une erreur : recalcule tout de suite, pour que la touche « buff suivant » vise

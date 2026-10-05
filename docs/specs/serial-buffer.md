@@ -1,8 +1,10 @@
 # Serial Buffer : la tournée des buffs en extérieur
 
 > État : **validée par le user le 2026-10-04 (D1 à D29), faisabilité prouvée par la sonde**
-> (relevés R1 à R5). Aucune question ouverte. · Rédigée le 2026-10-04 · Idée du user le 2026-10-04,
-> périmètre tranché par lui le même jour (cf. Décisions).
+> (relevés R1 à R5). **Étendue le 2026-10-05 (D30 à D33)** : le groupe et le raid passent devant,
+> la liste du groupe vit aussi en instance, un rouage sur le tableau ouvre une grille buffs × classes.
+> · Rédigée le 2026-10-04 · Idée du user le 2026-10-04, périmètre tranché par lui le même jour
+> (cf. Décisions).
 > **Le mécanisme retenu** : on **voit** les joueurs par leurs plaques (portée et buffs se lisent
 > sur le jeton), on les **buffe** par un bouton macro à leur nom complet (`/targetexact Prénom
 > Nom`). Le jeu refuse de lancer un sort sur un jeton de plaque (H1 fausse, H8 tient).
@@ -27,15 +29,18 @@ Hors combat, en extérieur, **un tableau sur le côté de l'écran** liste les j
 - **les membres de ton groupe ou de ton raid, même hors de portée**, marqués comme tels.
 
 Les joueurs y sont rangés **dans l'ordre où ils sont entrés dans la liste** : le premier entré est en
-tête (FIFO). Un clic sur une ligne lance le buff sur ce joueur. Une touche « buff suivant » lance le
+tête (FIFO). **Les membres de ton groupe ou de ton raid passent devant**, dans une partie à eux en
+haut du tableau (D30) ; les autres suivent. Un clic sur une ligne lance le buff sur ce joueur. Une touche « buff suivant » lance le
 buff sur le premier de la liste qui est à portée, sans viser personne. Un joueur buffé **sort de la
 liste tout de suite** : on enchaîne. Quand elle est vide, la tournée est finie.
 
 Tous les buffs que ta classe sait poser sur un autre joueur sont cochés d'office ; tu décoches ce
-que tu ne veux pas. Le paladin pose **la première bénédiction de sa liste de priorité qu'il connaît**
-(Rois > Sagesse > Puissance par défaut), réglable dans les options du jeu (Options > AddOns). **Un buff de
-mana ne va jamais à une classe sans mana** : pas de Sagesse ni d'Intelligence des Arcanes pour un
-guerrier ou un voleur.
+que tu ne veux pas, **classe par classe**, dans une grille des options (une ligne par buff, une
+colonne par classe de la cible, comme un tableur ; D33), qu'un rouage du tableau ouvre (D32). Le
+paladin pose **la première bénédiction de sa liste de priorité qu'il connaît et qui est cochée pour
+la classe de la cible** (Rois > Sagesse > Puissance par défaut), réglable dans les options du jeu
+(Options > AddOns). **Un buff de mana ne va jamais à une classe sans mana** : pas de Sagesse ni
+d'Intelligence des Arcanes pour un guerrier ou un voleur.
 
 Chaque buff part **d'un clic ou d'une touche du joueur**. L'addon prépare la file, le joueur appuie.
 
@@ -46,8 +51,9 @@ même s'il lui manque plusieurs buffs : elle propose le prochain qui manque.
 
 - **Lancer un sort sans clic ni touche.** Le jeu l'interdit (`CastSpellByName` est protégé sur
   Forever), et ce n'est pas l'esprit de l'addon.
-- **Instances** (donjon, raid, champ de bataille) : les plaques amies y sont interdites sur
-  l'interface moderne (H2) et les noms y deviennent secrets. La liste s'y efface derrière un message.
+- **Les inconnus en instance** (donjon, raid, champ de bataille) : les plaques amies y sont
+  interdites sur l'interface moderne (H2) et les noms peuvent y devenir secrets. En instance, la
+  liste ne montre **que ton groupe ou ton raid** (D31).
 - **Recalculer pendant ton combat** : le jeu interdit de changer les boutons sécurisés en combat. Le
   tableau se masque, ou reste affiché figé avec l'option (D12).
 - **Version de groupe des buffs** (Illumination des Arcanes, Prière de robustesse, Don du fauve) en
@@ -185,14 +191,19 @@ est celle du build 70205, lue le 2026-10-04.
 
   Le gris, la touche et la perte de cible découlent des règles du jeu sur les boutons sécurisés,
   pas d'un choix du user.
-- **Instance** : un message remplace la liste ; aucun calcul.
+- **Instance** (D31) : la liste ne montre que ton groupe ou ton raid, sans les plaques. Un membre
+  dont le nom ou les buffs sont illisibles (verrou `Map` : les noms deviennent secrets en donjon)
+  n'entre pas, et le pied du tableau compte ces joueurs illisibles, pour qu'une liste vide ne passe
+  pas pour une tournée finie.
+- **Toi, dans un groupe** : tu es dans la partie du groupe (D30). Seul, tu restes dans la liste à ta
+  place d'arrivée, comme avant (D8).
 - **Joueur déjà buffé par quelqu'un d'autre**, ou avec un rang plus fort : il a le buff, il n'entre
   pas dans la liste.
 - **Il reste moins de 10 minutes au buff d'un joueur** (D11) : il rentre dans la liste, en fin de
   file. Même chose quand le buff a expiré.
 - **Un inconnu sort de portée puis revient** : il sort de la liste, puis y rentre en fin de file.
-- **Un membre du groupe hors de portée** : il reste dans la liste, à sa place, marqué « hors de
-  portée ». La touche « buff suivant » le saute. Un clic sur sa ligne laisse le jeu dire qu'il est
+- **Un membre du groupe hors de portée** : il reste dans la liste, marqué « hors de portée », dans
+  une partie à lui tout en bas (D25, D30). La touche « buff suivant » le saute. Un clic sur sa ligne laisse le jeu dire qu'il est
   trop loin.
 - **Un membre du groupe que le client ne voit pas** (autre carte, déconnecté) : on ne peut pas lire
   ses buffs (`GetUnitAuraBySpellID` rend `nil` pour une unité invisible), donc on ne sait pas s'il
@@ -217,7 +228,7 @@ est celle du build 70205, lue le 2026-10-04.
 
 ## Décisions
 
-Toutes prises par le user le 2026-10-04.
+Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
 
 - **D1 : le nom est « Serial Buffer ».** « Buffomatic » a été écarté parce qu'il est trop proche de
   Buffomat Classic, qui existe déjà sur CurseForge.
@@ -231,8 +242,9 @@ Toutes prises par le user le 2026-10-04.
 - **D6 : l'addon propose d'activer les plaques amies** (en mode « noms seuls ») à la première
   ouverture. Si tu refuses, la question ne revient pas, et une liste vide dit pourquoi.
 - **D7 : une ligne par joueur**, qui propose le prochain buff qui lui manque.
-- **D8 : l'ordre est FIFO.** Le premier joueur entré dans la liste est en tête. Ni toi ni ton
-  groupe ne passez devant.
+- **D8 : l'ordre est FIFO.** Le premier joueur entré dans la liste est en tête. ~~Ni toi ni ton
+  groupe ne passez devant~~ : le groupe passe devant depuis D30 (2026-10-05). Le FIFO tient à
+  l'intérieur de chaque partie du tableau.
 - **D9 : un joueur hors de portée n'est pas dans la liste, sauf s'il est de ton groupe ou de ton
   raid.**
 - **D10 : la liste est un tableau sur le côté de l'écran.**
@@ -305,6 +317,40 @@ Toutes prises par le user le 2026-10-04.
   les guerriers ni les voleurs, et un prêtre ne leur propose que Robustesse et Protection contre
   l'Ombre. Rappel du user : seul le **paladin** ne pose qu'une bénédiction par joueur ; un prêtre, un
   mage ou un druide posent tous leurs buffs, l'un après l'autre (D7).
+- **D30 : les membres du groupe ou du raid à buffer passent devant**, dans une partie à eux en haut
+  du tableau, distinguée des autres (demande du user, 2026-10-05 : « il faut qu'au-dessus de la
+  liste on distingue les membres du groupe/raid qui doivent être buff en priorité »). Remplace « ni
+  ton groupe ne passe devant » de D8. Le FIFO tient dans chaque partie, et la touche « buff
+  suivant » sert donc le groupe d'abord. *Conséquences dérivées, non décidées par le user* :
+  - trois parties, chacune sous un titre : **Raid** (ou **Groupe**), **Autour de toi**, puis **Hors
+    de portée** (les membres du groupe trop loin), tout en bas pour que la première ligne reste
+    quelqu'un qu'on peut buffer (D25) ;
+  - les titres n'apparaissent que si tu es groupé : seul, le tableau garde son allure d'avant ;
+  - toi, groupé, tu es dans la partie du groupe ; seul, tu restes à ta place d'arrivée (D8).
+- **D31 : l'addon traite le groupe et le raid autrement que les inconnus** : en instance (donjon,
+  raid), la liste montre ton groupe ou ton raid, au lieu de se mettre en pause. Les inconnus restent
+  une affaire d'extérieur (plaques interdites en instance). *Interprétation de l'agent* de la réponse
+  du user (2026-10-05) à « en instance, pause ou groupe seul ? » : « l'addon doit se comporter
+  différemment avec les membres de groupe/raid qu'avec les randoms ». **Jamais mesuré** : la lecture
+  des noms et des buffs sur `raidN` / `partyN` en instance (le verrou `Map` rend des noms secrets en
+  donjon), et `/targetexact` en instance. Un nom ou un buff illisible écarte le joueur (règle de
+  sûreté) et le pied du tableau compte les illisibles.
+- **D32 : un rouage sur le tableau ouvre les options** (demande du user, 2026-10-05). Pas en combat :
+  le panneau d'options du jeu ne s'ouvre pas pendant un combat.
+- **D33 : une grille buffs × classes dans les options, « comme un tableur »** (demande du user,
+  2026-10-05 : « pouvoir choisir quel buff on met sur quelle classe »). Une ligne par buff, une
+  colonne par classe de la cible ; une case cochée = ce buff se pose sur cette classe.
+  - **Paladin** : les six bénédictions (Rois, Sagesse, Puissance, Salut, Lumière, Sanctuaire ; choix
+    du user le 2026-10-05). Salut, Lumière et Sanctuaire sont **décochées partout par défaut**
+    (proposé par l'agent dans la question, retenu). Chaque cible reçoit la première bénédiction de
+    la priorité (D22) qui est connue, cochée pour sa classe, et qu'elle peut recevoir (D23, D24,
+    D27). « Une bénédiction par classe » s'obtient en ne cochant qu'elle dans la colonne. L'ordre se
+    règle toujours avec Monter / Descendre, sur la ligne de la grille.
+  - **Les cases de D23** (buff de mana × guerrier, voleur) sont **grisées, jamais cochables** :
+    D23 dit « jamais ».
+  - *Conséquence dérivée* : la case à cocher globale d'un buff (D14) disparaît au profit de la
+    grille. Un buff décoché avant la grille l'est pour toutes les classes après la mise à jour (la
+    base passe à `schemaVer` 2).
 
 ## Questions ouvertes (au user)
 
@@ -385,10 +431,31 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
 17. [test] La priorité du paladin et D23 : sans Rois, Puissance au guerrier et Sagesse au mage ; avec
     Rois, Rois pour tous ; un ordre réglé l'emporte ; une bénédiction décochée cède sa place ; un
     mage ne propose rien aux guerriers ni aux voleurs.
+19. [test] (D30) Les membres du groupe à portée passent devant les inconnus, les membres hors de
+    portée restent tout en bas, et le FIFO tient dans chaque partie. Toi, non groupé, tu gardes ta
+    place d'arrivée.
+20. [humain] (D30) En groupe ou en raid, dehors : le tableau montre la partie « Groupe » (ou
+    « Raid ») en haut, puis « Autour de toi », puis « Hors de portée ». Un clic répété sur la
+    première ligne buffe d'abord tout le groupe à portée, puis les inconnus. Seul, aucun titre.
+    Témoin connu-bon : le même tableau seul, avant de grouper.
+21. [humain] (D31) En donjon, groupé : la liste montre les membres du groupe à qui il manque un
+    buff, et un clic buffe le nommé. Si elle est vide alors qu'un membre n'a pas le buff, le pied
+    compte des illisibles. Témoin connu-bon : le même membre, buffé à la main.
+22. [humain] (D32) Un clic sur le rouage, hors combat, ouvre Options > AddOns > Serial Buffer ; en
+    combat, un message dit « pas pendant un combat ».
+23. [humain] (D33) Dans la grille, décocher Rois dans la colonne Guerrier : le tableau propose
+    aussitôt la bénédiction suivante aux guerriers, et Rois aux autres classes. Les cases Sagesse ×
+    Guerrier et Voleur sont grisées. Le réglage survit à un `/reload`.
+24. [test] (D33) Une case décochée retire ce buff à cette classe seulement ; Salut, Lumière et
+    Sanctuaire sont décochés par défaut ; une case de D23 ne se coche jamais ; un `off` d'avant la
+    grille devient décoché pour toutes les classes ; une priorité sauvée à trois bénédictions
+    reçoit les trois nouvelles à la fin.
 
 ## Contrat
 
-- **SavedVariables : des réglages seulement.** Ce sont les buffs cochés par classe (`off`), l'ordre
+- **SavedVariables : des réglages seulement.** Ce sont les cases de la grille (`classBuffs`, classe
+  de la cible → id de sort → coché ou non ; des jetons de classe et des ids, aucune donnée de joueur ;
+  il remplace `off`, migré par `schemaVer` 2), l'ordre
   des bénédictions du paladin (`priority`), l'option PvP, l'option « garder en combat », la réponse à la proposition
   des plaques et la position du tableau (son coin haut gauche). Pour le diagnostic, `seenErrors` : le
   nom et le texte des erreurs du jeu vues juste après un de nos clics. **Aucun nom de joueur, aucun
@@ -447,4 +514,6 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
      `b497d03`, déployé, pas encore revu en jeu. Le relevé de cet essai reste à écrire : le clic
      a-t-il buffé ? ;
    - (c) le combat (critères 4 et 15) ;
-   - (d) la proposition des plaques et les options (critère 6).
+   - (d) la proposition des plaques et les options (critère 6) ;
+   - (e) le groupe devant, le groupe en instance, le rouage et la grille (D30 à D33, critères 19 à
+     24). Codé le 2026-10-05 sur `feat/groupe-et-grille` (SerialBuffer et outillage, même nom).

@@ -11,14 +11,21 @@
 --   - la TOUCHE, hors du panneau : un pilote d'attribut lui retire son action en combat (D12).
 -- Un attribut sécurisé ne se pose JAMAIS en combat : Render ne fait rien tant qu'il dure.
 -- Le tableau ne lit QUE ce que SerialBuffer_Run.lua lui passe (rows, état) : jamais le client.
+-- D30 : groupé, les lignes se rangent sous trois titres (Raid ou Groupe, Autour de toi, Hors de
+-- portée) ; les lignes se replacent donc à chaque rendu, hors combat. Groupé, un titre précède
+-- toujours la première ligne : elle ne bouge pas (D25). D32 : un rouage ouvre les options.
 local _, NS = ...
 NS = NS or _G.SerialBuffer
 local L = NS.L
 
-local UI = { rows = {} }
+local UI = { rows = {}, heads = {} }
 NS.UI = UI
 
-local WIDTH, ROW_H, MAX_ROWS, PAD = 270, 18, 16, 8
+local WIDTH, ROW_H, HEAD_H, MAX_ROWS, PAD, TOP = 270, 18, 16, 16, 8, 20
+-- Le rouage (D32) : le premier de ces atlas que le client connaît (une mention dans la source
+-- Blizzard ne prouve pas qu'il existe sur Forever), sinon une texture de fichier.
+local GEAR_ATLASES = { "questlog-icon-setting", "OptionsIcon-Brown", "GM-icon-settings" }
+local GEAR_FILE = "Interface\\Buttons\\UI-OptionsButton"
 local BACKDROP = {
     bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
     edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -67,10 +74,9 @@ local function setMacro(b, text, r)
     b.level = r and r.level
 end
 
-local function buildRow(panel, i)
+local function buildRow(panel)
     local row = secureMacroButton(nil, panel)
     row:SetSize(WIDTH - 2 * PAD, ROW_H)
-    row:SetPoint("TOPLEFT", panel, "TOPLEFT", PAD, -(PAD + 20 + (i - 1) * ROW_H))
     local hl = row:CreateTexture(nil, "HIGHLIGHT")
     hl:SetAllPoints()
     hl:SetColorTexture(1, 1, 1, 0.12)
@@ -85,6 +91,36 @@ local function buildRow(panel, i)
     row.note:SetJustifyH("RIGHT")
     row:Hide()
     return row
+end
+
+local function gearAtlas()
+    for _, a in ipairs(GEAR_ATLASES) do
+        local ok, info = pcall(C_Texture.GetAtlasInfo, a)
+        if ok and info then return a end
+    end
+    return nil
+end
+
+-- D32 : le rouage. Un bouton ordinaire (pas sécurisé) : Options:Open refuse lui-même en combat.
+local function gearButton(panel)
+    local b = CreateFrame("Button", nil, panel)
+    b:SetSize(16, 16)
+    b:SetPoint("TOPRIGHT", -PAD + 2, -PAD + 1)
+    local atlas = C_Texture and gearAtlas()
+    for _, layer in ipairs({ "ARTWORK", "HIGHLIGHT" }) do
+        local t = b:CreateTexture(nil, layer)
+        t:SetAllPoints()
+        if atlas then t:SetAtlas(atlas) else t:SetTexture(GEAR_FILE) end
+        if layer == "HIGHLIGHT" then t:SetBlendMode("ADD"); t:SetAlpha(0.4) end
+    end
+    b:SetScript("OnClick", function() NS.Options:Open() end)
+    b:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+        GameTooltip:SetText(L["Options : quels buffs sur quelles classes"])
+        GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    return b
 end
 
 function UI:Build()
@@ -108,12 +144,19 @@ function UI:Build()
     panel.title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     panel.title:SetPoint("TOPLEFT", PAD, -PAD)
     panel.title:SetText("Serial Buffer")
+    panel.gear = gearButton(panel)
     panel.count = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    panel.count:SetPoint("TOPRIGHT", -PAD, -PAD - 2)
+    panel.count:SetPoint("RIGHT", panel.gear, "LEFT", -4, 0)
     panel.msg = panel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     panel.msg:SetWidth(WIDTH - 2 * PAD)
     panel.msg:SetJustifyH("LEFT")
-    for i = 1, MAX_ROWS do self.rows[i] = buildRow(panel, i) end
+    for i = 1, MAX_ROWS do self.rows[i] = buildRow(panel) end
+    for i = 1, #NS.Queue.SECTIONS do
+        local head = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        head:SetJustifyH("LEFT")
+        head:Hide()
+        self.heads[i] = head
+    end
     self.driver, self.panel = driver, panel
     self:BuildNext()
     panel:SetShown(NS.db.shown)
@@ -158,36 +201,82 @@ end
 
 -- Clés écrites en toutes lettres : la porte de localisation ne voit pas un L[variable].
 local function stateMessage(state)
-    if state == "instance" then return L["En instance : la tournée est en pause."] end
+    if state == "instance" then return L["En instance : seul ton groupe est listé."] end
     if state == "nobuffs" then return L["Ta classe n'a pas de buff à poser sur les autres."] end
     if state == "noplates" then return L["Plaques des joueurs amis coupées : seuls toi et ton groupe sont vus."] end
     return nil
 end
 
--- Le message du pied : l'état d'abord, sinon pourquoi la liste est vide (spec, « Liste vide »).
-local function footer(rows, state, around)
-    local m = stateMessage(state)
-    if m then return m end
-    if #rows > MAX_ROWS then return string.format(L["+%d autres"], #rows - MAX_ROWS) end
-    if #rows > 0 then return nil end
-    if around == 0 then return L["Personne à buffer autour de toi."] end
-    return L["Tournée finie !"]
+local function sectionTitle(section, kind)
+    if section == "group" then return kind == "raid" and L["Raid"] or L["Groupe"] end
+    if section == "around" then return L["Autour de toi"] end
+    return L["Hors de portée"]
 end
 
-function UI:Render(rows, state, around)
+-- Le message du pied : l'état, le reste de la liste, les illisibles (D31), sinon pourquoi la liste est
+-- vide (spec, « Liste vide »). Une ligne par message.
+local function footer(rows, info)
+    local lines = {}
+    local m = stateMessage(info.state)
+    if m then lines[#lines + 1] = m end
+    if info.state ~= "nobuffs" then
+        if #rows > MAX_ROWS then lines[#lines + 1] = string.format(L["+%d autres"], #rows - MAX_ROWS) end
+        local unread = info.unread or 0
+        if unread > 0 then
+            lines[#lines + 1] = string.format(L["%d illisible(s) : le jeu cache leur nom ou leurs buffs."], unread)
+        elseif #rows == 0 then
+            lines[#lines + 1] = (info.around or 0) == 0 and L["Personne à buffer autour de toi."] or L["Tournée finie !"]
+        end
+    end
+    if #lines == 0 then return nil end
+    return table.concat(lines, "\n")
+end
+
+-- Place les titres de partie (groupé seulement, D30) et les lignes ; rend le y libre sous la dernière.
+-- Une ligne n'est replacée que si sa place change (attribut sécurisé ou pas, hors combat : Render).
+function UI:Layout(rows, kind)
+    local counts = {}
+    for _, r in ipairs(rows) do counts[r.section] = (counts[r.section] or 0) + 1 end
+    local y, used, last = PAD + TOP, 0, nil
+    for i = 1, MAX_ROWS do
+        local row, r = self.rows[i], rows[i]
+        if r then
+            if kind and r.section ~= last then
+                used, last = used + 1, r.section
+                local head = self.heads[used]
+                head:ClearAllPoints()
+                head:SetPoint("TOPLEFT", self.panel, "TOPLEFT", PAD, -y)
+                head:SetText(string.format("%s (%d)", sectionTitle(r.section, kind), counts[r.section]))
+                head:Show()
+                y = y + HEAD_H
+            end
+            if row.y ~= y then
+                row:ClearAllPoints()
+                row:SetPoint("TOPLEFT", self.panel, "TOPLEFT", PAD, -y)
+                row.y = y
+            end
+            fillRow(row, r)
+            y = y + ROW_H
+        else
+            row:Hide()
+        end
+    end
+    for j = used + 1, #self.heads do self.heads[j]:Hide() end
+    return y
+end
+
+-- info : state ("ok" | "noplates" | "instance" | "nobuffs"), around, unread, group ("raid" | "party" | nil).
+function UI:Render(rows, info)
     if not self.panel or InCombatLockdown() then return end
     if not self.panel.anchored then anchorTop(self.panel) end
     local nextRow = NS.Cast.NextRow(rows)
     setMacro(self.next, nextRow and NS.Cast.MacroFor(nextRow), nextRow)
-    local shown = math.min(#rows, MAX_ROWS)
-    for i = 1, MAX_ROWS do
-        if i <= shown then fillRow(self.rows[i], rows[i]) else self.rows[i]:Hide() end
-    end
+    local y = self:Layout(rows, info.group)
     self.panel.count:SetText(string.format(L["%d à buffer"], #rows))
-    local msg = footer(rows, state, around)
+    local msg = footer(rows, info)
     self.panel.msg:ClearAllPoints()
-    self.panel.msg:SetPoint("TOPLEFT", PAD, -(PAD + 22 + shown * ROW_H))
+    self.panel.msg:SetPoint("TOPLEFT", PAD, -(y + 2))
     self.panel.msg:SetText(msg or "")
     local msgH = msg and (self.panel.msg:GetStringHeight() + 4) or 0
-    self.panel:SetHeight(PAD * 2 + 22 + shown * ROW_H + msgH)
+    self.panel:SetHeight(y + 2 + PAD + msgH)
 end

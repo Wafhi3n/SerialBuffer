@@ -58,17 +58,28 @@ local function add(out, unit, group)
     if ok and s then out[#out + 1] = s end
 end
 
--- Toi, ton groupe ou ton raid, puis les plaques. La file dédoublonne par GUID : un membre du groupe
--- vu aussi par sa plaque garde son jeton de groupe, arrivé le premier.
-function U:Collect()
+-- "raid", "party", ou nil si tu es seul : le titre de la partie du groupe dans le tableau (D30).
+function U:GroupKind()
+    if IsInRaid() then return "raid" end
+    if IsInGroup() then return "party" end
+    return nil
+end
+
+-- Toi, ton groupe ou ton raid, puis les plaques (withPlates : jamais en instance, D31 ; elles y sont
+-- interdites). La file dédoublonne par GUID : un membre du groupe vu aussi par sa plaque garde son
+-- jeton de groupe, arrivé le premier ; toi, ton « raidN » est écarté par ton « player ».
+-- Toi : membre du groupe seulement si tu es groupé (D30) ; seul, tu gardes ta place d'arrivée (D8).
+function U:Collect(withPlates)
     local out = {}
-    add(out, "player", true)
+    add(out, "player", self:GroupKind() ~= nil)
     if IsInRaid() then
         for i = 1, GetNumGroupMembers() do add(out, "raid" .. i, true) end
     else
         for i = 1, GetNumSubgroupMembers() do add(out, "party" .. i, true) end
     end
-    for unit in pairs(self.plates) do add(out, unit, false) end
+    if withPlates then
+        for unit in pairs(self.plates) do add(out, unit, false) end
+    end
     return out
 end
 
@@ -113,8 +124,8 @@ function U.probe.range(unit, buffName)
     return r
 end
 
--- "instance" : la liste se met en pause (plaques interdites, noms secrets). "noplates" : les plaques
--- des joueurs amis sont coupées, seuls toi et ton groupe sont vus. "ok" sinon.
+-- "instance" : seuls toi et ton groupe ou ton raid (D31 ; plaques interdites, noms parfois secrets).
+-- "noplates" : les plaques des joueurs amis sont coupées, seuls toi et ton groupe sont vus. "ok" sinon.
 function U:State()
     local inside = IsInInstance()
     if inside then return "instance" end
