@@ -126,7 +126,7 @@ Toutes prises par le user le 2026-10-05, en réponse aux questions Q1 à Q5 du b
 5. [humain] Une séance en donjon avec coordination ne laisse ni erreur Lua ni `ADDON_ACTION_BLOCKED`,
    y compris pendant un combat de boss.
 
-## Palier 1 : annoncer et afficher (2026-10-05)
+## Palier 1 : annoncer et afficher (2026-10-05) — vu en jeu à 13:08 (registre)
 
 *Choix de l'agent pour le palier 1, le user ayant dit « tu peux commencer » ; à revoir s'il le
 souhaite.* Rien de ce palier ne change ce que ton tableau propose : il annonce et il montre.
