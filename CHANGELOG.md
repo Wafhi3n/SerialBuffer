@@ -1,5 +1,23 @@
 # Changelog - Serial Buffer
 
+## v0.3.0-beta - 2026-10-05
+
+Lines now show how long the buff they'd refresh has left ("8 min"). In combat that time keeps
+counting down from what was read before the pull, and the line says "expired" when the buff drops,
+so you can put it back in the middle of a fight. Party and raid members who are fighting stay on
+the list (strangers in combat still don't), which means the tank has a line when you pull.
+
+Serial Buffers in the same group now talk to each other. Each one tells the group what it casts on
+each class, and the options show it under the grid, in a new "Group / raid: who casts what" part:
+your own Group / raid row, then one row per other Serial Buffer user in the group. /sbuff group
+lists them in the chat. Nothing changes yet in what your panel offers; splitting blessings between
+paladins comes next.
+
+These messages only go to your party or raid, several clicks make a single message, and they wait
+if the game blocks addon messages during a boss fight.
+
+This is a beta: the countdown in combat hasn't been tried in game yet.
+
 ## v0.2.0 - 2026-10-05
 
 The 0.2.0 beta, tried in a dungeon and in combat, plus two fixes for low-level players.

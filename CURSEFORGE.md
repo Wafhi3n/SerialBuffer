@@ -45,13 +45,18 @@ flagged for PvP are hidden by default, since buffing them flags you too (/sbuff 
 You'll need friendly player nameplates turned on (Options, Nameplates): that's how the addon sees
 the people around you. In dungeons and raids the game blocks friendly nameplates, so only your
 group is listed there. In combat the panel stays up but freezes: you can still click your group's
-lines to rebuff them, and it refreshes when the fight ends.
+lines to rebuff them, and it refreshes when the fight ends. Each line shows how long its buff has
+left ("8 min"), and that keeps counting down during a fight until it says "expired".
+
+If other people in your group run Serial Buffer too, you'll see what they cast on each class, under
+the grid in the options ("Group / raid: who casts what"), and /sbuff group lists them in the chat.
 
 Clicking a stranger's line targets them, and they stay targeted afterwards. Clicking someone in
 your group leaves your target alone.
 
 Commands: /sbuff shows or hides the panel, /sbuff options opens the settings, /sbuff pvp toggles
-PvP-flagged players.
+PvP-flagged players, /sbuff group lists the other Serial Buffers in your group.
 
-Nothing goes over the network. Built for WoW: Forever (Camelot). English, French, German and
-Spanish.
+The only thing that goes over the network is what you cast on each class, sent to your own party
+or raid as addon messages. Nobody gets a whisper or a chat line. Built for WoW: Forever (Camelot).
+English, French, German and Spanish.
