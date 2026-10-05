@@ -70,7 +70,8 @@ même s'il lui manque plusieurs buffs : elle propose le prochain qui manque.
 - **Sorts qui changent les dégâts ou les soins reçus** (Amplifier la magie, Atténuer la magie) : on ne
   les impose pas à un inconnu.
 - **Coordination entre buffeurs** (qui buffe qui, répartition des bénédictions entre paladins) :
-  aucun message réseau en v1.
+  aucun message réseau en v1. *Idée du user le 2026-10-05 pour la suite : spec à part,
+  `coordination.md` (brouillon).*
 - **Aucun message aux joueurs buffés** (chuchotement, /dire) : c'est du spam.
 - **Rien du voisinage n'est sauvegardé** : ni nom, ni GUID. La liste vit le temps de la session.
 - **Classes sans buff long à poser sur un inconnu** (chaman, chasseur, démoniste, guerrier,
