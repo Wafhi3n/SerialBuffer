@@ -44,7 +44,8 @@ function R:Refresh()
     end
     local state = NS.Units:State()
     local rows, around, unread = NS.Queue:Build(NS.Units:Collect(state ~= "instance"), wantedFor,
-        NS.Units.probe, { showPvP = NS.db.showPvP, now = GetTime(), refreshBelow = (NS.db.refreshMin or 45) * 60 })
+        NS.Units.probe, { showPvP = NS.db.showPvP, now = GetTime(), refreshBelow = (NS.db.refreshMin or 45) * 60,
+                          tooLow = NS.db.tooLow })
     NS.UI:Render(rows, { state = state, around = around, unread = unread, group = NS.Units:GroupKind() })
 end
 
@@ -86,7 +87,10 @@ function R:OnError(errorType, message)
         NS.db.seenErrors[name] = msg or true
     end
     local kind, click = NS.Cast:OnError(name, msg, GetTime())
-    if kind == "lowlevel" then NS.Queue:TooLow(click.guid, click.buff, click.level)
+    if kind == "lowlevel" then
+        NS.Queue:TooLow(click.guid, click.buff, click.level)          -- D24 : ce joueur, cette séance
+        local e = NS.Buffs:ByName(click.buff)
+        NS.Queue.LearnLow(NS.db, e and e.rank, click.level)           -- D38 : ce rang, pour tous, gardé
     elseif kind == "stronger" then NS.Queue:Stronger(click.guid, click.buff, GetTime())
     elseif kind == "target" then NS.Queue:Requeue(click.guid) end
     if kind then refreshNow() end
@@ -100,6 +104,8 @@ function R:OnCast(spellID)
     local name = C_Spell.GetSpellName and C_Spell.GetSpellName(spellID)
     if name == click.buff then
         NS.Queue:Cast(click.guid, click.buff, GetTime())
+        local e = NS.Buffs:ByName(click.buff)
+        NS.Queue.LearnOk(NS.db, e and e.rank, click.level)            -- D38 : un seuil faux se corrige
         if InCombatLockdown() then NS.UI:MarkDone(click.guid) end   -- D36 : la ligne se grise
     end
 end
