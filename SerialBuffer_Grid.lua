@@ -213,14 +213,100 @@ function G:Build(parent, y, caster)
     y = y - HEAD_H
     local fmt = caster == "PALADIN" and L["Choix %d"] or L["Buff %d"]
     for r = 1, B:Ranks(caster) do y = self:BuildRow(parent, y, "rank", r, string.format(fmt, r)) end
-    y = self:BuildRow(parent, y - 6, "group", nil, L["Groupe / raid"])
     for i, cl in ipairs(B.CLASSES) do undoButton(parent, CLS_X + (i - 1) * COL_W, y - 2, cl) end
     local resetAll = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
     resetAll:SetSize(130, 22)
     resetAll:SetPoint("TOPLEFT", PAD, y)
     resetAll:SetText(L["Tout par défaut"])
     resetAll:SetScript("OnClick", function() G:Reset(nil) end)
-    return y - 28
+    -- Coordination C3 : la ligne « Groupe / raid » descend dans sa partie, avec celles des autres.
+    local sub = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    sub:SetPoint("TOPLEFT", PAD, y - 34)
+    sub:SetText(L["Groupe / raid : qui pose quoi"])
+    y = self:BuildRow(parent, y - 56, "group", nil, L["Toi"])
+    return self:BuildPeers(parent, y)
+end
+
+-- ---------------------------------------------------------------- les autres buffeurs du groupe
+
+-- Coordination, palier 1 (C3) : une ligne par autre Serial Buffer du groupe, son nom et, dans les
+-- colonnes des classes, ce qu'il y pose (lecture seule ; plusieurs buffs : le premier et « +N »).
+G.MAX_PEERS = 6
+local PEER_H, PEER_ICON = 24, 20
+
+local function peerCell(parent, x, y)
+    local f = CreateFrame("Frame", nil, parent)
+    f:SetSize(PEER_ICON, PEER_ICON)
+    f:SetPoint("TOPLEFT", x + (COL_W - PEER_ICON) / 2, y)
+    f.icon = f:CreateTexture(nil, "ARTWORK")
+    f.icon:SetAllPoints()
+    f.more = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    f.more:SetPoint("BOTTOMRIGHT", 4, -2)
+    f:EnableMouse(true)
+    f:SetScript("OnEnter", function(self)
+        if not (self.ids and #self.ids > 0) then return end
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        for i, id in ipairs(self.ids) do
+            local n = NS.Buffs.client.name(id) or tostring(id)
+            if i == 1 then GameTooltip:SetText(n) else GameTooltip:AddLine(n, 1, 1, 1) end
+        end
+        GameTooltip:Show()
+    end)
+    f:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    f:Hide()
+    return f
+end
+
+function G:BuildPeers(parent, y)
+    self.peerRows, self.peerY0 = {}, y
+    for i = 1, self.MAX_PEERS do
+        local row = { label = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"), cells = {} }
+        row.label:SetPoint("TOPLEFT", PAD, y - 5)
+        row.label:SetWidth(CLS_X - PAD - 6)
+        row.label:SetJustifyH("LEFT")
+        row.label:SetWordWrap(false)
+        for c = 1, #NS.Buffs.CLASSES do row.cells[c] = peerCell(parent, CLS_X + (c - 1) * COL_W, y) end
+        self.peerRows[i] = row
+        y = y - PEER_H
+    end
+    self.peerYEnd = y
+    self.peerMsg = parent:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    self.peerMsg:SetJustifyH("LEFT")
+    return y - 18
+end
+
+local function paintPeer(row, e)
+    row.label:SetText(e and e.name or "")
+    if e then row.label:SetTextColor(classRGB(e.p.caster)) end
+    for c, pc in ipairs(row.cells) do
+        local ids = e and e.p.plan[NS.Buffs.CLASSES[c]]
+        pc.ids = ids
+        if ids and #ids > 0 then
+            pc.icon:SetTexture(NS.Buffs.client.icon(ids[1]))
+            pc.more:SetText(#ids > 1 and ("+" .. (#ids - 1)) or "")
+            pc:Show()
+        else
+            pc:Hide()
+        end
+    end
+end
+
+-- Repeint les lignes des autres (à l'ouverture, à chaque annonce reçue, quand le groupe change).
+function G:RefreshPeers()
+    if not self.peerRows then return end
+    local list = {}
+    for name, p in pairs(NS.Comm.peers) do list[#list + 1] = { name = name, p = p } end
+    table.sort(list, function(a, b) return a.name < b.name end)
+    for i, row in ipairs(self.peerRows) do paintPeer(row, list[i]) end
+    local msg, y = "", self.peerYEnd
+    if #list == 0 then
+        msg, y = NS.Comm.grouped and L["Aucun autre Serial Buffer dans ton groupe."] or L["Pas de groupe."], self.peerY0
+    elseif #list > #self.peerRows then
+        msg = string.format(L["+%d autres"], #list - #self.peerRows)
+    end
+    self.peerMsg:ClearAllPoints()
+    self.peerMsg:SetPoint("TOPLEFT", PAD, y - 4)
+    self.peerMsg:SetText(msg)
 end
 
 -- Remet chaque case à l'état de la base (à l'ouverture, et après chaque geste).
@@ -234,6 +320,13 @@ function G:Refresh()
             paint(b, b.kind == "group" and B:GroupPick(c, b.class, db) or B:Order(c, b.class, db)[b.rank])
         end
     end
+    self:RefreshPeers()
+end
+
+-- Après chaque geste dans la grille : repeindre, et annoncer au groupe (regroupé, palier 1).
+function G:Changed()
+    self:Refresh()
+    NS.Comm:Announce()
 end
 
 function G:Step(b, delta)
@@ -247,7 +340,7 @@ function G:Step(b, delta)
     else
         self.all = B:StepColumn(c, nil, self.all, b.rank, delta)
     end
-    self:Refresh()
+    self:Changed()
     if GameTooltip:IsOwned(b) then cellTooltip(b) end
 end
 
@@ -255,7 +348,7 @@ function G:Fill(kind, rank)
     local B = NS.Buffs
     if kind == "group" then B:FillGroup(self.caster, self.allGroup, NS.db)
     else B:Fill(self.caster, rank, self.all[rank] or 0, NS.db) end
-    self:Refresh()
+    self:Changed()
 end
 
 -- class = nil : « Tout par défaut », la colonne « Toutes » comprise.
@@ -266,5 +359,5 @@ function G:Reset(class)
         B:ResetAll(self.caster, NS.db)
         self.all, self.allGroup = B:DefaultOrder(self.caster, nil), 0
     end
-    self:Refresh()
+    self:Changed()
 end

@@ -29,6 +29,7 @@ function R:ResolveBuffs()
         NS:Printf(L["Aucun de tes buffs n'est reconnu (ids : %s). Préviens l'auteur de l'addon."],
             table.concat(ids, ", "))
     end
+    if NS.Comm.frame then NS.Comm:Announce() end   -- coordination : ce que tu connais a pu changer
 end
 
 local function wantedFor(class, inGroup) return NS.Buffs:WantedFor(class, NS.db, inGroup) end
@@ -120,7 +121,9 @@ function R:Start()
     end
     self:ResolveBuffs()
     -- Diagnostic de la session (D27 non mesuré) : relu dans les SavedVariables après un /reload.
-    NS.db.diag = { aura = NS.Units.stats, queue = NS.Queue.stats, since = date("%Y-%m-%d %H:%M") }
+    -- comm : les messages de la coordination (envoyés, reçus, écartés), des comptes, aucun nom.
+    NS.db.diag = { aura = NS.Units.stats, queue = NS.Queue.stats, comm = NS.Comm.stats,
+                   since = date("%Y-%m-%d %H:%M") }
     NS.UI:Build()
     pcall(NS.Options.Register, NS.Options)   -- l'API Settings jamais éprouvée ici : elle ne casse rien
     NS.Units:SeedPlates()
@@ -133,7 +136,10 @@ function R:Start()
     f:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
     f:SetScript("OnEvent", onEvent)
     self.frame = f
+    NS.Comm:Start()   -- coordination, palier 1 : annoncer et recevoir dans le groupe
+    -- Hors combat : recalcul. En combat (D36, tableau figé) : seul le temps restant descend (D39).
     self.ticker = C_Timer.NewTicker(TICK, function()
-        if NS.UI:IsVisible() then R:Refresh() end
+        if not NS.UI:IsVisible() then return end
+        if InCombatLockdown() then NS.UI:CombatTick(GetTime()) else R:Refresh() end
     end)
 end

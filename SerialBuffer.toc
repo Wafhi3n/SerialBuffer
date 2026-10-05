@@ -28,4 +28,5 @@ SerialBuffer_Cast.lua
 SerialBuffer_UI.lua
 SerialBuffer_Grid.lua
 SerialBuffer_Options.lua
+SerialBuffer_Comm.lua
 SerialBuffer_Run.lua

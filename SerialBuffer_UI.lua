@@ -187,9 +187,25 @@ function UI:Toggle()
 end
 
 -- Hors combat seulement (Render). Remet aussi ce que le combat a changé (D36 : gris, note).
+-- D39 : « 8 min », « 40 s », ou « expiré » à zéro.
+local function leftText(sec)
+    if sec <= 0 then return L["expiré"] end
+    if sec >= 60 then return string.format(L["%d min"], math.floor(sec / 60)) end
+    return string.format(L["%d s"], math.floor(sec))
+end
+
+-- La note : PvP, hors de portée, le buff, puis le temps restant s'il y en a un (D39).
+local function setNote(row, sec)
+    local text = row.baseNote
+    if sec then text = text .. " · " .. leftText(sec) end
+    row.note:SetText(text)
+end
+
+-- Hors combat seulement (Render). Remet aussi ce que le combat a changé (D36 : gris, note).
 local function fillRow(row, r)
     setMacro(row, NS.Cast.MacroFor(r), r)
     row.combatOK, row.isSelf = NS.Cast.CombatClickable(r), r.self
+    row.expiresAt, row.done, row.stale = r.expiresAt, false, false
     row.icon:SetTexture(r.buff.icon)
     row.icon:SetDesaturated(false)
     row.name:SetText(r.name)
@@ -198,10 +214,23 @@ local function fillRow(row, r)
     if r.pvp then notes[#notes + 1] = L["PvP"] end
     if r.outOfRange then notes[#notes + 1] = L["hors de portée"] end
     notes[#notes + 1] = r.buff.name
-    row.note:SetText(table.concat(notes, " · "))
+    row.baseNote = table.concat(notes, " · ")
+    setNote(row, r.left)
     row.note:SetTextColor(unpack(row.noteRGB))
     row:SetAlpha(r.outOfRange and 0.5 or 1)
     row:Show()
+end
+
+-- D39 : en combat, le temps restant des lignes cliquables descend (depuis l'heure de fin relevée
+-- avant le pull : rien n'est relu) ; à zéro, « expiré » en orange. Régions enfants seulement.
+function UI:CombatTick(now)
+    for _, row in ipairs(self.rows) do
+        if row:IsShown() and row.combatOK and not row.done and not row.stale and row.expiresAt then
+            local sec = NS.Queue.Remaining(row, now)
+            setNote(row, sec)
+            if sec <= 0 then row.note:SetTextColor(1, 0.6, 0.2) end
+        end
+    end
 end
 
 -- D36 : une ligne éteinte ou faite, en combat. Régions enfants seulement : le bouton est protégé.
@@ -224,7 +253,10 @@ end
 -- Notre sort sur ce joueur a réussi pendant le combat : sa ligne se grise, sans sortir du tableau.
 function UI:MarkDone(guid)
     for _, row in ipairs(self.rows) do
-        if row:IsShown() and row.guid == guid then dim(row, L["buffé"], 0.4, 0.8, 0.4) end
+        if row:IsShown() and row.guid == guid then
+            row.done = true                                  -- D39 : plus de décompte
+            dim(row, L["buffé"], 0.4, 0.8, 0.4)
+        end
     end
 end
 
@@ -232,6 +264,7 @@ end
 function UI:MarkStale()
     for _, row in ipairs(self.rows) do
         if row:IsShown() and row.combatOK and not row.isSelf then
+            row.stale = true                                 -- D39 : le décompte ne l'écrase pas
             row.note:SetText(L["groupe changé"])
             row.note:SetTextColor(1, 0.4, 0.3)
         end

@@ -113,10 +113,10 @@ local function nextMissing(snap, wanted, probe, refreshBelow, low)
                 if v == "next" then st.next = st.next + 1
                 elseif v == "stop" and mine == nil then st.stopUnknown = st.stopUnknown + 1
                 elseif v == "stop" then st.stopMine = st.stopMine + 1 end
-                if v == "take" then return w end
+                if v == "take" then return w, left end
                 if v == "stop" then return nil end
             elseif needs(left, refreshBelow) then   -- D28 : seuil réglable hors paladin
-                return w
+                return w, left
             elseif wanted.single and i == 1 then     -- D37 : le choix unique est là
                 return nil
             end
@@ -148,7 +148,7 @@ local function admissible(snap, opts)
     if not snap.player or not snap.assist or snap.dead then return false end
     if not snap.name then return false, "unread" end
     if snap.self then return true end
-    if snap.combat then return false end                       -- D16
+    if snap.combat and not snap.group then return false end    -- D16, les inconnus seulement (D39)
     if snap.pvp and not opts.showPvP then return false end     -- D5
     if snap.group and not snap.visible then return false end   -- D18
     return true
@@ -160,8 +160,11 @@ function Q:Eligible(snap, wantedFor, probe, opts)
     opts = opts or {}
     local ok, why = admissible(snap, opts)
     if not ok then return nil, why end
-    local buff, unread = nextMissing(snap, wantedFor(snap.class, snap.group), probe, opts.refreshBelow, opts.tooLow)
-    if not buff then return nil, unread end
+    local buff, info = nextMissing(snap, wantedFor(snap.class, snap.group), probe, opts.refreshBelow, opts.tooLow)
+    if not buff then return nil, info end   -- info : "unread", ou rien
+    -- D39 : le temps qui reste au buff que la ligne refait (nil s'il est absent), et son heure de fin.
+    local left = (type(info) == "number" and info ~= math.huge) and info or nil
+    local now = opts.now or self.now
     local outOfRange = false
     if not snap.self then
         local r = probe.range(snap.unit, buff.name)
@@ -173,6 +176,7 @@ function Q:Eligible(snap, wantedFor, probe, opts)
     local section = outOfRange and "far" or (snap.group and "group" or "around")   -- D30
     return { guid = snap.guid, name = snap.name, class = snap.class, unit = snap.unit, level = snap.level,
              buff = buff, group = snap.group, self = snap.self, outOfRange = outOfRange, section = section,
+             left = left, expiresAt = left and (now + left) or nil,
              pvp = (snap.pvp and not snap.self) or false }
 end
 
@@ -213,6 +217,13 @@ function Q:Build(snaps, wantedFor, probe, opts)
         return a.seq < b.seq
     end)
     return rows, around, unread
+end
+
+-- D39 : le temps qui reste au buff d'une ligne à l'instant now (0 passé l'heure de fin), ou nil si
+-- la ligne n'en a pas (buff absent). En combat, rien n'est relu : on décompte depuis expiresAt.
+function Q.Remaining(row, now)
+    if not (row and row.expiresAt) then return nil end
+    return math.max(0, row.expiresAt - now)
 end
 
 -- Palier (b) : un sort raté renvoie le joueur en fin de file, pour ne pas bloquer « buff suivant ».
