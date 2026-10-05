@@ -1,7 +1,7 @@
 # Serial Buffer : la coordination entre buffeurs du groupe
 
-> État : **brouillon**, idée du user le 2026-10-05 (après la v0.2.0). Rien n'est décidé au-delà de
-> ses mots, cités ci-dessous ; les questions ouvertes attendent ses réponses. Aucune ligne de code.
+> État : **brouillon, questions tranchées le 2026-10-05 (C1 à C5)**, idée du user le même jour
+> (après la v0.2.0). Aucune ligne de code ; H1 (le message d'addon dans le groupe) à prouver d'abord.
 > Spec mère : `serial-buffer.md` (D1 à D39), dont elle lève l'exclusion « Coordination entre
 > buffeurs : aucun message réseau en v1 ».
 
@@ -25,13 +25,17 @@ Les mots du user (2026-10-05) :
 - « on peut rajouter un toggle pour faire en sorte qu'un autre joueur puisse décider de la
   bénédiction / du buff que l'on pose ».
 
-Dit autrement, à confirmer :
-1. Chaque membre du groupe qui a Serial Buffer annonce aux autres sa grille pour le groupe (ce
-   qu'il compte poser, sur quelle classe).
-2. Dans les options, on voit la grille des autres buffeurs du groupe à côté de la sienne.
-3. Une option (désactivée par défaut) laisse un autre joueur du groupe régler ta ligne « Groupe /
-   raid » à ta place ; ses choix arrivent par le réseau et s'appliquent chez toi.
-4. Chaque buff part toujours d'un clic ou d'une touche de **toi** (D2) : la coordination change ce
+Dit autrement, avec les décisions C1 à C5 :
+1. Chaque membre du groupe qui a Serial Buffer annonce aux autres ce qu'il compte poser au groupe,
+   sur quelle classe : sa ligne « Groupe / raid ».
+2. Dans les options, **sous la grille**, une partie « Groupe / raid » montre une ligne par buffeur
+   du groupe : la tienne (ta ligne « Groupe / raid », déplacée là) et celle des autres (C3).
+3. Une option à trois positions dit **qui peut régler ta ligne à ta place** : personne, le chef
+   (chef de groupe ou de raid et ses assistants), ou n'importe qui du groupe (C1). Ses choix
+   arrivent par le réseau et s'appliquent chez toi.
+4. Deux paladins sur la même bénédiction pour la même classe : le premier annoncé la garde ; les
+   paladins en trop comblent les bénédictions qui manquent (C4).
+5. Chaque buff part toujours d'un clic ou d'une touche de **toi** (D2) : la coordination change ce
    que ta liste propose, jamais qui appuie.
 
 ## Ce qu'on NE fait PAS (proposé, à valider)
@@ -41,8 +45,10 @@ Dit autrement, à confirmer :
   (« pas de spam des joueurs », règle de l'écosystème).
 - **Communiquer hors du groupe** : seuls ton groupe ou ton raid reçoivent les messages ; rien avec
   les inconnus d'Ironforge.
-- **Laisser n'importe qui décider par défaut** : sans l'option, personne ne change tes buffs.
-- **Parler le protocole d'un autre addon** (PallyPower et cie) : pas en première version (Q5).
+- **Laisser quelqu'un décider par défaut** : l'option est sur « personne » tant que tu ne la
+  changes pas (conséquence dérivée de C1, à confirmer).
+- **Parler le protocole d'un autre addon** (PallyPower et cie) : on reste entre utilisateurs de
+  Serial Buffer (C5).
 
 ## Ce qui n'est pas prouvé
 
@@ -57,7 +63,10 @@ Dit autrement, à confirmer :
 
 ## Cas particuliers (à trancher)
 
-- Deux paladins choisissent la même bénédiction pour la même classe : qui cède ? (Q4)
+- Deux paladins choisissent la même bénédiction pour la même classe : le premier annoncé la garde,
+  l'autre comble ce qui manque (C4). Reste à dire ce que « premier » veut dire quand deux annonces
+  se croisent (proposition : l'ordre d'annonce vu par le chef, sinon l'ordre alphabétique des noms,
+  pour que tous les clients tranchent pareil).
 - Le joueur qui décide pour toi quitte le groupe, ou se déconnecte : tes choix reviennent-ils à ta
   grille ?
 - Deux joueurs veulent décider pour toi en même temps.
@@ -68,34 +77,52 @@ Dit autrement, à confirmer :
 - Rien de ce qui arrive par le réseau n'est sauvegardé (règle « aucune donnée de joueur ») ; à la
   reconnexion, chacun se réannonce.
 
-## Questions ouvertes (au user)
+## Décisions
 
-- **Q1 : qui peut décider pour toi**, quand l'option est active ? N'importe quel membre du groupe,
-  le chef de groupe ou de raid (et ses assistants), ou un joueur que tu désignes par son nom ?
-- **Q2 : qu'est-ce qui se coordonne ?** Seulement les bénédictions des paladins, ou aussi les buffs
-  des prêtres, mages et druides (deux prêtres qui se partagent le raid) ?
-- **Q3 : où voit-on les autres ?** Dans la grille des options (une ligne par buffeur), dans le
-  tableau (« Rois : Paladin2 »), ou les deux ?
-- **Q4 : conflit** : deux paladins sur la même bénédiction pour la même classe. Le premier annoncé
-  garde, l'autre passe à son choix suivant ? Ou on laisse faire et on l'affiche seulement ?
-- **Q5 : PallyPower** : faut-il un jour lire ses messages, pour coordonner avec des paladins qui ne
-  l'ont pas, ou rester entre utilisateurs de Serial Buffer ?
+Toutes prises par le user le 2026-10-05, en réponse aux questions Q1 à Q5 du brouillon.
+
+- **C1 : qui peut régler ta ligne à ta place, une option à trois positions** : « ceux qui ont la
+  promote / raid leader » (le chef de groupe ou de raid et ses assistants), « n'importe qui », ou
+  « personne ». *Conséquence dérivée : « personne » par défaut.*
+- **C2 : la coordination vise d'abord les classes qui ont plusieurs buffs UNIQUES à se partager**,
+  c'est-à-dire les paladins (une bénédiction par paladin et par cible). Elle reste ouverte aux
+  prêtres, mages et druides « au cas où le raid lead veut assigner une personne à un buff » ; mais
+  **par défaut, chacun de ceux-là pose tout**, comme aujourd'hui (D7).
+- **C3 : ce que posent les autres se voit dans les options, sous la grille** ; ta propre ligne
+  « Groupe / raid » descend dans cette partie, avec celles des autres buffeurs du groupe.
+- **C4 : le premier annoncé garde sa bénédiction ; s'il y a trop de paladins, ceux en surplus
+  comblent les bénédictions manquantes** (« les paladins en surplus font le remplissage des buffs
+  manquants »).
+- **C5 : on reste entre utilisateurs de Serial Buffer** pour le moment : pas de lecture des messages
+  de PallyPower ou d'un autre addon.
 
 ## Critères d'acceptation (provisoires)
 
 1. [humain] Deux comptes groupés, deux paladins : chacun voit dans ses options la grille de l'autre.
    Témoin connu-bon : la grille de l'autre, ouverte sur son écran.
-2. [humain] Le paladin 2 active l'option ; le paladin 1 lui règle « Sagesse aux mages » ; le tableau
-   du paladin 2 propose Sagesse à Gnomi. Sans l'option, rien ne change chez le paladin 2.
-3. [test] Un message mal formé, d'une autre version ou d'un joueur hors du groupe est ignoré sans
+2. [humain] (C1) Le paladin 2 règle l'option sur « le chef » ; le paladin 1, chef du groupe, lui
+   règle « Sagesse aux mages » ; le tableau du paladin 2 propose Sagesse à Gnomi. Sur « personne »,
+   rien ne change chez le paladin 2 ; un membre sans promotion n'a d'effet que sur « n'importe qui ».
+3. [humain] (C4) Trois paladins, deux classes à servir : les deux premiers annoncés gardent leurs
+   bénédictions, le troisième se voit proposer celles qui manquent.
+4. [test] Un message mal formé, d'une autre version ou d'un joueur hors du groupe est ignoré sans
    erreur, et ne change rien.
-4. [humain] Une séance en donjon avec coordination ne laisse ni erreur Lua ni `ADDON_ACTION_BLOCKED`,
+5. [humain] Une séance en donjon avec coordination ne laisse ni erreur Lua ni `ADDON_ACTION_BLOCKED`,
    y compris pendant un combat de boss.
 
 ## Contrat (à définir)
 
 Le format des messages : préfixe d'addon dédié, numéro de version, une ligne par changement. À figer
 avant le premier envoi, puisque des clients déjà déployés le liront.
+
+## Plan (2026-10-05, volatile)
+
+0. **La sonde H1** : deux comptes groupés, un message d'addon `PARTY` (puis `RAID`, puis en donjon)
+   envoyé par l'un, reçu ou non par l'autre. Deux lignes `/run`, sans addon. Rien ne se code avant.
+1. Annoncer sa ligne « Groupe / raid » et voir celle des autres sous la grille (C3).
+2. Le premier annoncé garde, les paladins en surplus comblent (C4).
+3. L'option à trois positions et le réglage à distance (C1).
+4. L'assignation par le chef pour les prêtres, mages et druides (C2).
 
 ## Renvois
 
