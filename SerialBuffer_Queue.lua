@@ -8,8 +8,11 @@
 --   D18 membre du groupe invisible (autre carte) : dehors              D24 trop bas pour un buff : dehors pour CE buff
 --   D26 « sort plus puissant actif » : dehors pour CE buff, 20 min     D27 paladin : celle d'un autre (> 30 min) → la suivante
 --   D28 hors paladin : un buff qui a plus que le seuil des options (45 min par défaut) : servi
--- AFFICHAGE : les joueurs à portée d'abord (FIFO), puis les membres du groupe hors de portée (FIFO) :
--- la première ligne est toujours quelqu'un qu'on peut buffer, et un clic répété dessus vide la file.
+--   D30 le groupe passe devant (remplace « ni ton groupe » de D8)
+-- AFFICHAGE, trois parties, FIFO dans chacune (D30, D25) : « group » (ton groupe ou ton raid, à
+-- portée), « around » (les autres, à portée), « far » (le groupe hors de portée), tout en bas : la
+-- première ligne est toujours quelqu'un qu'on peut buffer, et un clic répété dessus vide la file.
+-- Toi : dans « group » si l'instantané te dit groupé (SerialBuffer_Units.lua), sinon à ta place (D8).
 -- RÈGLE DE SÛRETÉ : « je ne sais pas » n'est JAMAIS « il lui manque ». Une aura illisible (erreur,
 -- valeur secrète) ou une portée inconnue pour un inconnu écartent le joueur : sinon une restriction
 -- du client ferait passer tout le monde pour non buffé.
@@ -85,13 +88,14 @@ local function blessingVerdict(left, mine)
     return "stop"   -- la mienne, ou lanceur illisible : ne jamais écraser sa propre bénédiction par une autre
 end
 
--- Le buff à proposer, ou nil. probe.aura rend "absent" ou les secondes restantes (math.huge = sans
--- fin), plus « est-ce la mienne » ; nil = illisible. Prêtre, mage, druide : le premier qui manque (D7).
+-- Le buff à proposer, ou nil (plus "unread" si une aura est illisible). probe.aura rend "absent" ou
+-- les secondes restantes (math.huge = sans fin), plus « est-ce la mienne » ; nil = illisible. Prêtre,
+-- mage, druide : le premier qui manque (D7).
 local function nextMissing(snap, wanted, probe, refreshBelow)
     for _, w in ipairs(wanted) do
         if not isBlocked(snap, w.name) then
             local left, mine = probe.aura(snap.unit, w.name)
-            if left == nil then return nil end
+            if left == nil then return nil, "unread" end
             if mine ~= true and left ~= "absent" and castByMe(snap, w.name) then mine = true end
             if wanted.exclusive then
                 local v = blessingVerdict(left, mine)
@@ -109,10 +113,13 @@ local function nextMissing(snap, wanted, probe, refreshBelow)
     return nil
 end
 
--- Les filtres qui ne dépendent pas des buffs. Rend true si le joueur peut entrer dans la file.
+-- Les filtres qui ne dépendent pas des buffs. Rend true si le joueur peut entrer dans la file, sinon
+-- false, plus "unread" pour un joueur ami dont le NOM est illisible (critère 10 ; en instance, le
+-- verrou Map en rend : D31) : le tableau les compte, pour qu'une liste vide ne passe pas pour finie.
 local function admissible(snap, opts)
-    if not snap.guid or not snap.name then return false end   -- secret ou illisible (critère 10)
+    if not snap.guid then return false end                    -- GUID secret ou absent (critère 10)
     if not snap.player or not snap.assist or snap.dead then return false end
+    if not snap.name then return false, "unread" end
     if snap.self then return true end
     if snap.combat then return false end                       -- D16
     if snap.pvp and not opts.showPvP then return false end     -- D5
@@ -120,11 +127,13 @@ local function admissible(snap, opts)
     return true
 end
 
--- Une ligne pour ce joueur, ou nil. wantedFor(classe) → buffs voulus, dans l'ordre.
+-- Une ligne pour ce joueur, ou nil (plus "unread" si son nom ou une de ses auras est illisible).
+-- wantedFor(classe, membre du groupe) → buffs voulus, dans l'ordre (D35 : le groupe a sa ligne à lui).
 function Q:Eligible(snap, wantedFor, probe, opts)
-    if not admissible(snap, opts or {}) then return nil end
-    local buff = nextMissing(snap, wantedFor(snap.class), probe, (opts or {}).refreshBelow)
-    if not buff then return nil end
+    local ok, why = admissible(snap, opts or {})
+    if not ok then return nil, why end
+    local buff, unread = nextMissing(snap, wantedFor(snap.class, snap.group), probe, (opts or {}).refreshBelow)
+    if not buff then return nil, unread end
     local outOfRange = false
     if not snap.self then
         local r = probe.range(snap.unit, buff.name)
@@ -133,24 +142,29 @@ function Q:Eligible(snap, wantedFor, probe, opts)
             outOfRange = (r == false)
         end
     end
+    local section = outOfRange and "far" or (snap.group and "group" or "around")   -- D30
     return { guid = snap.guid, name = snap.name, class = snap.class, unit = snap.unit, level = snap.level,
-             buff = buff, group = snap.group, self = snap.self, outOfRange = outOfRange,
+             buff = buff, group = snap.group, self = snap.self, outOfRange = outOfRange, section = section,
              pvp = (snap.pvp and not snap.self) or false }
 end
 
--- Construit les lignes, triées FIFO, les joueurs à portée d'abord. Un joueur qui sort de la file
--- (buffé, parti, en combat…) perd sa place : s'il revient, il entre en fin de file (D8, D11). Rend
--- rows, around (joueurs admis autour, toi non compris : il distingue « personne autour » de « tournée
--- finie »).
+Q.SECTIONS = { "group", "around", "far" }   -- l'ordre des parties du tableau (D30, D25)
+local RANK = { group = 1, around = 2, far = 3 }
+
+-- Construit les lignes, triées par partie puis FIFO. Un joueur qui sort de la file (buffé, parti, en
+-- combat…) perd sa place : s'il revient, il entre en fin de file (D8, D11). Rend rows, around (joueurs
+-- admis autour, toi non compris : il distingue « personne autour » de « tournée finie ») et unread
+-- (joueurs amis écartés parce que leur nom ou une de leurs auras est illisible).
 function Q:Build(snaps, wantedFor, probe, opts)
     opts = opts or {}
     self.now = opts.now or self.now
-    local rows, seen, around = {}, {}, 0
+    local rows, seen, around, unread = {}, {}, 0, 0
     for _, snap in ipairs(snaps) do
         if snap.guid and not seen[snap.guid] then
             seen[snap.guid] = true
             if admissible(snap, opts) and not snap.self then around = around + 1 end
-            local row = self:Eligible(snap, wantedFor, probe, opts)
+            local row, why = self:Eligible(snap, wantedFor, probe, opts)
+            if why == "unread" then unread = unread + 1 end
             if row then
                 if not self.order[row.guid] then
                     self.seq = self.seq + 1
@@ -167,10 +181,10 @@ function Q:Build(snaps, wantedFor, probe, opts)
         if not keep[guid] then self.order[guid] = nil end
     end
     table.sort(rows, function(a, b)
-        if a.outOfRange ~= b.outOfRange then return not a.outOfRange end
+        if a.section ~= b.section then return RANK[a.section] < RANK[b.section] end
         return a.seq < b.seq
     end)
-    return rows, around
+    return rows, around, unread
 end
 
 -- Palier (b) : un sort raté renvoie le joueur en fin de file, pour ne pas bloquer « buff suivant ».

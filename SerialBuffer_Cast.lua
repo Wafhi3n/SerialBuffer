@@ -10,6 +10,12 @@
 -- /cleartarget et [exists] : si le nom ne cible personne (joueur parti), RIEN ne part ; sans eux, le
 -- sort partait sur la cible d'avant (relevé du 2026-10-04 16:57). Pas de /targetlasttarget (D20) : le
 -- dernier joueur buffé reste ciblé. Toi : [@player], qui ne touche pas à ta cible.
+-- D36 (combat, « comme PallyPower ») : un membre du groupe se vise par son JETON de groupe,
+--     /cast [@raid3,help,nodead] <sort>
+-- sans toucher à ta cible, en combat comme hors combat ; un inconnu commence par /stopmacro [combat] :
+-- en combat, sa ligne ne lance rien (la macro par le nom te ferait perdre ta cible). Jamais un jeton
+-- de plaque dans un /cast : le jeu l'ignore en silence (relevé R3). Le jeton de groupe n'est pas
+-- vérifié au clic (le code sécurisé n'a ni UnitName ni UnitGUID) : exception de D36.
 local _, NS = ...
 NS = NS or _G.SerialBuffer
 local L = NS.L
@@ -25,14 +31,27 @@ C.RECENT = 2   -- secondes : une erreur au-delà ne vient pas de notre clic
 _G.BINDING_HEADER_SERIALBUFFER = "Serial Buffer"
 _G["BINDING_NAME_CLICK " .. C.NEXT_BUTTON .. ":LeftButton"] = L["Buff suivant"]
 
+-- Un jeton de groupe (« party2 », « raid17 ») : le seul jeton qu'une ligne du groupe met dans un /cast.
+function C.GroupToken(unit)
+    return type(unit) == "string" and (unit:match("^party%d+$") or unit:match("^raid%d+$")) ~= nil
+end
+
+-- D36 : une ligne qui lance encore en combat (toi, ou un membre du groupe visé par son jeton).
+function C.CombatClickable(row)
+    return row ~= nil and (row.self == true or (row.group == true and C.GroupToken(row.unit)))
+end
+
 -- Le texte de macro d'une ligne de la file, ou nil (nom ou sort absent, macro trop longue).
 function C.MacroFor(row)
     if not (row and row.buff and row.buff.name) then return nil end
     local text
     if row.self then
         text = "/cast [@player] " .. row.buff.name
+    elseif row.group and C.GroupToken(row.unit) then
+        text = "/cast [@" .. row.unit .. ",help,nodead] " .. row.buff.name
     elseif row.name then
-        text = "/cleartarget\n/targetexact " .. row.name .. "\n/cast [@target,exists,help,nodead] " .. row.buff.name
+        text = "/stopmacro [combat]\n/cleartarget\n/targetexact " .. row.name
+            .. "\n/cast [@target,exists,help,nodead] " .. row.buff.name
     end
     if text and #text <= C.MAX_MACRO then return text end
     return nil
