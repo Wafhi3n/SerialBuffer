@@ -336,10 +336,11 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   raid), la liste montre ton groupe ou ton raid, au lieu de se mettre en pause. Les inconnus restent
   une affaire d'extérieur (plaques interdites en instance). *Interprétation de l'agent* de la réponse
   du user (2026-10-05) à « en instance, pause ou groupe seul ? » : « l'addon doit se comporter
-  différemment avec les membres de groupe/raid qu'avec les randoms ». **Jamais mesuré** : la lecture
-  des noms et des buffs sur `raidN` / `partyN` en instance (le verrou `Map` rend des noms secrets en
-  donjon), et `/targetexact` en instance. Un nom ou un buff illisible écarte le joueur (règle de
-  sûreté) et le pied du tableau compte les illisibles.
+  différemment avec les membres de groupe/raid qu'avec les randoms ». Un nom ou un buff illisible
+  écarte le joueur (règle de sûreté) et le pied du tableau compte les illisibles. **Mesuré le
+  2026-10-05 12:12** (registre) : en donjon, hors combat, 1644 buffs de membres du groupe lus par
+  leur jeton de groupe, aucun illisible, et le user a buffé tout le groupe. Le clic part par le jeton
+  de groupe (D36), pas par `/targetexact`.
 - **D32 : un rouage sur le tableau ouvre les options** (demande du user, 2026-10-05). Pas en combat :
   le panneau d'options du jeu ne s'ouvre pas pendant un combat.
 - **D33 : une grille buffs × classes dans les options, « comme un tableur »** (demande du user,
