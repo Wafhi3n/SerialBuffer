@@ -315,6 +315,30 @@ function B:WantedFor(targetClass, db, inGroup)
     return out
 end
 
+-- Coordination, palier 1 (docs/specs/coordination.md) : ce que tu poses aux membres du GROUPE, classe
+-- par classe, tel que ça s'appliquera : le choix unique s'il est rempli et appris, sinon la colonne
+-- (paladin : la première bénédiction connue ; les autres : tous leurs buffs connus). Rend
+-- plan[classe] = { ids de rang 1 } (vide : rien).
+function B:GroupPlan(db)
+    local c, out = self.class, {}
+    for _, t in ipairs(self.CLASSES) do
+        local ids = {}
+        local pick = self:GroupPick(c, t, db)
+        if pick ~= 0 and self.known and self.known[pick] then
+            ids[1] = pick
+        else
+            for _, id in ipairs(self:Order(c, t, db)) do
+                if id ~= 0 and self.known and self.known[id] then
+                    ids[#ids + 1] = id
+                    if c == "PALADIN" then break end
+                end
+            end
+        end
+        out[t] = ids
+    end
+    return out
+end
+
 -- ---------------------------------------------------------------- migration (schemaVer 3)
 
 -- Ce que voulaient les réglages d'avant : la v0.1.0 (off[id] = décoché partout, priority = ordre du

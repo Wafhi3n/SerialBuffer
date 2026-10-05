@@ -53,11 +53,14 @@ function NS:Slash(msg)
         if self.Options then self.Options:Open() end
     elseif cmd == "version" then
         self:Printf(L["version %s"], self.VERSION)
+    elseif cmd == "groupe" or cmd == "group" then
+        if self.Comm then self.Comm:PrintPeers() end
     else
         self:Print(L["Commandes :"])
         self:Print("/sbuff - " .. L["affiche ou cache le tableau"])
         self:Print("/sbuff pvp - " .. L["montre ou cache les joueurs PvP"])
         self:Print("/sbuff options - " .. L["ouvre les options"])
+        self:Print("/sbuff groupe - " .. L["liste les Serial Buffer de ton groupe"])
         self:Print("/sbuff version - " .. L["affiche la version"])
     end
 end

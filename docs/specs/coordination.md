@@ -126,10 +126,39 @@ Toutes prises par le user le 2026-10-05, en réponse aux questions Q1 à Q5 du b
 5. [humain] Une séance en donjon avec coordination ne laisse ni erreur Lua ni `ADDON_ACTION_BLOCKED`,
    y compris pendant un combat de boss.
 
-## Contrat (à définir)
+## Palier 1 : annoncer et afficher (2026-10-05)
 
-Le format des messages : préfixe d'addon dédié, numéro de version, une ligne par changement. À figer
-avant le premier envoi, puisque des clients déjà déployés le liront.
+*Choix de l'agent pour le palier 1, le user ayant dit « tu peux commencer » ; à revoir s'il le
+souhaite.* Rien de ce palier ne change ce que ton tableau propose : il annonce et il montre.
+
+- **Ce qui s'annonce** : ta ligne « Groupe / raid » telle qu'elle s'appliquera, classe par classe :
+  ton choix unique s'il est rempli et appris, sinon ce que ta colonne donnera (paladin : la
+  première bénédiction connue ; prêtre, mage, druide : tous leurs buffs connus de la colonne).
+- **Quand** : en entrant dans un groupe, à la connexion ou au `/reload` si tu es groupé (une
+  demande « R », à laquelle les autres répondent par leur annonce), et quand tu changes ta grille.
+  Chaque annonce est **regroupée** : plusieurs clics dans la grille en deux secondes font un seul
+  message ; la réponse à une demande attend une à trois secondes au hasard, pour que tout un raid ne
+  réponde pas d'un bloc.
+- **Où** : `RAID` en raid, `PARTY` en groupe (R1 ter) ; jamais seul, jamais hors du groupe. Pendant
+  un verrou de messagerie (`C_ChatInfo.InChatMessagingLockdown`, combat de boss), l'envoi attend.
+- **Ce qui se reçoit** : seulement d'un membre de ton groupe (nom complet de l'expéditeur comparé à
+  `GetUnitName(unité, true)` des membres), jamais de toi-même ; un message mal formé ou d'une autre
+  version est ignoré sans erreur. Rien n'est sauvegardé ; un membre qui quitte le groupe disparaît.
+- **Où ça se voit (C3)** : dans les options, sous la grille, une partie « Groupe / raid » : ta ligne
+  (modifiable, comme avant) puis une ligne par autre Serial Buffer du groupe, son nom et ses icônes
+  dans les colonnes des classes (lecture seule), jusqu'à huit lignes.
+
+## Contrat
+
+**Message d'addon, préfixe `SBUF`, version 1.** Champs séparés par `|`, en ASCII :
+
+- `1|R` : « annoncez-vous ». Celui qui le reçoit répond par son annonce.
+- `1|A|<classe du lanceur>|<e1>|…|<e9>` : l'annonce. Les neuf entrées suivent l'ordre des colonnes
+  de la grille (`WARRIOR PALADIN PRIEST SHAMAN DRUID ROGUE MAGE WARLOCK HUNTER`, `Buffs.CLASSES`) ;
+  chacune est `0` (rien) ou des ids de sort de rang 1 séparés par `+` (`20217`, `1243+976`).
+
+Un client lit les versions qu'il connaît et ignore le reste ; un champ en trop est ignoré. Changer
+le sens d'un champ demande une version 2, jamais une retouche de la version 1.
 
 ## Plan (2026-10-05, volatile)
 
