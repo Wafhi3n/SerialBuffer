@@ -292,15 +292,23 @@ local function paintPeer(row, e)
 end
 
 -- Repeint les lignes des autres (à l'ouverture, à chaque annonce reçue, quand le groupe change).
+-- En tête, groupé : ta propre répartition, ce que tu annonces vraiment (palier 2 : un paladin plus
+-- ancien a pu prendre ton choix), en lecture seule.
 function G:RefreshPeers()
     if not self.peerRows then return end
+    local others = {}
+    for name, p in pairs(NS.Comm.peers) do others[#others + 1] = { name = name, p = p } end
+    table.sort(others, function(a, b) return a.name < b.name end)
     local list = {}
-    for name, p in pairs(NS.Comm.peers) do list[#list + 1] = { name = name, p = p } end
-    table.sort(list, function(a, b) return a.name < b.name end)
+    if NS.Comm.grouped and NS.Comm:CanSpeak() then
+        list[1] = { name = L["Toi, après répartition"], p = { caster = NS.Buffs.class, plan = NS.Buffs:GroupPlan(NS.db) } }
+    end
+    for _, e in ipairs(others) do list[#list + 1] = e end
     for i, row in ipairs(self.peerRows) do paintPeer(row, list[i]) end
     local msg, y = "", self.peerYEnd
-    if #list == 0 then
-        msg, y = NS.Comm.grouped and L["Aucun autre Serial Buffer dans ton groupe."] or L["Pas de groupe."], self.peerY0
+    if #others == 0 then
+        msg = NS.Comm.grouped and L["Aucun autre Serial Buffer dans ton groupe."] or L["Pas de groupe."]
+        y = self.peerY0 - #list * PEER_H
     elseif #list > #self.peerRows then
         msg = string.format(L["+%d autres"], #list - #self.peerRows)
     end

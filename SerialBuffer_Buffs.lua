@@ -296,18 +296,39 @@ end
 -- Un membre du groupe prend d'abord le choix unique de la ligne « Groupe / raid » s'il est rempli et
 -- appris (D35), puis la colonne en repli (D37) ; la liste est alors marquée SINGLE : pour un lanceur
 -- non paladin, le choix unique présent vaut « servi », la colonne ne sert que s'il ne peut pas passer.
+-- Coordination, palier 2 (C4) : les bénédictions déjà prises, pour cette classe, par des paladins
+-- plus anciens du groupe (ensemble id → true), ou nil. Branché par SerialBuffer_Comm.lua ; un test
+-- le remplace.
+B.taken = nil
+
+-- Tes préférences pour un MEMBRE DU GROUPE de cette classe : le choix unique s'il est rempli et
+-- appris (D35), puis la colonne (D37) ; paladin : sans ce que les plus anciens ont pris (C4).
+-- Rend ids, single (le premier est le choix unique : servi s'il est là, hors paladin).
+function B:GroupPrefs(targetClass, db)
+    local c = self.class
+    local pick = self:GroupPick(c, targetClass, db)
+    local ids, single = {}, false
+    if pick ~= 0 and self.known and self.known[pick] then ids[1], single = pick, true end
+    for _, id in ipairs(self:Order(c, targetClass, db)) do
+        if id ~= 0 and id ~= pick then ids[#ids + 1] = id end
+    end
+    local taken = (c == "PALADIN") and self.taken and self.taken(targetClass)
+    if taken then
+        local kept = {}
+        for _, id in ipairs(ids) do
+            if not taken[id] then kept[#kept + 1] = id end
+        end
+        ids = kept
+    end
+    return ids, single
+end
+
 function B:WantedFor(targetClass, db, inGroup)
     local c = self.class
     local out = { exclusive = (c == "PALADIN") or nil }
-    local pick = inGroup and self:GroupPick(c, targetClass, db) or 0
-    local ids = self:Order(c, targetClass, db)
-    if pick ~= 0 and self.known and self.known[pick] then
-        local col = ids
-        ids, out.single = { pick }, true
-        for _, id in ipairs(col) do
-            if id ~= pick then ids[#ids + 1] = id end
-        end
-    end
+    local ids
+    if inGroup then ids, out.single = self:GroupPrefs(targetClass, db)
+    else ids = self:Order(c, targetClass, db) end
     for _, id in ipairs(ids) do
         local e = id ~= 0 and self.known and self.known[id]
         if e then out[#out + 1] = e end
@@ -319,20 +340,15 @@ end
 -- par classe, tel que ça s'appliquera : le choix unique s'il est rempli et appris, sinon la colonne
 -- (paladin : la première bénédiction connue ; les autres : tous leurs buffs connus). Rend
 -- plan[classe] = { ids de rang 1 } (vide : rien).
+-- Palier 2 : c'est la MÊME liste que celle que ton tableau propose au groupe (WantedFor), pour
+-- qu'on n'annonce jamais une bénédiction en en proposant une autre.
 function B:GroupPlan(db)
-    local c, out = self.class, {}
+    local out = {}
     for _, t in ipairs(self.CLASSES) do
-        local ids = {}
-        local pick = self:GroupPick(c, t, db)
-        if pick ~= 0 and self.known and self.known[pick] then
-            ids[1] = pick
-        else
-            for _, id in ipairs(self:Order(c, t, db)) do
-                if id ~= 0 and self.known and self.known[id] then
-                    ids[#ids + 1] = id
-                    if c == "PALADIN" then break end
-                end
-            end
+        local w, ids = self:WantedFor(t, db, true), {}
+        for _, e in ipairs(w) do
+            ids[#ids + 1] = e.id
+            if w.exclusive or w.single then break end
         end
         out[t] = ids
     end

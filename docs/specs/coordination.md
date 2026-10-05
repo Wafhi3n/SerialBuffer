@@ -148,6 +148,32 @@ souhaite.* Rien de ce palier ne change ce que ton tableau propose : il annonce e
   (modifiable, comme avant) puis une ligne par autre Serial Buffer du groupe, son nom et ses icônes
   dans les colonnes des classes (lecture seule), jusqu'à huit lignes.
 
+## Palier 2 : le premier arrivé garde, les paladins en surplus comblent (C4, 2026-10-05)
+
+*Choix de l'agent pour appliquer C4, le user ayant dit « on continue le dev » ; à revoir s'il le
+souhaite.* Seuls les **paladins** sont concernés (C2 : ce sont eux qui se partagent des buffs
+uniques) ; les prêtres, mages et druides posent tout, comme avant.
+
+- **« Premier annoncé » = le plus ancien dans le groupe** : chaque paladin annonce l'heure du
+  serveur (`GetServerTime`) à laquelle il est entré dans le groupe. Le plus ancien passe devant ; à
+  égalité, l'ordre alphabétique des noms complets. Tous les clients ont les mêmes chiffres, donc
+  tranchent pareil. Un `/reload` ne te fait pas perdre ta place (l'heure est gardée tant que tu
+  restes groupé).
+- **La répartition, classe par classe** : chacun prend, dans **ses propres** préférences pour le
+  groupe (son choix unique, puis sa colonne : D35, D37), la première bénédiction connue qu'aucun
+  paladin plus ancien n'a annoncée pour cette classe. C'est ce qu'il annonce, et ce que son tableau
+  propose aux membres du groupe de cette classe. Un paladin dont toutes les préférences sont prises
+  ne propose rien à cette classe : on ne sort jamais de ce que le joueur a choisi dans sa grille
+  (Salut sur un guerrier, par exemple, n'arrive que s'il l'a mis dans sa colonne).
+- Le plus ancien ne bouge jamais pour un plus récent ; un plus récent se réajuste dès qu'une annonce
+  d'un plus ancien change (regroupé, comme toute annonce).
+- Un client du palier 1 n'annonce pas son heure d'arrivée : il compte comme le plus ancien (il ne
+  sait pas se réajuster, les autres le contournent).
+- **Les inconnus** dehors ne sont pas touchés : la répartition ne vaut que pour les membres du groupe.
+- Les refus restent en place : trop bas (D24, D38) ou bénédiction d'un autre déjà là (D27), la ligne
+  passe à la préférence suivante qu'aucun plus ancien n'a prise.
+- `/sbuff groupe` montre aussi ta propre répartition.
+
 ## Contrat
 
 **Message d'addon, préfixe `SBUF`, version 1.** Champs séparés par `|`, en ASCII :
@@ -159,6 +185,14 @@ souhaite.* Rien de ce palier ne change ce que ton tableau propose : il annonce e
 
 Un client lit les versions qu'il connaît et ignore le reste ; un champ en trop est ignoré. Changer
 le sens d'un champ demande une version 2, jamais une retouche de la version 1.
+
+**Ajout du palier 2, compatible avec la version 1** (un client du palier 1 ignore le champ en trop) :
+un 13e champ, facultatif, après les neuf entrées : l'heure du serveur, en secondes entières, à
+laquelle le lanceur est entré dans le groupe (`…|<e9>|1759662000`). Absent, mal formé : le lanceur
+compte comme le plus ancien.
+
+**SavedVariables** : `coordSince`, cette même heure, gardée tant que tu restes groupé (pour qu'un
+`/reload` ne te fasse pas perdre ta place) et effacée hors groupe. Aucune donnée d'un autre joueur.
 
 ## Plan (2026-10-05, volatile)
 
