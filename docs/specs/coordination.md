@@ -174,6 +174,31 @@ uniques) ; les prêtres, mages et druides posent tout, comme avant.
   passe à la préférence suivante qu'aucun plus ancien n'a prise.
 - `/sbuff groupe` montre aussi ta propre répartition.
 
+## Palier 3 : laisser un autre régler ta ligne (C1, 2026-10-05)
+
+*Choix de l'agent pour appliquer C1, le user ayant dit « vas-y » ; à revoir s'il le souhaite.*
+
+- **L'option, à trois positions**, dans les options sous « Groupe / raid : qui pose quoi » : « qui
+  peut régler ta ligne à ta place » : **personne** (par défaut), **le chef** (le chef du groupe ou
+  du raid et ses assistants), **n'importe qui** du groupe. Trois cases qui s'excluent (aucun menu
+  déroulant, ils font planter Forever).
+- **Chaque annonce dit cette option** : les autres savent s'ils ont le droit de régler ta ligne.
+- **Régler la ligne d'un autre** : dans la partie « qui pose quoi », les cases de la ligne d'un
+  joueur qui te le permet deviennent cliquables (clic, molette), comme ta ligne « Toi » : vide, puis
+  les buffs de SA classe, sans ceux qu'interdit D23. Ta modification part vers lui, regroupée (une
+  seconde après ton dernier clic sur la même case), et ne change que cette case de sa ligne
+  « Groupe / raid » (son choix unique pour cette classe). Les cases des autres restent en lecture
+  seule.
+- **Chez lui** : la modification ne s'applique que si l'expéditeur est de son groupe et que son
+  option le permet à ce moment-là ; sinon elle est ignorée (et comptée). Appliquée, sa grille change
+  comme s'il avait cliqué lui-même (même contrôle des ids, D23 compris), il voit dans son chat
+  « <Nom> a réglé ta ligne Groupe / raid », et il se réannonce : tout le groupe voit le nouveau
+  réglage, répartition du palier 2 comprise.
+- Ça vaut pour toutes les classes qui ont des buffs : un chef peut ainsi assigner un buff unique à
+  un prêtre pour une classe (C2). Par défaut, personne n'a de choix unique : chacun pose tout.
+- Rien ne se lance tout seul (D2) : régler la ligne de quelqu'un change ce que SON tableau propose,
+  c'est toujours lui qui clique.
+
 ## Contrat
 
 **Message d'addon, préfixe `SBUF`, version 1.** Champs séparés par `|`, en ASCII :
@@ -193,6 +218,16 @@ compte comme le plus ancien.
 
 **SavedVariables** : `coordSince`, cette même heure, gardée tant que tu restes groupé (pour qu'un
 `/reload` ne te fasse pas perdre ta place) et effacée hors groupe. Aucune donnée d'un autre joueur.
+
+**Ajouts du palier 3, compatibles avec la version 1** :
+- un 14e champ facultatif dans l'annonce, après l'heure d'arrivée : qui peut régler la ligne du
+  lanceur, `N` (personne), `L` (le chef et ses assistants) ou `A` (n'importe qui). Absent ou autre :
+  `N`. Un client qui n'a pas d'heure d'arrivée à donner écrit `0` en 13e champ.
+- une nouvelle sorte de message, ignorée par un client des paliers 1 et 2 (« sorte inconnue ») :
+  `1|S|<nom complet de la cible>|<classe>|<id>` : « règle le choix unique de cette classe dans ta
+  ligne Groupe / raid » ; `<classe>` est l'un des neuf jetons de `WIRE_CLASSES`, `<id>` un id de
+  sort de rang 1, ou `0` pour vider la case.
+- **SavedVariables** : `coordWho` (`none`, `leader` ou `anyone` ; `none` par défaut).
 
 ## Plan (2026-10-05, volatile)
 
