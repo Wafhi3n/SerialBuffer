@@ -61,7 +61,11 @@ même s'il lui manque plusieurs buffs : elle propose le prochain qui manque.
   tableau reste affiché, figé ; seules les lignes du groupe restent cliquables (D36).
 - **Version de groupe des buffs** (Illumination des Arcanes, Prière de robustesse, Don du fauve) en
   v1 : elle coûte des composants et ne touche que ton groupe. Les membres de ton groupe reçoivent la
-  version simple, comme tout le monde.
+  version simple, comme tout le monde. *Piste du user (2026-10-05), pour un palier futur : avec les
+  bénédictions supérieures et les buffs de groupe, la partie du groupe montrerait une ligne par
+  CLASSE (son icône) au lieu d'une ligne par joueur, et en raid par classe ET numéro de groupe
+  (« classe + n° de groupe si c'est un raid ») ; le temps restant et le décompte en combat (D39)
+  valent pour les buffs à cible unique.*
 - **Buffs sur soi seul** (armures, Feu intérieur…) : ce n'est pas une tournée.
 - **Sorts qui changent les dégâts ou les soins reçus** (Amplifier la magie, Atténuer la magie) : on ne
   les impose pas à un inconnu.
@@ -261,7 +265,8 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   (Amplifier, Atténuer la magie) n'en font pas partie.
 - ~~D15 : le paladin pose une bénédiction par classe de la cible~~ : remplacée par D22.
 - **D16 : un joueur en combat n'entre pas dans la liste** (il s'agit des joueurs de la liste, pas
-  de toi). Le buffer te mettrait en combat et figerait le tableau (H7).
+  de toi). Le buffer te mettrait en combat et figerait le tableau (H7). *Depuis D39 (2026-10-05) :
+  les inconnus seulement ; un membre de ton groupe en combat reste dans la liste.*
 - **D17 : la commande est `/sbuff`.**
 - **D18 : un membre du groupe que le client ne voit pas** (autre carte, déconnecté) **est absent de
   la liste** : on ne peut pas savoir s'il lui manque un buff.
@@ -456,6 +461,20 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
     niveau sous le seuil coûte un clic de plus (Rois, sans doute refusé jusqu'au niveau 9 selon la
     règle de vanilla « niveau du sort − 10 », jamais mesurée sur Forever) ;
   - le refus « trop bas » d'un joueur précis pendant la séance (D24) reste, en plus.
+- **D39 : une ligne affiche le temps qui reste au buff qu'elle refait, décompté en combat** (user,
+  2026-10-05, après un donjon : « c'est quand les buffs dépop en combat », puis « rajouter les
+  lignes des membres où il ne reste que 10 min, avec le temps restant »). Un buff qui expire bientôt
+  (moins de 10 min pour une bénédiction, D11 ; sous le seuil des options sinon, D28) a déjà sa ligne :
+  elle porte désormais le temps restant (« 8 min », « 40 s »). En combat, le tableau étant figé
+  (D36), ce temps est décompté à partir de l'heure de fin relevée avant le pull, sans rien relire ;
+  à zéro, la ligne affiche « expiré ». *Conséquences dérivées, non décidées par le user :*
+  - **un membre du groupe en combat reste dans la liste** (D16 ne vaut plus que pour les inconnus) :
+    sinon le tank, souvent en combat quand tu ne l'es pas, n'aurait jamais sa ligne au moment du
+    pull. Dehors, buffer un membre du groupe en plein combat te met en combat aussi ;
+  - un buff ABSENT n'a pas de temps à afficher ; une ligne grisée « buffé » en combat (D36) ne se
+    décompte plus ;
+  - un buff qui tombe en combat alors qu'il avait plus que le seuil au pull (dissipé, mort) n'a pas
+    de ligne : le tableau ne peut pas en créer en combat.
 
 ## Questions ouvertes (au user)
 
@@ -574,6 +593,14 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     clic sur Gnomi → « too low level » → la ligne passe à Sagesse, refusée → Puissance, qui passe.
     Après un `/reload`, Gnomi se voit proposer Puissance d'emblée. `SerialBufferDB.tooLow` porte les
     rangs de Rois et de Sagesse à 2. Témoin connu-bon : la v0.2.0-beta, où Gnomi n'avait plus rien.
+29. [test] (D39) Une ligne porte le temps restant du buff qu'elle refait (aucun si le buff est
+    absent) et son heure de fin ; le décompte rend le temps qui reste à un instant donné, et zéro
+    passé l'heure de fin ; un membre du groupe en combat entre dans la liste, un inconnu en combat
+    non.
+30. [humain] (D39) En donjon, un membre dont la bénédiction a moins de 10 min : sa ligne affiche le
+    temps restant ; pendant un combat, ce temps descend et la ligne passe à « expiré » quand il
+    tombe ; un clic le refait. Le tank en combat a sa ligne. Témoin connu-bon : la barre de buffs du
+    membre ciblé.
 
 ## Contrat
 

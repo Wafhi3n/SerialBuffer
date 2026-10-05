@@ -133,7 +133,9 @@ function R:Start()
     f:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
     f:SetScript("OnEvent", onEvent)
     self.frame = f
+    -- Hors combat : recalcul. En combat (D36, tableau figé) : seul le temps restant descend (D39).
     self.ticker = C_Timer.NewTicker(TICK, function()
-        if NS.UI:IsVisible() then R:Refresh() end
+        if not NS.UI:IsVisible() then return end
+        if InCombatLockdown() then NS.UI:CombatTick(GetTime()) else R:Refresh() end
     end)
 end
