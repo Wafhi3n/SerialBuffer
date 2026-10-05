@@ -1,5 +1,28 @@
 # Changelog - Serial Buffer
 
+## v0.2.0-beta - 2026-10-05
+
+Your group and raid now come first. When you're grouped, the panel splits into Group (or Raid),
+Around you, and Out of range at the bottom, so clicking the top line buffs your own people before
+strangers. In dungeons and raids the list keeps working for your group instead of pausing. If the
+game hides some names or buffs in there, the bottom of the panel says how many players it couldn't
+read.
+
+The panel stays up in combat. It freezes as it was when the fight started: your group's lines can
+still be clicked, a line turns grey once your buff lands, and the list refreshes when combat ends.
+Strangers' lines go dark and do nothing until then, and so does the "Next buff" key.
+
+Clicking someone in your group no longer changes your target, in or out of combat.
+
+The options have a new grid, opened from the gear icon on the panel. Each class gets a column of
+buff icons; click or scroll a box to change it. Paladins get three choices per class (the first,
+then the next one if it can't land), plus a Group / raid row for a single blessing per class on
+your own group, the way you'd split blessings in a raid. The All column and its » button copy a
+choice across every class, the arrow under a class resets it, and Reset all puts everything back.
+Salvation and Light are in the grid too, off by default. Your old settings carry over.
+
+This is a beta: combat and dungeons haven't been tried in game yet.
+
 ## v0.1.0 - 2026-10-04
 
 First release, for WoW: Forever.
