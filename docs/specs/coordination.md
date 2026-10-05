@@ -52,11 +52,17 @@ Dit autrement, avec les décisions C1 à C5 :
 
 ## Ce qui n'est pas prouvé
 
-- **H1 : un message d'addon en `PARTY`, `RAID` ou `INSTANCE_CHAT` arrive sur Forever.** Jamais
-  mesuré : le skill public `wow-forever-api` (`chat-channels-and-communities.md`) ne couvre que le
-  canal perso (livré), les canaux du jeu et les communautés (avalés en silence), `SAY` / `YELL`
-  (refusés hors instance) et le chuchotement (livré). À éprouver d'abord, à deux comptes groupés,
-  dehors puis en donjon.
+- **H1 : un message d'addon en `PARTY`, `RAID` ou `INSTANCE_CHAT` arrive sur Forever.** Le skill
+  public `wow-forever-api` (`chat-channels-and-communities.md`) ne couvrait que le canal perso
+  (livré), les canaux du jeu et les communautés (avalés en silence), `SAY` / `YELL` (refusés hors
+  instance) et le chuchotement (livré). **`PARTY` TIENT dehors (relevé R1)** ; restent le donjon,
+  `RAID`, `INSTANCE_CHAT` et le combat de boss.
+  - **R1, 2026-10-05 vers 13:00, Hurlevent (canaux), dehors, hors combat**, Gnomi Short et
+    Rédemption groupées, sans addon, par deux `/run` : chez Gnomi,
+    `C_ChatInfo.SendAddonMessage("SBUF", "bonjour", "PARTY")` a rendu **0** (accepté) ; chez
+    Rédemption, `CHAT_MSG_ADDON` est arrivé avec `bonjour`, `PARTY` et l'expéditeur **« Gnomi
+    Short »** (le nom complet, avec l'espace : le même que `GetUnitName(unité, true)`, de quoi
+    relier un message à un membre du groupe). Captures du user.
 - **H2 : en combat de BOSS, les envois d'addon sont bloqués** (verrou `Chat`, mesuré le 2026-09-30
   pour `SendChatMessage` sur un canal, `secret-values-and-lockdowns.md`). La coordination doit donc
   se faire hors combat de boss ; à vérifier pour `SendAddonMessage` en groupe.
@@ -117,8 +123,8 @@ avant le premier envoi, puisque des clients déjà déployés le liront.
 
 ## Plan (2026-10-05, volatile)
 
-0. **La sonde H1** : deux comptes groupés, un message d'addon `PARTY` (puis `RAID`, puis en donjon)
-   envoyé par l'un, reçu ou non par l'autre. Deux lignes `/run`, sans addon. Rien ne se code avant.
+0. ~~**La sonde H1**~~ : `PARTY` dehors, prouvé (R1). La même sonde en donjon et en `RAID` peut se
+   faire pendant le palier 1, elle ne le bloque pas.
 1. Annoncer sa ligne « Groupe / raid » et voir celle des autres sous la grille (C3).
 2. Le premier annoncé garde, les paladins en surplus comblent (C4).
 3. L'option à trois positions et le réglage à distance (C1).
