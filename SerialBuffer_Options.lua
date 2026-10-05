@@ -122,6 +122,10 @@ end
 function O:Register()
     if not (Settings and Settings.RegisterCanvasLayoutCategory and Settings.RegisterAddOnCategory) then return end
     local panel = CreateFrame("Frame")
+    -- Créé CACHÉ : un cadre naît visible, et le premier affichage par le panneau du jeu ne
+    -- déclenchait alors pas OnShow, d'où un panneau vide jusqu'à ce qu'on change de menu et revienne
+    -- (vu par le user, 2026-10-05).
+    panel:Hide()
     panel:SetScript("OnShow", function(f)
         if not O.built then O:Build(f) end
         O:Refresh()

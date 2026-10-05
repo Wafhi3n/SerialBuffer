@@ -377,7 +377,7 @@ function C:PrintPeers()
     NS:Print(L["Serial Buffer dans ton groupe :"])
     for _, name in ipairs(names) do
         local p, rank = self.peers[name], ""
-        if p.caster == "PALADIN" then
+        if p.caster == "PALADIN" and NS.Buffs.class == "PALADIN" then   -- l'ancienneté : entre paladins
             rank = NS.Share.Senior({ since = p.since, name = name }, self:Me()) and L[" (avant toi)"] or L[" (après toi)"]
         end
         -- Palier 3 : son option (N / L / A, annoncée) et si tu peux régler sa ligne maintenant.
