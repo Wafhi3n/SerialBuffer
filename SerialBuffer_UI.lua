@@ -144,8 +144,21 @@ function UI:Build()
     panel:SetMovable(true)
     panel:EnableMouse(true)
     panel:RegisterForDrag("LeftButton")
-    panel:SetScript("OnDragStart", panel.StartMoving)
-    panel:SetScript("OnDragStop", function(f) f:StopMovingOrSizing(); anchorTop(f) end)
+    -- Le panneau porte des boutons sécurisés, donc le jeu le protège : en combat (il reste affiché,
+    -- D36), StartMoving, StopMovingOrSizing, ClearAllPoints et SetPoint sont bloqués (taint.log du
+    -- 2026-10-06 ; StartMoving branché tel quel s'y nomme « UNKNOWN() »). Pas de glisser en combat ;
+    -- un glisser commencé juste avant le pull se termine à la sortie du combat (UI:CombatEnd).
+    panel:SetScript("OnDragStart", function(f)
+        if InCombatLockdown() then return end
+        f.dragging = true
+        f:StartMoving()
+    end)
+    panel:SetScript("OnDragStop", function(f)
+        if not f.dragging or InCombatLockdown() then return end
+        f.dragging = false
+        f:StopMovingOrSizing()
+        anchorTop(f)
+    end)
     panel.title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     panel.title:SetPoint("TOPLEFT", PAD, -PAD)
     panel.title:SetText("Serial Buffer")
@@ -253,6 +266,17 @@ function UI:CombatStart()
     for _, row in ipairs(self.rows) do
         if row:IsShown() and not row.combatOK then dim(row, nil) end
     end
+    self:FinishDrag()   -- un glisser en cours au pull : posé tout de suite si le jeu le permet encore
+end
+
+-- Termine un glisser resté en cours (pull pendant le glisser) : hors verrou seulement, sinon à la
+-- sortie du combat (SerialBuffer_Run.lua, PLAYER_REGEN_ENABLED).
+function UI:FinishDrag()
+    local p = self.panel
+    if not (p and p.dragging) or InCombatLockdown() then return end
+    p.dragging = false
+    p:StopMovingOrSizing()
+    anchorTop(p)
 end
 
 -- Notre sort sur ce joueur a réussi pendant le combat : sa ligne se grise, sans sortir du tableau.
