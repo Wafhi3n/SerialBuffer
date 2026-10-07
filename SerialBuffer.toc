@@ -26,6 +26,7 @@ SerialBuffer_Queue.lua
 SerialBuffer_Units.lua
 SerialBuffer_Cast.lua
 SerialBuffer_UI.lua
+SerialBuffer_Header.lua
 SerialBuffer_Grid.lua
 SerialBuffer_Options.lua
 SerialBuffer_Share.lua

@@ -65,5 +65,19 @@ local T = {
     ["ouvre les options"] = "opens the options",
     ["Buff suivant"] = "Next buff",
     ["Rafraîchir un buff s'il lui reste moins de %d min"] = "Refresh a buff with less than %d min left",
+    -- D40 : groupe seul ; D41 : la touche « buff suivant » dans l'en-tête.
+    ["Groupe seul"] = "Group only",
+    ["Coché : seuls toi et ton groupe ou ton raid sont listés ; les joueurs autour de toi sont ignorés."] = "Checked: only you and your group or raid are listed; players around you are ignored.",
+    ["Groupe seul : ignorer les joueurs autour de toi"] = "Group only: ignore players around you",
+    ["Personne à buffer dans ton groupe."] = "Nobody in your group needs a buff.",
+    ["Joueurs autour ignorés : seuls toi et ton groupe sont listés."] = "Players around you ignored: only you and your group are listed.",
+    ["Joueurs autour listés."] = "Players around you are listed.",
+    ["montre ou ignore les joueurs autour de toi (groupe seul)"] = "shows or ignores players around you (group only)",
+    ["Touche « buff suivant » : %s"] = "“Next buff” key: %s",
+    ["Aucune touche pour « buff suivant »."] = "No key bound to “Next buff”.",
+    ["Clic : la page Raccourcis du jeu, section Serial Buffer."] = "Click: the game's Keybindings page, Serial Buffer section.",
+    ["touche ?"] = "key?",
+    ["Page des raccourcis indisponible : Échap > Options > Raccourcis > Serial Buffer."] = "Keybindings page unavailable: Esc > Options > Keybindings > Serial Buffer.",
+    ["ta touche « buff suivant », et la page des raccourcis pour la changer"] = "your “Next buff” key, and the Keybindings page to change it",
 }
 for k, v in pairs(T) do NS.L[k] = v end

@@ -64,5 +64,19 @@ local T = {
     ["ouvre les options"] = "öffnet die Optionen",
     ["Buff suivant"] = "Nächster Buff",
     ["Rafraîchir un buff s'il lui reste moins de %d min"] = "Buff erneuern, wenn weniger als %d Min. übrig sind",
+    -- D40 : groupe seul ; D41 : la touche « buff suivant » dans l'en-tête.
+    ["Groupe seul"] = "Nur Gruppe",
+    ["Coché : seuls toi et ton groupe ou ton raid sont listés ; les joueurs autour de toi sont ignorés."] = "Aktiviert: nur du und deine Gruppe oder dein Schlachtzug werden aufgelistet; Spieler um dich herum werden ignoriert.",
+    ["Groupe seul : ignorer les joueurs autour de toi"] = "Nur Gruppe: Spieler um dich herum ignorieren",
+    ["Personne à buffer dans ton groupe."] = "Niemand in deiner Gruppe braucht einen Buff.",
+    ["Joueurs autour ignorés : seuls toi et ton groupe sont listés."] = "Spieler um dich herum ignoriert: nur du und deine Gruppe werden aufgelistet.",
+    ["Joueurs autour listés."] = "Spieler um dich herum werden aufgelistet.",
+    ["montre ou ignore les joueurs autour de toi (groupe seul)"] = "zeigt oder ignoriert Spieler um dich herum (nur Gruppe)",
+    ["Touche « buff suivant » : %s"] = "Taste „Nächster Buff“: %s",
+    ["Aucune touche pour « buff suivant »."] = "Keine Taste für „Nächster Buff“ belegt.",
+    ["Clic : la page Raccourcis du jeu, section Serial Buffer."] = "Klick: die Tastaturbelegung des Spiels, Abschnitt Serial Buffer.",
+    ["touche ?"] = "Taste?",
+    ["Page des raccourcis indisponible : Échap > Options > Raccourcis > Serial Buffer."] = "Tastaturbelegung nicht verfügbar: Esc > Optionen > Tastaturbelegung > Serial Buffer.",
+    ["ta touche « buff suivant », et la page des raccourcis pour la changer"] = "deine Taste „Nächster Buff“ und die Tastaturbelegung, um sie zu ändern",
 }
 for k, v in pairs(T) do NS.L[k] = v end

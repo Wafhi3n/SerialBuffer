@@ -65,5 +65,19 @@ local T = {
     ["ouvre les options"] = "abre las opciones",
     ["Buff suivant"] = "Siguiente beneficio",
     ["Rafraîchir un buff s'il lui reste moins de %d min"] = "Renovar un beneficio si le quedan menos de %d min",
+    -- D40 : groupe seul ; D41 : la touche « buff suivant » dans l'en-tête.
+    ["Groupe seul"] = "Solo grupo",
+    ["Coché : seuls toi et ton groupe ou ton raid sont listés ; les joueurs autour de toi sont ignorés."] = "Marcado: solo se listan tú y tu grupo o banda; se ignora a los jugadores a tu alrededor.",
+    ["Groupe seul : ignorer les joueurs autour de toi"] = "Solo grupo: ignorar a los jugadores a tu alrededor",
+    ["Personne à buffer dans ton groupe."] = "Nadie de tu grupo necesita un beneficio.",
+    ["Joueurs autour ignorés : seuls toi et ton groupe sont listés."] = "Jugadores a tu alrededor ignorados: solo se listan tú y tu grupo.",
+    ["Joueurs autour listés."] = "Se listan los jugadores a tu alrededor.",
+    ["montre ou ignore les joueurs autour de toi (groupe seul)"] = "muestra o ignora a los jugadores a tu alrededor (solo grupo)",
+    ["Touche « buff suivant » : %s"] = "Tecla «Siguiente beneficio»: %s",
+    ["Aucune touche pour « buff suivant »."] = "Ninguna tecla asignada a «Siguiente beneficio».",
+    ["Clic : la page Raccourcis du jeu, section Serial Buffer."] = "Clic: la página de asignación de teclas del juego, sección Serial Buffer.",
+    ["touche ?"] = "¿tecla?",
+    ["Page des raccourcis indisponible : Échap > Options > Raccourcis > Serial Buffer."] = "Página de teclas no disponible: Esc > Opciones > Asignación de teclas > Serial Buffer.",
+    ["ta touche « buff suivant », et la page des raccourcis pour la changer"] = "tu tecla «Siguiente beneficio» y la página de teclas para cambiarla",
 }
 for k, v in pairs(T) do NS.L[k] = v end

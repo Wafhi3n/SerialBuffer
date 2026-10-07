@@ -152,7 +152,8 @@ function UI:Build()
     panel.gear = gearButton(panel)
     panel.count = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     panel.count:SetPoint("RIGHT", panel.gear, "LEFT", -4, 0)
-    panel.msg = panel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    NS.Header:Build(panel)   -- D40, D41 : la case « Groupe seul » et la touche « buff suivant »
+    panel.msg =panel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     panel.msg:SetWidth(WIDTH - 2 * PAD)
     panel.msg:SetJustifyH("LEFT")
     for i = 1, MAX_ROWS do self.rows[i] = buildRow(panel) end
@@ -302,7 +303,9 @@ local function footer(rows, info)
         if unread > 0 then
             lines[#lines + 1] = string.format(L["%d illisible(s) : le jeu cache leur nom ou leurs buffs."], unread)
         elseif #rows == 0 then
-            lines[#lines + 1] = (info.around or 0) == 0 and L["Personne à buffer autour de toi."] or L["Tournée finie !"]
+            local nobody = info.state == "grouponly" and L["Personne à buffer dans ton groupe."]   -- D40
+                or L["Personne à buffer autour de toi."]
+            lines[#lines + 1] = (info.around or 0) == 0 and nobody or L["Tournée finie !"]
         end
     end
     if #lines == 0 then return nil end
@@ -342,10 +345,12 @@ function UI:Layout(rows, kind)
     return y
 end
 
--- info : state ("ok" | "noplates" | "instance" | "nobuffs"), around, unread, group ("raid" | "party" | nil).
+-- info : state ("ok" | "noplates" | "grouponly" | "instance" | "nobuffs"), around, unread,
+-- group ("raid" | "party" | nil). « grouponly » (D40) n'a pas de message : la case de l'en-tête le dit.
 function UI:Render(rows, info)
     if not self.panel or InCombatLockdown() then return end
     if not self.panel.anchored then anchorTop(self.panel) end
+    NS.Header:Refresh()
     local nextRow = NS.Cast.NextRow(rows)
     setMacro(self.next, nextRow and NS.Cast.MacroFor(nextRow), nextRow)
     local y = self:Layout(rows, info.group)

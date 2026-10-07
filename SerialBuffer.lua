@@ -17,6 +17,7 @@ NS.DEFAULTS = {
     schemaVer = 3,          -- 3 : la grille D34 remplace off, priority et classBuffs (Buffs:Migrate)
     shown = true,           -- le tableau (/sbuff)
     showPvP = false,        -- D5 : joueurs PvP cachés par défaut
+    groupOnly = false,      -- D40 : coché, les joueurs autour sont ignorés (toi et ton groupe ou raid seuls)
     orders = {},            -- D34 : lanceur -> classe de la cible -> ids par rang (0 = vide) ; seuls les écarts au défaut
     groupPick = {},         -- D35 : lanceur -> classe de la cible -> id du choix unique pour le groupe (absent = vide)
     tooLow = {},            -- D38 : rang de sort lancé -> niveau max refusé « Target is too low level » (appris)
@@ -49,6 +50,14 @@ function NS:Slash(msg)
     elseif cmd == "pvp" then
         self.db.showPvP = not self.db.showPvP
         self:Print(self.db.showPvP and L["Joueurs PvP affichés."] or L["Joueurs PvP cachés."])
+    elseif cmd == "autour" or cmd == "around" then   -- D40
+        self.Header:SetGroupOnly(not self.db.groupOnly)
+        self:Print(self.db.groupOnly and L["Joueurs autour ignorés : seuls toi et ton groupe sont listés."]
+            or L["Joueurs autour listés."])
+    elseif cmd == "touche" or cmd == "key" then       -- D41
+        local key = self.Header.KeyText()
+        self:Print(key and string.format(L["Touche « buff suivant » : %s"], key) or L["Aucune touche pour « buff suivant »."])
+        self.Header:OpenBindings()
     elseif cmd == "options" then
         if self.Options then self.Options:Open() end
     elseif cmd == "version" then
@@ -59,6 +68,8 @@ function NS:Slash(msg)
         self:Print(L["Commandes :"])
         self:Print("/sbuff - " .. L["affiche ou cache le tableau"])
         self:Print("/sbuff pvp - " .. L["montre ou cache les joueurs PvP"])
+        self:Print("/sbuff autour - " .. L["montre ou ignore les joueurs autour de toi (groupe seul)"])
+        self:Print("/sbuff touche - " .. L["ta touche « buff suivant », et la page des raccourcis pour la changer"])
         self:Print("/sbuff options - " .. L["ouvre les options"])
         self:Print("/sbuff groupe - " .. L["liste les Serial Buffer de ton groupe"])
         self:Print("/sbuff version - " .. L["affiche la version"])
