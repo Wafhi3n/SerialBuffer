@@ -1,0 +1,43 @@
+name: Bug report
+description: Something in Serial Buffer doesn't work, or looks wrong.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time! Write in any language you like.
+
+        **Fastest way:** in game, type `/sbuff bug` (or click Report in the options panel), pick **Bug**, copy the link (Ctrl+C) and open it in your browser. The Version box below comes back filled in.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How can we make it happen again?
+      placeholder: |
+        1. Open ...
+        2. Click ...
+    validations:
+      required: false
+  - type: textarea
+    id: error
+    attributes:
+      label: Lua error
+      description: If the game showed an error (BugSack, or the default error window), paste it here.
+      render: text
+    validations:
+      required: false
+  - type: textarea
+    id: env
+    attributes:
+      label: Version
+      description: Filled in by the in-game link. Otherwise, the addon version (`/sbuff version`) and the game version.
+      render: text
+    validations:
+      required: false
