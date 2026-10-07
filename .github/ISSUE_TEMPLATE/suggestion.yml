@@ -8,7 +8,7 @@ body:
       value: |
         Thanks for the idea! Write in any language you like.
 
-        **From the game:** type `/sbuff bug` (or click Report in the options panel), pick **Idea**, copy the link (Ctrl+C) and open it in your browser.
+        **From the game, in versions after 0.3.1-beta:** type `/sbuff bug` (or click Report in the options panel), pick **Idea**, copy the link (Ctrl+C) and open it in your browser.
   - type: textarea
     id: idea
     attributes:
