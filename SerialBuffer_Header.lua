@@ -40,11 +40,13 @@ end
 
 -- D40 : la case, la case des options et /sbuff autour passent tous par ici. Hors combat, le tableau
 -- suit tout de suite ; en combat il est figé (D36) et prend le réglage à la sortie ; caché, il ne
--- recalcule rien (la touche « buff suivant » reste vide, SerialBuffer_UI.lua).
+-- recalcule rien (la touche « buff suivant » reste vide, SerialBuffer_UI.lua). Les options ne se
+-- touchent pas en combat : leur cadre vit dans le panneau de Blizzard (protégé une fois accroché,
+-- skill wow-forever-api) ; leur OnShow les remet de toute façon à l'état de la base.
 function H:SetGroupOnly(on)
     NS.db.groupOnly = on and true or false
     self:Refresh()
-    if NS.Options.built then NS.Options:Refresh() end
+    if NS.Options.built and not InCombatLockdown() then NS.Options:Refresh() end
     if NS.UI:IsVisible() then NS.Run:Refresh() end
 end
 

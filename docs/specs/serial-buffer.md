@@ -626,7 +626,9 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
 31. [humain] (D40) Dehors, groupé, avec des inconnus sans buff autour : cocher « Groupe seul » dans
     l'en-tête fait disparaître la partie « Autour de toi » au rendu suivant (une demi-seconde) ; seuls
     toi et ton groupe restent, et la touche « buff suivant » ne vise plus d'inconnu. Décocher les
-    ramène. La case des options suit la même valeur, et elle survit à un `/reload`. Témoin
+    ramène. La case des options suit la même valeur (sur un paladin, elle se voit encore sous la
+    grille et la ligne « qui pose quoi » : le panneau ne défile pas), et elle survit à un `/reload`.
+    Cocher la case de l'en-tête en combat ne laisse ni erreur ni `ADDON_ACTION_BLOCKED`. Témoin
     connu-bon : le même tableau, case décochée, juste avant.
 32. [humain] (D40) Seul, case cochée, rien à te poser : le pied dit « Personne à buffer dans ton
     groupe. » ; `/sbuff autour` bascule la case et le dit dans le chat.
