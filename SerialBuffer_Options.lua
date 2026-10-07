@@ -78,6 +78,12 @@ function O:Build(panel)
     end
     self.checks[#self.checks + 1] = checkbox(panel, PAD, y, L["Montrer les joueurs marqués PvP"],
         function() return NS.db.showPvP end, function(v) NS.db.showPvP = v end)
+    -- Signaler un bug ou une idée (SerialBuffer_Report.lua) : sa fenêtre passe devant ce panneau.
+    local report = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+    report:SetSize(260, 22)
+    report:SetPoint("TOPLEFT", PAD, y - LINE - 12)
+    report:SetText(L["Signaler un bug ou proposer une idée"])
+    report:SetScript("OnClick", function() NS.Report:Open() end)
     self.built = true
 end
 
