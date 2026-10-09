@@ -77,5 +77,16 @@ local T = {
     ["ouvre les options"] = "opens the options",
     ["Buff suivant"] = "Next buff",
     ["Rafraîchir un buff s'il lui reste moins de %d min"] = "Refresh a buff with less than %d min left",
+    -- Signaler un bug ou une idée (SerialBuffer_Report.lua, 2026-10-07)
+    ["Signaler un bug ou proposer une idée"] = "Report a bug or suggest an idea",
+    ["Bug"] = "Bug",
+    ["Idée"] = "Idea",
+    ["Sans compte GitHub"] = "No GitHub account",
+    ["Lien copié : colle-le (Ctrl+V) dans ton navigateur."] = "Link copied: paste it (Ctrl+V) into your browser.",
+    ["Fermer"] = "Close",
+    ["Copie ce lien (Ctrl+C) et ouvre-le dans ton navigateur : le formulaire arrive avec la version déjà remplie."] = "Copy this link (Ctrl+C) and open it in your browser: the form comes up with the version already filled in.",
+    ["Pas de compte GitHub ? Copie ce lien (Ctrl+C) et laisse un commentaire sur la page CurseForge."] = "No GitHub account? Copy this link (Ctrl+C) and leave a comment on the CurseForge page.",
+    ["Un bug, ou une idée pour l'addon ? Choisis ci-dessous : l'addon te donne le lien du formulaire, déjà rempli."] = "A bug, or an idea for the addon? Pick below: the addon gives you the link to the form, already filled in.",
+    ["signaler un bug ou proposer une idée (lien vers un ticket GitHub)"] = "report a bug or suggest an idea (link to a GitHub issue)",
 }
 for k, v in pairs(T) do NS.L[k] = v end

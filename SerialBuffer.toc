@@ -30,4 +30,6 @@ SerialBuffer_Grid.lua
 SerialBuffer_Options.lua
 SerialBuffer_Share.lua
 SerialBuffer_Comm.lua
+# Signaler un bug ou une idee : un lien vers un ticket GitHub (docs/specs/signaler.md, outillage).
+SerialBuffer_Report.lua
 SerialBuffer_Run.lua

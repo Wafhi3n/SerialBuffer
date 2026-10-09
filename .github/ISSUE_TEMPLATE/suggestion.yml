@@ -1,0 +1,32 @@
+name: Suggestion
+description: An idea to make Serial Buffer better.
+title: "[Idea] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! Write in any language you like.
+
+        **From the game, in versions after 0.3.1-beta:** type `/sbuff bug` (or click Report in the options panel), pick **Idea**, copy the link (Ctrl+C) and open it in your browser.
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What would it help you do?
+      description: The situation in game where you missed it.
+    validations:
+      required: false
+  - type: textarea
+    id: env
+    attributes:
+      label: Version
+      description: Filled in by the in-game link.
+      render: text
+    validations:
+      required: false

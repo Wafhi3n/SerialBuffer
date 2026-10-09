@@ -56,6 +56,10 @@ function NS:Slash(msg)
         self:Printf(L["version %s"], self.VERSION)
     elseif cmd == "groupe" or cmd == "group" then
         if self.Comm then self.Comm:PrintPeers() end
+    elseif cmd == "bug" then
+        if self.Report then self.Report:Open("bug") end
+    elseif cmd == "idea" or cmd == "idee" or cmd == "idée" then
+        if self.Report then self.Report:Open("idea") end
     else
         self:Print(L["Commandes :"])
         self:Print("/sbuff - " .. L["affiche ou cache le tableau"])
@@ -63,6 +67,7 @@ function NS:Slash(msg)
         self:Print("/sbuff options - " .. L["ouvre les options"])
         self:Print("/sbuff groupe - " .. L["liste les Serial Buffer de ton groupe"])
         self:Print("/sbuff version - " .. L["affiche la version"])
+        self:Print("/sbuff bug - " .. L["signaler un bug ou proposer une idée (lien vers un ticket GitHub)"])
     end
 end
 
