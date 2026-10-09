@@ -1,8 +1,8 @@
 -- SerialBuffer_Options.lua — LES OPTIONS, dans le panneau d'options du jeu (Options > AddOns).
 --
 -- Spec docs/specs/serial-buffer.md : D34 et D35 (la grille par classe et sa ligne « Groupe / raid »,
--- SerialBuffer_Grid.lua), D28 (seuil de rafraîchissement hors paladin), D5 (joueurs PvP), D32 (le
--- rouage du tableau ouvre ce panneau : O:Open).
+-- SerialBuffer_Grid.lua), D28 (seuil de rafraîchissement hors paladin), D5 (joueurs PvP), D40 (groupe
+-- seul), D32 (le rouage du tableau ouvre ce panneau : O:Open).
 -- Prudences, toutes deux liées au client Forever (skill public wow-forever-api) :
 --   - AUCUN menu déroulant : ouvrir un menu du système Menu depuis un addon fait planter le client
 --     (taint-and-protected-frames.md, « Menus »). L'ordre se règle avec les flèches de la grille ;
@@ -109,6 +109,9 @@ function O:Build(panel)
     y = y - LINE
     self.checks[#self.checks + 1] = checkbox(panel, PAD, y, L["Montrer les joueurs marqués PvP"],
         function() return NS.db.showPvP end, function(v) NS.db.showPvP = v end)
+    -- D40 : la même case que dans l'en-tête du tableau (SerialBuffer_Header.lua).
+    self.checks[#self.checks + 1] = checkbox(panel, PAD, y - LINE, L["Groupe seul : ignorer les joueurs autour de toi"],
+        function() return NS.db.groupOnly end, function(v) NS.Header:SetGroupOnly(v) end)
     -- Signaler un bug ou une idée (SerialBuffer_Report.lua) : sa fenêtre passe devant ce panneau.
     -- À droite du TITRE (le user, 2026-10-09) : vu dès l'ouverture, et rien ne le pousse. Sous la
     -- dernière case, il débordait du panneau, posé sur sa bordure à côté de « Fermer » (capture).

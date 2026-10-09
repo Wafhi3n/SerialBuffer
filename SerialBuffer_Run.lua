@@ -34,7 +34,8 @@ end
 
 local function wantedFor(class, inGroup) return NS.Buffs:WantedFor(class, NS.db, inGroup) end
 
--- En instance, la liste ne lit que toi et ton groupe ou ton raid (D31) : pas de plaques.
+-- En instance, la liste ne lit que toi et ton groupe ou ton raid (D31) : pas de plaques. Dehors aussi
+-- quand la case « Groupe seul » est cochée (D40, état « grouponly »).
 -- Jamais en combat (D36, tableau figé) : rien n'est relu, et la file garde l'ordre d'avant le pull
 -- (sinon D16 écarterait chaque joueur en combat, qui reviendrait en fin de file après).
 function R:Refresh()
@@ -44,7 +45,9 @@ function R:Refresh()
         return
     end
     local state = NS.Units:State()
-    local rows, around, unread = NS.Queue:Build(NS.Units:Collect(state ~= "instance"), wantedFor,
+    if state ~= "instance" and NS.db.groupOnly then state = "grouponly" end
+    local withPlates = state ~= "instance" and state ~= "grouponly"
+    local rows, around, unread = NS.Queue:Build(NS.Units:Collect(withPlates), wantedFor,
         NS.Units.probe, { showPvP = NS.db.showPvP, now = GetTime(), refreshBelow = (NS.db.refreshMin or 45) * 60,
                           tooLow = NS.db.tooLow })
     NS.UI:Render(rows, { state = state, around = around, unread = unread, group = NS.Units:GroupKind() })

@@ -29,7 +29,8 @@ Hors combat, en extérieur, **un tableau sur le côté de l'écran** liste les j
 - **les membres de ton groupe ou de ton raid, même hors de portée**, marqués comme tels.
 
 En instance (donjon, raid), le tableau ne liste que ton groupe ou ton raid (D31) : les inconnus
-sont une affaire d'extérieur, le groupe se buffe partout.
+sont une affaire d'extérieur, le groupe se buffe partout. Dehors aussi, une case « Groupe seul » de
+l'en-tête coupe les joueurs autour (D40).
 
 Les joueurs y sont rangés **dans l'ordre où ils sont entrés dans la liste** : le premier entré est en
 tête (FIFO). **Les membres de ton groupe ou de ton raid passent devant**, dans une partie à eux en
@@ -476,6 +477,26 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
     décompte plus ;
   - un buff qui tombe en combat alors qu'il avait plus que le seuil au pull (dissipé, mort) n'a pas
     de ligne : le tableau ne peut pas en créer en combat.
+- **D40 : une case « Groupe seul » coupe les joueurs autour de toi** (user, 2026-10-07, capture du
+  tableau à l'appui : « un toggle pour désactiver le buffing des joueurs aux alentours (et garder que
+  groupe/raid) »). Cochée, la liste ne montre que toi et ton groupe ou ton raid, dehors comme en
+  instance (D31) : aucune plaque n'est lue. Réglage gardé (`groupOnly`, décochée par défaut : l'addon
+  reste une tournée d'extérieur, D3). *Conséquences dérivées, non décidées par le user :*
+  - la case est dans l'en-tête du tableau, juste après le titre (là où le user a tracé son trait),
+    et aussi dans les options ; `/sbuff autour` la bascule ;
+  - seul et case cochée, tu ne vois que toi ; liste vide, le pied dit « Personne à buffer dans ton
+    groupe. » ; le message des plaques coupées (« noplates ») ne s'affiche plus, il n'a plus d'objet ;
+  - en combat, la case change le réglage mais le tableau reste figé (D36) : il le prend à la sortie.
+- **D41 : la touche « buff suivant » se voit dans l'en-tête, et un clic sur elle ouvre la page
+  Raccourcis du jeu** (user, 2026-10-07 : « un truc pour voir le raccourci actuel, le définir (le
+  raccourci existe déjà et utilise l'UI Blizzard) » ; entre une capture de touche dans l'addon et la
+  page de Blizzard, le user a choisi **la page de Blizzard**). La touche s'affiche à gauche du
+  compteur (« [F] », ou « touche ? » en gris si aucune), relue dès qu'elle change. Le clic ouvre
+  Options > Raccourcis déroulé jusqu'à la section « Serial Buffer » ; c'est Blizzard qui assigne,
+  signale et remplace. `/sbuff touche` fait de même. Pas en combat. *Non mesuré sur Forever* :
+  `Settings.OpenToCategory` sur la page des raccourcis avec un nom de section à dérouler (source
+  70205 : `SettingsPanelMixin:OpenToCategory` → `ScrollToElementByName`) ; la section peut s'ouvrir
+  repliée.
 
 ## Questions ouvertes (au user)
 
@@ -602,6 +623,20 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     temps restant ; pendant un combat, ce temps descend et la ligne passe à « expiré » quand il
     tombe ; un clic le refait. Le tank en combat a sa ligne. Témoin connu-bon : la barre de buffs du
     membre ciblé.
+31. [humain] (D40) Dehors, groupé, avec des inconnus sans buff autour : cocher « Groupe seul » dans
+    l'en-tête fait disparaître la partie « Autour de toi » au rendu suivant (une demi-seconde) ; seuls
+    toi et ton groupe restent, et la touche « buff suivant » ne vise plus d'inconnu. Décocher les
+    ramène. La case des options suit la même valeur (sur un paladin, elle se voit encore sous la
+    grille et la ligne « qui pose quoi » : le panneau ne défile pas), et elle survit à un `/reload`.
+    Cocher la case de l'en-tête en combat ne laisse ni erreur ni `ADDON_ACTION_BLOCKED`. Témoin
+    connu-bon : le même tableau, case décochée, juste avant.
+32. [humain] (D40) Seul, case cochée, rien à te poser : le pied dit « Personne à buffer dans ton
+    groupe. » ; `/sbuff autour` bascule la case et le dit dans le chat.
+33. [humain] (D41) Une touche assignée à « Buff suivant » s'affiche dans l'en-tête (« [F] ») ;
+    sans touche, « touche ? » en gris. Un clic, hors combat, ouvre Options > Raccourcis sur la
+    section « Serial Buffer » ; y changer la touche met l'en-tête à jour sans `/reload`. En combat,
+    « pas pendant un combat ». Aucune erreur Lua ni `ADDON_ACTION_BLOCKED` (BugGrabber, `taint.log`).
+    Témoin connu-bon : la même touche lue dans la page Raccourcis ouverte à la main.
 
 ## Contrat
 
@@ -610,13 +645,15 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
   s'écartent du défaut ; des jetons de classe et des ids, aucune donnée de joueur ; elles remplacent
   `off`, `priority` et `classBuffs`, migrés par `schemaVer` 3), la ligne « Groupe / raid »
   (`groupPick`, classe du lanceur → classe de la cible → id ; D35), les refus « trop bas » appris
-  (`tooLow`, rang de sort → niveau ; D38), l'option PvP, la réponse à la
+  (`tooLow`, rang de sort → niveau ; D38), l'option PvP, la case « Groupe seul » (`groupOnly` ; D40),
+  la réponse à la
   proposition des plaques et la position du tableau (son coin haut gauche). Pour le diagnostic, `seenErrors` : le
   nom et le texte des erreurs du jeu vues juste après un de nos clics. **Aucun nom de joueur, aucun
   GUID** : un secret sauvegardé empoisonne la base. Le refus « trop bas » (D24) vit en mémoire de
   session, jamais sauvegardé.
-- **Raccourci clavier** « Serial Buffer : buff suivant », dans le menu des raccourcis du jeu.
-- **Commande** : `/sbuff` (D17).
+- **Raccourci clavier** « Serial Buffer : buff suivant », dans le menu des raccourcis du jeu ; la
+  touche assignée se lit dans l'en-tête du tableau, qui ouvre ce menu (D41).
+- **Commande** : `/sbuff` (D17) ; `/sbuff autour` (D40), `/sbuff touche` (D41).
 
 ## Renvois
 
