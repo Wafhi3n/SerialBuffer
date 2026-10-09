@@ -1,5 +1,13 @@
 # Changelog - Serial Buffer
 
+## v0.3.2-beta - 2026-10-09
+
+Found a bug, or have an idea? Click the little blue bug next to the gear at the top of the panel, or
+the button next to the title in the options (or type /sbuff bug). Pick Bug or Idea and the addon
+gives you a link, already selected. Press Ctrl+C, paste it in your browser, and the GitHub form opens
+with your addon and game versions filled in. Nothing about your character goes in it. No GitHub
+account? The third choice gives you the addon's CurseForge page, where you can leave a comment.
+
 ## v0.3.1-beta - 2026-10-05
 
 Paladins in the same group now split their blessings. The one who joined the group first keeps
