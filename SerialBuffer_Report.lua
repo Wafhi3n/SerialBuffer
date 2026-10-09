@@ -58,6 +58,10 @@ local HINTS = {
     idea = L["Copie ce lien (Ctrl+C) et ouvre-le dans ton navigateur : le formulaire arrive avec la version déjà remplie."],
     site = L["Pas de compte GitHub ? Copie ce lien (Ctrl+C) et laisse un commentaire sur la page CurseForge."],
 }
+-- Pas de bouton « Copier » : le jeu ne laisse pas un addon écrire dans le presse-papiers
+-- (CopyToClipboard porte HasRestrictions dans la doc du client, comme les gestes de l'hôtel des
+-- ventes). Le joueur fait Ctrl+C dans la zone, et on lui confirme que c'est fait.
+local COPIED = "|cFF33DD88" .. L["Lien copié : colle-le (Ctrl+V) dans ton navigateur."] .. "|r"
 
 -- La zone du lien : en lecture seule (une frappe remet le lien), tout sélectionné au focus.
 local function buildBox(f)
@@ -76,6 +80,12 @@ local function buildBox(f)
     box:SetScript("OnEditFocusGained", function(b) b:HighlightText() end)
     box:SetScript("OnTextChanged", function(b, user)
         if user then b:SetText(b.link or ""); b:HighlightText() end
+    end)
+    -- Ctrl+C (Cmd+C sur Mac) dans la zone : le jeu copie le lien sélectionné, on le dit au joueur.
+    box:SetScript("OnKeyDown", function(b, key)
+        if key == "C" and b.link and b.link ~= "" and (IsControlKeyDown() or (IsMetaKeyDown and IsMetaKeyDown())) then
+            f.hint:SetText(COPIED)
+        end
     end)
     return box
 end
@@ -145,5 +155,6 @@ function Report:Show(kind)
     f.hint:SetText(HINTS[kind] or L["Un bug, ou une idée pour l'addon ? Choisis ci-dessous : l'addon te donne le lien du formulaire, déjà rempli."])
     f.box.link = kind and Report.URL(kind) or ""
     f.box:SetText(f.box.link)
-    if kind then f.box:SetFocus(); f.box:HighlightText() else f.box:ClearFocus() end
+    -- Curseur au DÉBUT : la zone montre « https://github.com/… », pas la fin du lien (vu le 2026-10-09).
+    if kind then f.box:SetFocus(); f.box:SetCursorPosition(0); f.box:HighlightText() else f.box:ClearFocus() end
 end

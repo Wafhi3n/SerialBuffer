@@ -70,6 +70,7 @@ local T = {
     ["Bug"] = "Bug",
     ["Idée"] = "Idea",
     ["Sans compte GitHub"] = "No GitHub account",
+    ["Lien copié : colle-le (Ctrl+V) dans ton navigateur."] = "Link copied: paste it (Ctrl+V) into your browser.",
     ["Fermer"] = "Close",
     ["Copie ce lien (Ctrl+C) et ouvre-le dans ton navigateur : le formulaire arrive avec la version déjà remplie."] = "Copy this link (Ctrl+C) and open it in your browser: the form comes up with the version already filled in.",
     ["Pas de compte GitHub ? Copie ce lien (Ctrl+C) et laisse un commentaire sur la page CurseForge."] = "No GitHub account? Copy this link (Ctrl+C) and leave a comment on the CurseForge page.",
