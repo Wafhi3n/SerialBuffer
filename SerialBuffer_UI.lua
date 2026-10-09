@@ -81,18 +81,19 @@ local function buildRow(panel)
     local hl = row:CreateTexture(nil, "HIGHLIGHT")
     hl:SetAllPoints()
     hl:SetColorTexture(1, 1, 1, 0.12)
-    -- À droite : la note (PvP, hors de portée, temps restant), et devant elle l'ICÔNE du buff, qui
-    -- tient lieu de son nom (le user, 2026-10-09 : plus de nom de sort à traduire ni à tronquer).
-    -- Le nom du joueur prend la place qui reste et se tronque au lieu de passer dessous.
-    row.note = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    row.note:SetPoint("RIGHT")
-    row.note:SetJustifyH("RIGHT")
+    -- Au bord droit, l'ICÔNE du buff, qui tient lieu de son nom (le user, 2026-10-09 : plus de nom
+    -- de sort à traduire ni à tronquer) ; toujours au bord, les icônes de toutes les lignes forment
+    -- une colonne (le temps restant devant elle la décalait, vu sur capture le même jour). Devant
+    -- l'icône, la note (PvP, temps restant) ; le nom du joueur prend la place qui reste et se tronque.
     row.icon = row:CreateTexture(nil, "ARTWORK")
     row.icon:SetSize(ROW_H - 2, ROW_H - 2)
-    row.icon:SetPoint("RIGHT", row.note, "LEFT", -3, 0)
+    row.icon:SetPoint("RIGHT")
+    row.note = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    row.note:SetPoint("RIGHT", row.icon, "LEFT", -4, 0)
+    row.note:SetJustifyH("RIGHT")
     row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     row.name:SetPoint("LEFT")
-    row.name:SetPoint("RIGHT", row.icon, "LEFT", -6, 0)
+    row.name:SetPoint("RIGHT", row.note, "LEFT", -6, 0)
     row.name:SetJustifyH("LEFT")
     row.name:SetWordWrap(false)
     row.noteRGB = { row.note:GetTextColor() }

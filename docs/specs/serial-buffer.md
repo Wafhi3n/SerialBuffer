@@ -478,7 +478,9 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
     de ligne : le tableau ne peut pas en créer en combat.
 - **D42 : l'icône du buff remplace son nom sur la ligne** (user, 2026-10-09 : « un icône du buff à la
   place du nom du buff, pour simplifier la localisation »). La ligne se lit : nom du joueur à gauche,
-  puis, à droite, l'icône du buff à lancer devant la note (PvP, hors de portée, temps restant D39).
+  la note (PvP, temps restant D39), puis l'icône du buff à lancer, TOUJOURS au bord droit : les
+  icônes forment une colonne (le user, sur capture : « peut-être inversé ? », l'icône devant le
+  temps se décalait sur les seules lignes qui en avaient un).
   Le nom du sort n'est plus affiché nulle part sur la ligne : plus de texte long à tronquer ni à
   traduire. Même jour, sur capture : une ligne **hors de portée** n'écrit plus « hors de portée » ;
   nom gris, icône désaturée, ligne estompée, « comme le fait le jeu de base » (le user) ; sa section
