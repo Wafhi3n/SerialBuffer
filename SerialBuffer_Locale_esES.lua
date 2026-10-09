@@ -76,5 +76,8 @@ local T = {
     ["Pas de compte GitHub ? Copie ce lien (Ctrl+C) et laisse un commentaire sur la page CurseForge."] = "¿Sin cuenta de GitHub? Copia este enlace (Ctrl+C) y deja un comentario en la página de CurseForge.",
     ["Un bug, ou une idée pour l'addon ? Choisis ci-dessous : l'addon te donne le lien du formulaire, déjà rempli."] = "¿Un error o una idea para el addon? Elige abajo: el addon te da el enlace al formulario, ya rellenado.",
     ["signaler un bug ou proposer une idée (lien vers un ticket GitHub)"] = "informar de un error o proponer una idea (enlace a una incidencia de GitHub)",
+    -- Afficher le tableau depuis les options (2026-10-09)
+    ["Afficher le tableau (/sbuff)"] = "Mostrar la tabla (/sbuff)",
+    ["Tableau caché. /sbuff, ou la case « Afficher le tableau » des options, le réaffiche."] = "Tabla oculta. /sbuff, o la casilla «Mostrar la tabla» de las opciones, la vuelve a mostrar.",
 }
 for k, v in pairs(T) do NS.L[k] = v end

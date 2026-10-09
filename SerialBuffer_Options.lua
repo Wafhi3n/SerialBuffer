@@ -76,6 +76,11 @@ function O:Build(panel)
             self.refreshRow = refreshRow(panel, y); y = y - LINE - 4
         end
     end
+    -- Le tableau caché par /sbuff se retrouve ici (le user, 2026-10-09). Refusé en combat : la case
+    -- reprend l'état réel à la prochaine ouverture du panneau (O:Refresh au OnShow).
+    self.checks[#self.checks + 1] = checkbox(panel, PAD, y, L["Afficher le tableau (/sbuff)"],
+        function() return NS.db.shown end, function(v) NS.UI:SetVisible(v) end)
+    y = y - LINE
     self.checks[#self.checks + 1] = checkbox(panel, PAD, y, L["Montrer les joueurs marqués PvP"],
         function() return NS.db.showPvP end, function(v) NS.db.showPvP = v end)
     -- Signaler un bug ou une idée (SerialBuffer_Report.lua) : sa fenêtre passe devant ce panneau.

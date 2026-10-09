@@ -76,5 +76,8 @@ local T = {
     ["Pas de compte GitHub ? Copie ce lien (Ctrl+C) et laisse un commentaire sur la page CurseForge."] = "No GitHub account? Copy this link (Ctrl+C) and leave a comment on the CurseForge page.",
     ["Un bug, ou une idée pour l'addon ? Choisis ci-dessous : l'addon te donne le lien du formulaire, déjà rempli."] = "A bug, or an idea for the addon? Pick below: the addon gives you the link to the form, already filled in.",
     ["signaler un bug ou proposer une idée (lien vers un ticket GitHub)"] = "report a bug or suggest an idea (link to a GitHub issue)",
+    -- Afficher le tableau depuis les options (2026-10-09)
+    ["Afficher le tableau (/sbuff)"] = "Show the panel (/sbuff)",
+    ["Tableau caché. /sbuff, ou la case « Afficher le tableau » des options, le réaffiche."] = "Panel hidden. /sbuff, or the \"Show the panel\" box in the options, brings it back.",
 }
 for k, v in pairs(T) do NS.L[k] = v end

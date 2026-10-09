@@ -181,14 +181,27 @@ function UI:IsVisible()
     return self.panel ~= nil and self.panel:IsVisible()
 end
 
--- /sbuff : afficher ou cacher. Jamais en combat (ancêtre de boutons sécurisés). Caché, le tableau
--- ne se recalcule plus : la touche « buff suivant » est vidée, pour ne pas viser une file périmée.
+-- Afficher ou cacher : /sbuff (Toggle) et la case « Afficher le tableau » des options. Jamais en
+-- combat (ancêtre de boutons sécurisés) : rend false si refusé. Caché, le tableau ne se recalcule
+-- plus : la touche « buff suivant » est vidée, pour ne pas viser une file périmée. Une ligne de chat
+-- dit comment le retrouver : caché par /sbuff, il ne se devinait plus (le user, 2026-10-09).
+function UI:SetVisible(on)
+    if not self.panel then return false end
+    if InCombatLockdown() then NS:Print(L["Pas pendant un combat."]) return false end
+    NS.db.shown = on and true or false
+    self.panel:SetShown(NS.db.shown)
+    if not NS.db.shown then
+        setMacro(self.next, nil, nil)
+        NS:Print(L["Tableau caché. /sbuff, ou la case « Afficher le tableau » des options, le réaffiche."])
+    end
+    -- La case des options suit /sbuff ; hors combat seulement (cf. Header:SetGroupOnly).
+    if NS.Options.built then NS.Options:Refresh() end
+    return true
+end
+
 function UI:Toggle()
     if not self.panel then return end
-    if InCombatLockdown() then NS:Print(L["Pas pendant un combat."]) return end
-    NS.db.shown = not self.panel:IsShown()
-    self.panel:SetShown(NS.db.shown)
-    if not NS.db.shown then setMacro(self.next, nil, nil) end
+    self:SetVisible(not self.panel:IsShown())
 end
 
 -- Hors combat seulement (Render). Remet aussi ce que le combat a changé (D36 : gris, note).
