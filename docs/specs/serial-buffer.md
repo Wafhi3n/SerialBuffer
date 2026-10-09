@@ -493,10 +493,12 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   page de Blizzard, le user a choisi **la page de Blizzard**). La touche s'affiche à gauche du
   compteur (« [F] », ou « touche ? » en gris si aucune), relue dès qu'elle change. Le clic ouvre
   Options > Raccourcis déroulé jusqu'à la section « Serial Buffer » ; c'est Blizzard qui assigne,
-  signale et remplace. `/sbuff touche` fait de même. Pas en combat. *Non mesuré sur Forever* :
-  `Settings.OpenToCategory` sur la page des raccourcis avec un nom de section à dérouler (source
-  70205 : `SettingsPanelMixin:OpenToCategory` → `ScrollToElementByName`) ; la section peut s'ouvrir
-  repliée.
+  signale et remplace. `/sbuff touche` fait de même. Pas en combat. **Mesuré le 2026-10-09 17:23**
+  (registre, build 70291) : `Settings.OpenToCategory(Settings.KEYBINDINGS_CATEGORY_ID, "Serial
+  Buffer")` appelé par l'addon ouvre la page des raccourcis déjà déroulée jusqu'à la section
+  (source 70205 : `SettingsPanelMixin:OpenToCategory` → `ScrollToElementByName`), et une touche
+  changée là s'affiche aussitôt dans l'en-tête (`UPDATE_BINDINGS`). D40 et D41 vus en entier le même
+  jour (critères 31 à 33).
 - **D42 : l'icône du buff remplace son nom sur la ligne** (user, 2026-10-09 : « un icône du buff à la
   place du nom du buff, pour simplifier la localisation »). La ligne se lit : nom du joueur à gauche,
   la note (PvP, temps restant D39), puis l'icône du buff à lancer, TOUJOURS au bord droit : les
