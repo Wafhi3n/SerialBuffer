@@ -57,6 +57,29 @@ local function refreshRow(panel, y)
     return row
 end
 
+-- Coordination, palier 3 (C1) : qui peut régler ta ligne Groupe / raid à ta place. Trois cases
+-- qui s'excluent (aucun menu déroulant : ils font planter Forever). Rend le y libre suivant.
+local WHO = { "none", "leader", "anyone" }
+
+function O:WhoRow(panel, y)
+    local head = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    head:SetPoint("TOPLEFT", PAD, y - 4)
+    head:SetText(L["Qui peut régler ta ligne Groupe / raid :"])
+    local xs = { PAD, PAD + 120, PAD + 330 }
+    for i, value in ipairs(WHO) do
+        -- Clés écrites en toutes lettres pour la porte de localisation.
+        local label = (i == 1 and L["personne"]) or (i == 2 and L["le chef et ses assistants"]) or L["n'importe qui du groupe"]
+        self.checks[#self.checks + 1] = checkbox(panel, xs[i], y - 24, label,
+            function() return (NS.db.coordWho or "none") == value end,
+            function()
+                NS.db.coordWho = value
+                O:Refresh()
+                NS.Comm:Announce()   -- les autres apprennent s'ils peuvent régler ta ligne
+            end)
+    end
+    return y - 54
+end
+
 -- Construit le contenu une fois, à la première ouverture.
 function O:Build(panel)
     local _, class = UnitClass("player")
@@ -66,6 +89,7 @@ function O:Build(panel)
     local y = -PAD - 30
     if NS.Buffs:HasCatalog(class) then
         y = NS.Grid:Build(panel, y, class)
+        y = self:WhoRow(panel, y)
         local note = panel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
         note:SetPoint("TOPLEFT", PAD, y - 6)
         note:SetWidth(600)
@@ -75,6 +99,8 @@ function O:Build(panel)
         if class ~= "PALADIN" then
             self.refreshRow = refreshRow(panel, y); y = y - LINE - 4
         end
+    else
+        y = NS.Grid:BuildWatch(panel, y)   -- palier 3 : un chef sans buff voit et règle les lignes
     end
     -- Le tableau caché par /sbuff se retrouve ici (le user, 2026-10-09). Refusé en combat : la case
     -- reprend l'état réel à la prochaine ouverture du panneau (O:Refresh au OnShow).
@@ -113,6 +139,10 @@ end
 function O:Register()
     if not (Settings and Settings.RegisterCanvasLayoutCategory and Settings.RegisterAddOnCategory) then return end
     local panel = CreateFrame("Frame")
+    -- Créé CACHÉ : un cadre naît visible, et le premier affichage par le panneau du jeu ne
+    -- déclenchait alors pas OnShow, d'où un panneau vide jusqu'à ce qu'on change de menu et revienne
+    -- (vu par le user, 2026-10-05).
+    panel:Hide()
     panel:SetScript("OnShow", function(f)
         if not O.built then O:Build(f) end
         O:Refresh()

@@ -174,6 +174,57 @@ uniques) ; les prêtres, mages et druides posent tout, comme avant.
   passe à la préférence suivante qu'aucun plus ancien n'a prise.
 - `/sbuff groupe` montre aussi ta propre répartition.
 
+## Palier 3 : laisser un autre régler ta ligne (C1, 2026-10-05)
+
+*Choix de l'agent pour appliquer C1, le user ayant dit « vas-y » ; à revoir s'il le souhaite.*
+
+- **L'option, à trois positions**, dans les options sous « Groupe / raid : qui pose quoi » : « qui
+  peut régler ta ligne à ta place » : **personne** (par défaut), **le chef** (le chef du groupe ou
+  du raid et ses assistants), **n'importe qui** du groupe. Trois cases qui s'excluent (aucun menu
+  déroulant, ils font planter Forever).
+- **Chaque annonce dit cette option** : les autres savent s'ils ont le droit de régler ta ligne.
+- **Régler la ligne d'un autre** : dans la partie « qui pose quoi », les cases de la ligne d'un
+  joueur qui te le permet deviennent cliquables (clic, molette), comme ta ligne « Toi » : vide, puis
+  les buffs de SA classe, sans ceux qu'interdit D23. Ta modification part vers lui, regroupée (une
+  seconde après ton dernier clic sur la même case), et ne change que cette case de sa ligne
+  « Groupe / raid » (son choix unique pour cette classe). Les cases des autres restent en lecture
+  seule.
+- **Chez lui** : la modification ne s'applique que si l'expéditeur est de son groupe et que son
+  option le permet à ce moment-là ; sinon elle est ignorée (et comptée). Appliquée, sa grille change
+  comme s'il avait cliqué lui-même (même contrôle des ids, D23 compris), il voit dans son chat
+  « <Nom> a réglé ta ligne Groupe / raid », et il se réannonce : tout le groupe voit le nouveau
+  réglage, répartition du palier 2 comprise.
+- Ça vaut pour toutes les classes qui ont des buffs : un chef peut ainsi assigner un buff unique à
+  un prêtre pour une classe (C2). Par défaut, personne n'a de choix unique : chacun pose tout.
+- Rien ne se lance tout seul (D2) : régler la ligne de quelqu'un change ce que SON tableau propose,
+  c'est toujours lui qui clique.
+- *Conséquences dérivées, non décidées par le user :*
+  - **un chef sans buff** (un guerrier, souvent chef de raid) voit « qui pose quoi » dans ses
+    options et règle les lignes qu'on lui permet ; il demande les annonces en arrivant dans le
+    groupe, mais n'annonce jamais rien et ne répond pas aux demandes ;
+  - accepté ou refusé, un réglage fait **réannoncer** la cible, même inchangée : l'éditeur, qui a
+    affiché son choix d'avance, voit tout de suite le vrai résultat ;
+  - **réglage du chef et ancienneté (C1 × C4)** : un choix unique réglé par le chef passe par la
+    même répartition que les autres. Si un paladin plus ancien tient déjà cette bénédiction pour la
+    classe, le plus récent passe quand même à la suivante, et le chef le voit. Pour répartir à sa
+    guise, le chef règle donc tous les paladins (comme avec PallyPower). L'autre lecture, « un choix
+    du chef passe avant l'ancienneté », reste possible si le user la demande.
+
+## Palier 4 : voir ce qui est assigné (C2, 2026-10-05)
+
+*Choix de l'agent, le user ayant dit « continue avec le palier 4 pour avancer vers une stable ».* Le
+palier 3 permet déjà au chef de régler la ligne d'un prêtre, d'un mage ou d'un druide. Ce qui
+manquait : sur la ligne d'un prêtre, « il pose tous ses buffs » (rien d'assigné, le défaut de C2) et
+« il ne pose que Robustesse » (un choix unique) affichaient la même première icône.
+
+- **Chaque annonce dit, classe par classe, si l'entrée vient d'un choix unique** (le sien, ou réglé
+  par le chef). Pour un paladin, un choix unique qu'un plus ancien tient déjà ne compte pas : son
+  entrée vient alors de sa colonne.
+- **À l'écran**, une case qui porte un choix unique a une petite marque dorée dans son coin ; une
+  case sans choix unique montre le premier buff et « +N » (il pose tout). L'infobulle le dit en clair.
+- **Régler la case d'un autre** part de « vide = il pose tout » : le premier clic lui assigne le
+  premier buff, la molette fait défiler les autres, et revenir à vide lui rend « tout poser ».
+
 ## Contrat
 
 **Message d'addon, préfixe `SBUF`, version 1.** Champs séparés par `|`, en ASCII :
@@ -193,6 +244,21 @@ compte comme le plus ancien.
 
 **SavedVariables** : `coordSince`, cette même heure, gardée tant que tu restes groupé (pour qu'un
 `/reload` ne te fasse pas perdre ta place) et effacée hors groupe. Aucune donnée d'un autre joueur.
+
+**Ajouts du palier 3, compatibles avec la version 1** :
+- un 14e champ facultatif dans l'annonce, après l'heure d'arrivée : qui peut régler la ligne du
+  lanceur, `N` (personne), `L` (le chef et ses assistants) ou `A` (n'importe qui). Absent ou autre :
+  `N`. Un client qui n'a pas d'heure d'arrivée à donner écrit `0` en 13e champ.
+- une nouvelle sorte de message, ignorée par un client des paliers 1 et 2 (« sorte inconnue ») :
+  `1|S|<nom complet de la cible>|<classe>|<id>` : « règle le choix unique de cette classe dans ta
+  ligne Groupe / raid » ; `<classe>` est l'un des neuf jetons de `WIRE_CLASSES`, `<id>` un id de
+  sort de rang 1, ou `0` pour vider la case.
+- **SavedVariables** : `coordWho` (`none`, `leader` ou `anyone` ; `none` par défaut).
+
+**Ajout du palier 4, compatible avec la version 1** : un 15e champ facultatif dans l'annonce, neuf
+caractères `0` ou `1` dans l'ordre de `WIRE_CLASSES` : `1` quand l'entrée de cette classe est un choix
+unique (`…|1759662000|L|010000100`). Absent ou mal formé : aucun choix unique connu. Un client qui
+écrit ce champ écrit aussi les 13e et 14e (`0` et `N` à défaut).
 
 ## Plan (2026-10-05, volatile)
 

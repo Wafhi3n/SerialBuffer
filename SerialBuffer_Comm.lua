@@ -16,7 +16,8 @@ local _, NS = ...
 NS = NS or _G.SerialBuffer
 
 local C = { peers = {}, roster = {}, wantA = false, wantR = false, forceA = false,
-            stats = { sent = 0, recv = 0, self = 0, stranger = 0, bad = 0, secret = 0, deferred = 0, refused = 0 } }
+            stats = { sent = 0, recv = 0, self = 0, stranger = 0, bad = 0, secret = 0, deferred = 0, refused = 0,
+                      applied = 0, denied = 0 } }   -- applied / denied : réglages reçus (palier 3)
 NS.Comm = C
 
 C.PREFIX, C.VERSION, C.MAX_BYTES = "SBUF", "1", 255
@@ -31,15 +32,42 @@ local function sec(v) return issecretvalue ~= nil and issecretvalue(v) end
 
 -- « 1|A|PALADIN|20217|0|1243+976|…|<since> » : la classe du lanceur, ses neuf entrées (plan[classe]
 -- = ids) et, ajout du palier 2 compatible v1, l'heure du serveur de son arrivée dans le groupe.
-function C.Encode(caster, plan, since)
+function C.Encode(caster, plan, since, who, picked)
     local parts = { C.VERSION, "A", caster }
     for _, cl in ipairs(C.WIRE_CLASSES) do
         local ids, s = plan and plan[cl], {}
         for i, id in ipairs(ids or {}) do s[i] = tostring(id) end
         parts[#parts + 1] = (#s > 0) and table.concat(s, "+") or "0"
     end
-    if type(since) == "number" then parts[#parts + 1] = tostring(math.floor(since)) end
+    if type(since) == "number" or who or picked then
+        parts[#parts + 1] = (type(since) == "number") and tostring(math.floor(since)) or "0"
+    end
+    if who or picked then parts[#parts + 1] = who or "N" end   -- palier 3 : N, L ou A
+    if picked then                                            -- palier 4 : 1 = choix unique
+        local bits = {}
+        for i, cl in ipairs(C.WIRE_CLASSES) do bits[i] = picked[cl] and "1" or "0" end
+        parts[#parts + 1] = table.concat(bits)
+    end
     return table.concat(parts, "|")
+end
+
+-- Palier 3 : « 1|S|<cible>|<classe>|<id> », règle le choix unique de cette classe chez la cible.
+function C.EncodeSet(target, class, id)
+    return table.concat({ C.VERSION, "S", target, class, tostring(id or 0) }, "|")
+end
+
+local WIRE_SET = {}
+for _, cl in ipairs(C.WIRE_CLASSES) do WIRE_SET[cl] = true end
+
+-- La politique locale (db.coordWho) en lettre du message, et inversement.
+C.WHO_LETTER = { none = "N", leader = "L", anyone = "A" }
+
+-- Palier 3 : l'expéditeur a-t-il le droit de régler ta ligne ? policy : lettre N / L / A ;
+-- isChief : il est chef du groupe ou du raid, ou assistant.
+function C.Allowed(policy, isChief)
+    if policy == "A" then return true end
+    if policy == "L" then return isChief == true end
+    return false
 end
 
 function C.Request() return C.VERSION .. "|R" end
@@ -63,6 +91,11 @@ function C.Decode(msg)
     for field in (msg .. "|"):gmatch("([^|]*)|") do f[#f + 1] = field end
     if f[1] ~= C.VERSION then return nil end
     if f[2] == "R" then return { kind = "R" } end
+    if f[2] == "S" then   -- palier 3
+        local target, cl, id = f[3], f[4], f[5]
+        if not (target and target ~= "" and cl and WIRE_SET[cl] and id and id:match("^%d+$")) then return nil end
+        return { kind = "S", target = target, class = cl, id = tonumber(id) }
+    end
     if f[2] ~= "A" or type(f[3]) ~= "string" or not f[3]:match("^%u+$") then return nil end
     if #f < 3 + #C.WIRE_CLASSES then return nil end
     local plan = {}
@@ -74,7 +107,15 @@ function C.Decode(msg)
     -- Palier 2 : l'heure d'arrivée, chiffres seulement ; absente ou mal formée : 0, le plus ancien.
     local s = f[4 + #C.WIRE_CLASSES]
     local since = (s and s:match("^%d+$")) and tonumber(s) or 0
-    return { kind = "A", caster = f[3], plan = plan, since = since }
+    -- Palier 3 : qui peut régler la ligne du lanceur ; absent ou autre : N (personne).
+    local w = f[5 + #C.WIRE_CLASSES]
+    local who = (w == "L" or w == "A") and w or "N"
+    -- Palier 4 : neuf 0 / 1, le choix unique par classe ; absent ou mal formé : aucun connu.
+    local bits, picked = f[6 + #C.WIRE_CLASSES], {}
+    if bits and #bits == #C.WIRE_CLASSES and bits:match("^[01]+$") then
+        for i, cl in ipairs(C.WIRE_CLASSES) do picked[cl] = (bits:sub(i, i) == "1") or nil end
+    end
+    return { kind = "A", caster = f[3], plan = plan, since = since, who = who, picked = picked }
 end
 
 -- Le jeton du membre du groupe qui a envoyé ce message, ou nil plus la raison ("self" : ton propre
@@ -155,9 +196,13 @@ end
 
 -- Envoie ce qui attend. Une annonce identique à la dernière ne repart pas, sauf en réponse à une
 -- demande (forceA).
+-- Palier 3 : une classe sans buff (un chef de raid guerrier) DEMANDE les annonces, pour voir et
+-- régler les lignes des autres, mais n'annonce jamais rien et ne répond pas aux demandes.
 function C:Flush()
     local ch = channel()
-    if not ch or not self:CanSpeak() then self.wantA, self.wantR = false, false; return end
+    if not ch then self.wantA, self.wantR = false, false; return end
+    if not self:CanSpeak() then self.wantA, self.forceA = false, false end
+    if not (self.wantA or self.wantR) then return end
     if locked() then
         self.stats.deferred = self.stats.deferred + 1
         self:Schedule(C.RETRY)
@@ -165,7 +210,8 @@ function C:Flush()
     end
     if self.wantR and self:SendRaw(C.Request(), ch) then self.wantR = false end
     if self.wantA then
-        local msg = C.Encode(NS.Buffs.class, NS.Buffs:GroupPlan(NS.db), self.since)
+        local plan, picked = NS.Buffs:GroupPlan(NS.db)
+        local msg = C.Encode(NS.Buffs.class, plan, self.since, C.WHO_LETTER[NS.db.coordWho] or "N", picked)
         if (msg ~= self.lastA or self.forceA) and self:SendRaw(msg, ch) then self.lastA = msg end
         self.wantA, self.forceA = false, false
         self.stats.seniors, self.stats.juniors = NS.Share.Rank(self.peers, self:Me())
@@ -224,9 +270,72 @@ function C:OnMessage(prefix, msg, ch, sender)
         end
         return
     end
-    self.peers[sender] = { caster = m.caster, plan = m.plan, unit = unit, since = m.since }
+    if m.kind == "S" then self:OnSet(m, sender, unit) return end
+    self.peers[sender] = { caster = m.caster, plan = m.plan, unit = unit, since = m.since, who = m.who,
+                           picked = m.picked }
     self:Announce()   -- palier 2 : la répartition d'un plus ancien a pu changer la tienne
     if NS.Grid then NS.Grid:RefreshPeers() end
+end
+
+-- ---------------------------------------------------------------- palier 3 : régler la ligne d'un autre
+
+local function isChief(unit)
+    local ok1, lead = pcall(UnitIsGroupLeader, unit)
+    local ok2, assist = pcall(UnitIsGroupAssistant, unit)
+    return (ok1 and lead == true) or (ok2 and assist == true)
+end
+
+-- Un réglage reçu : s'applique à TA ligne seulement, si l'expéditeur en a le droit à cet instant
+-- (ton option, son rang dans le groupe). Même contrôle qu'un clic (Buffs:SetGroupPick : ids de ta
+-- classe, D23).
+-- Accepté ou refusé, la cible RÉANNONCE son vrai plan (forceA, même inchangé) : sinon l'éditeur, qui
+-- a affiché son choix d'avance, garderait une case fausse (réglage refusé, ou un plus ancien qui
+-- tient déjà cette bénédiction, palier 2).
+function C:OnSet(m, sender, unit)
+    if m.target ~= self.me then return end
+    if C.Allowed(C.WHO_LETTER[NS.db.coordWho] or "N", isChief(unit)) then
+        NS.Buffs:SetGroupPick(NS.Buffs.class, m.class, m.id, NS.db)
+        self.stats.applied = self.stats.applied + 1
+        NS:Printf(NS.L["%s a réglé ta ligne Groupe / raid."], sender)
+        if NS.Grid then NS.Grid:Refresh() end
+    else
+        self.stats.denied = self.stats.denied + 1
+    end
+    self.wantA, self.forceA = true, true
+    self:Schedule(C.DEBOUNCE)
+end
+
+-- Peux-tu régler la ligne de ce joueur ? (son option, annoncée, et ton rang à toi)
+function C:CanEdit(name)
+    local p = self.peers[name]
+    return p ~= nil and self.grouped and C.Allowed(p.who, isChief("player"))
+end
+
+-- Tu changes une case de sa ligne : affichée tout de suite chez toi, envoyée une seconde après ton
+-- dernier clic sur cette case (la molette ne fait pas partir un message par cran).
+function C:EditPeer(name, class, id)
+    local p = self.peers[name]
+    if not (p and self:CanEdit(name)) then return end
+    p.plan[class] = (id and id ~= 0) and { id } or {}
+    p.picked = p.picked or {}
+    p.picked[class] = (id and id ~= 0) or nil   -- palier 4 : vide = il repose tout (vrai plan à sa réannonce)
+    self.pendingSet = self.pendingSet or {}
+    self.pendingSet[name .. "|" .. class] = { target = name, class = class, id = id or 0 }
+    if self.setTimer then self.setTimer:Cancel() end
+    self.setTimer = C_Timer.NewTimer(1, function() C.setTimer = nil; C:FlushSets() end)
+end
+
+function C:FlushSets()
+    local ch = channel()
+    if not ch then self.pendingSet = {} return end
+    if locked() then
+        self.stats.deferred = self.stats.deferred + 1
+        self.setTimer = C_Timer.NewTimer(C.RETRY, function() C.setTimer = nil; C:FlushSets() end)
+        return
+    end
+    for key, s in pairs(self.pendingSet or {}) do
+        if self:SendRaw(C.EncodeSet(s.target, s.class, s.id), ch) then self.pendingSet[key] = nil end
+    end
 end
 
 -- Arrivée dans un groupe : ton heure est posée (sauf si un /reload l'a déjà relue) ; départ : effacée.
@@ -281,11 +390,15 @@ function C:PrintPeers()
     NS:Print(L["Serial Buffer dans ton groupe :"])
     for _, name in ipairs(names) do
         local p, rank = self.peers[name], ""
-        if p.caster == "PALADIN" then
+        if p.caster == "PALADIN" and NS.Buffs.class == "PALADIN" then   -- l'ancienneté : entre paladins
             rank = NS.Share.Senior({ since = p.since, name = name }, self:Me()) and L[" (avant toi)"] or L[" (après toi)"]
         end
-        NS:Printf("%s%s : %s", name, rank, planText(p.plan))
+        -- Palier 3 : son option (N / L / A, annoncée) et si tu peux régler sa ligne maintenant.
+        local edit = self:CanEdit(name) and L[" (réglable)"] or ""
+        NS:Printf("%s%s [%s]%s : %s", name, rank, p.who or "?", edit, planText(p.plan))
     end
+    NS:Printf(L["Toi : chef ou assistant = %s, ton option = %s"], isChief("player") and L["oui"] or L["non"],
+        C.WHO_LETTER[NS.db.coordWho] or "N")
 end
 
 -- Démarre après la boucle (SerialBuffer_Run.lua), quand la classe est lue.
