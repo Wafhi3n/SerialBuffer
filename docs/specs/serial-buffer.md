@@ -480,7 +480,9 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   place du nom du buff, pour simplifier la localisation »). La ligne se lit : nom du joueur à gauche,
   puis, à droite, l'icône du buff à lancer devant la note (PvP, hors de portée, temps restant D39).
   Le nom du sort n'est plus affiché nulle part sur la ligne : plus de texte long à tronquer ni à
-  traduire. (D40 et D41 sont sur `feat/groupe-seul-touche`.)
+  traduire. Même jour, sur capture : une ligne **hors de portée** n'écrit plus « hors de portée » ;
+  nom gris, icône désaturée, ligne estompée, « comme le fait le jeu de base » (le user) ; sa section
+  « Hors de portée » reste. (D40 et D41 sont sur `feat/groupe-seul-touche`.)
 
 ## Questions ouvertes (au user)
 

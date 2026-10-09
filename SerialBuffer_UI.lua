@@ -230,12 +230,15 @@ local function fillRow(row, r)
     row.icon:SetDesaturated(false)
     row.name:SetText(r.name)
     row.name:SetTextColor(classColor(r.class))
-    local notes = {}
-    if r.pvp then notes[#notes + 1] = L["PvP"] end
-    if r.outOfRange then notes[#notes + 1] = L["hors de portée"] end
-    row.baseNote = table.concat(notes, " · ")
+    row.baseNote = r.pvp and L["PvP"] or ""
     setNote(row, r.left)
     row.note:SetTextColor(unpack(row.noteRGB))
+    -- Hors de portée : la ligne se grise et s'estompe, sans texte, comme les cadres de groupe du jeu
+    -- (le user, 2026-10-09). Sa section « Hors de portée » le dit déjà.
+    if r.outOfRange then
+        row.name:SetTextColor(0.5, 0.5, 0.5)
+        row.icon:SetDesaturated(true)
+    end
     row:SetAlpha(r.outOfRange and 0.5 or 1)
     row:Show()
 end
