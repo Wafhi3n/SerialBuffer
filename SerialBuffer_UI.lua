@@ -163,6 +163,7 @@ function UI:Build()
         self.heads[i] = head
     end
     self.driver, self.panel = driver, panel
+    if NS.Report then NS.Report:AttachHeaderButton(panel) end   -- le scarabée, à gauche du rouage
     self:BuildNext()
     panel:SetShown(NS.db.shown)
 end

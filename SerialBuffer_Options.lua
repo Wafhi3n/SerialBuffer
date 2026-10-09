@@ -85,6 +85,10 @@ function O:Build(panel)
     report:SetPoint("TOPLEFT", self.checks[#self.checks], "BOTTOMLEFT", 0, -12)
     report:SetText(L["Signaler un bug ou proposer une idée"])
     report:SetScript("OnClick", function() NS.Report:Open() end)
+    local bug = report:CreateTexture(nil, "ARTWORK")   -- le scarabée, à gauche du texte centré
+    bug:SetTexture(NS.Report.ICON)
+    bug:SetSize(18, 18)
+    bug:SetPoint("LEFT", 6, 0)
     self.built = true
 end
 

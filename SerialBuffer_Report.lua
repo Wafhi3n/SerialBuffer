@@ -139,6 +139,33 @@ function Report:Build()
     return f
 end
 
+-- Le scarabée bleu : celui du rapport de bug de Blizzard (Blizzard_PTRFeedback), 64 x 64 avec sa
+-- marge ; Crafting Order porte le même dans sa barre de titre. Aussi sur le bouton des options.
+Report.ICON = "Interface\\HelpFrame\\HelpIcon-Bug"
+
+-- L'icône de l'en-tête du tableau, juste à gauche du rouage (le user, 2026-10-09 : « comme pour les
+-- autres »). Appelée à la FIN d'UI:Build : le compteur, posé contre le rouage, glisse à sa gauche, et
+-- ce qui s'ancre au compteur (la touche « buff suivant », D41) le suit. Bouton ordinaire, comme le
+-- rouage : il n'ouvre que notre fenêtre, qui n'est pas protégée.
+function Report:AttachHeaderButton(panel)
+    local b = CreateFrame("Button", nil, panel)
+    b:SetSize(16, 16)
+    b:SetPoint("RIGHT", panel.gear, "LEFT", -2, 0)
+    b:SetNormalTexture(Report.ICON)
+    b:SetHighlightTexture(Report.ICON, "ADD")
+    b:SetScript("OnClick", function() Report:Open() end)
+    b:SetScript("OnEnter", function(btn)
+        GameTooltip:SetOwner(btn, "ANCHOR_LEFT")
+        GameTooltip:SetText(L["Signaler un bug ou proposer une idée"])
+        GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    panel.count:ClearAllPoints()
+    panel.count:SetPoint("RIGHT", b, "LEFT", -4, 0)
+    panel.report = b
+    return b
+end
+
 -- Ouvre la fenêtre ; `kind` (facultatif) choisit tout de suite Bug, Idée ou la page CurseForge.
 function Report:Open(kind)
     local f = self.frame or self:Build()
