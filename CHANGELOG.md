@@ -1,10 +1,23 @@
 # Changelog - Serial Buffer
 
-## v0.3.3-beta - 2026-10-09
+## v0.4.0 - 2026-10-09
 
-Hid the panel with /sbuff and couldn't get it back? The options now have a "Show the panel (/sbuff)"
-box, just above the PvP one (Esc, Options, AddOns, Serial Buffer). Hiding the panel also tells you in
-chat how to bring it back.
+The first stable version since 0.2.0. It has everything from the 0.3 betas below (time left on each
+line, paladins splitting their blessings, the bug report button), and these changes on top:
+
+- Each line shows the buff's icon instead of its name, at the right edge, with the time left just
+  before it. A player out of range is greyed out, the way the game's own group frames do it.
+- A "Group only" box in the panel's header hides the players around you and keeps only you and
+  your group or raid. It's in the options too, and /sbuff around flips it.
+- Your "Next buff" key shows in the header ("[F]", or "key?" if none is set). Click it to open the
+  game's Keybindings page at the Serial Buffer section.
+- The group leader, or anyone in the group if you allow it in the options, can set your Group / raid
+  row for you. In the options, a gold mark shows a row set to a single buff, and "+N" a row that
+  casts all of them.
+- Dragging the panel during a fight no longer gets the addon blocked by the game: the panel stays
+  put in combat, and a drag started just before the pull finishes when the fight ends.
+- Hid the panel with /sbuff and couldn't get it back? The options now have a "Show the panel
+  (/sbuff)" box, and hiding the panel tells you in chat how to bring it back.
 
 ## v0.3.2-beta - 2026-10-09
 
