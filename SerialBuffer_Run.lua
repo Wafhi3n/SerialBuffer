@@ -64,7 +64,7 @@ local function onEvent(_, event, arg1, arg2, arg3)
     elseif event == "UNIT_SPELLCAST_SUCCEEDED" then R:OnCast(arg3); refreshNow()
     elseif event == "UI_ERROR_MESSAGE" then R:OnError(arg1, arg2)
     elseif event == "PLAYER_REGEN_DISABLED" then NS.UI:CombatStart()          -- D36 : le tableau se fige
-    elseif event == "PLAYER_REGEN_ENABLED" then refreshNow()                    -- D36 : il se recalcule
+    elseif event == "PLAYER_REGEN_ENABLED" then NS.UI:FinishDrag(); refreshNow() -- D36 : il se recalcule
     elseif event == "GROUP_ROSTER_UPDATE" then
         if InCombatLockdown() then NS.UI:MarkStale() else refreshNow() end    -- jetons de groupe à jour
     end
