@@ -81,16 +81,18 @@ local function buildRow(panel)
     local hl = row:CreateTexture(nil, "HIGHLIGHT")
     hl:SetAllPoints()
     hl:SetColorTexture(1, 1, 1, 0.12)
+    -- Au bord droit, l'ICÔNE du buff, qui tient lieu de son nom (le user, 2026-10-09 : plus de nom
+    -- de sort à traduire ni à tronquer) ; toujours au bord, les icônes de toutes les lignes forment
+    -- une colonne (le temps restant devant elle la décalait, vu sur capture le même jour). Devant
+    -- l'icône, la note (PvP, temps restant) ; le nom du joueur prend la place qui reste et se tronque.
     row.icon = row:CreateTexture(nil, "ARTWORK")
     row.icon:SetSize(ROW_H - 2, ROW_H - 2)
-    row.icon:SetPoint("LEFT")
-    -- La note (buff, temps restant) d'abord, à droite ; le nom prend la place qui reste et se tronque
-    -- au lieu de passer dessous (vu le 2026-10-05 avec « Blessing of Wisdom · 6 min »).
+    row.icon:SetPoint("RIGHT")
     row.note = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    row.note:SetPoint("RIGHT")
+    row.note:SetPoint("RIGHT", row.icon, "LEFT", -4, 0)
     row.note:SetJustifyH("RIGHT")
     row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    row.name:SetPoint("LEFT", row.icon, "RIGHT", 4, 0)
+    row.name:SetPoint("LEFT")
     row.name:SetPoint("RIGHT", row.note, "LEFT", -6, 0)
     row.name:SetJustifyH("LEFT")
     row.name:SetWordWrap(false)
@@ -227,10 +229,10 @@ local function leftText(sec)
     return string.format(L["%d s"], math.ceil(sec))
 end
 
--- La note : PvP, hors de portée, le buff, puis le temps restant s'il y en a un (D39).
+-- La note : PvP, hors de portée, puis le temps restant s'il y en a un (D39). Le buff, c'est l'icône.
 local function setNote(row, sec)
     local text = row.baseNote
-    if sec then text = text .. " · " .. leftText(sec) end
+    if sec then text = (text ~= "" and text .. " · " or "") .. leftText(sec) end
     row.note:SetText(text)
 end
 
@@ -243,13 +245,15 @@ local function fillRow(row, r)
     row.icon:SetDesaturated(false)
     row.name:SetText(r.name)
     row.name:SetTextColor(classColor(r.class))
-    local notes = {}
-    if r.pvp then notes[#notes + 1] = L["PvP"] end
-    if r.outOfRange then notes[#notes + 1] = L["hors de portée"] end
-    notes[#notes + 1] = r.buff.name
-    row.baseNote = table.concat(notes, " · ")
+    row.baseNote = r.pvp and L["PvP"] or ""
     setNote(row, r.left)
     row.note:SetTextColor(unpack(row.noteRGB))
+    -- Hors de portée : la ligne se grise et s'estompe, sans texte, comme les cadres de groupe du jeu
+    -- (le user, 2026-10-09). Sa section « Hors de portée » le dit déjà.
+    if r.outOfRange then
+        row.name:SetTextColor(0.5, 0.5, 0.5)
+        row.icon:SetDesaturated(true)
+    end
     row:SetAlpha(r.outOfRange and 0.5 or 1)
     row:Show()
 end

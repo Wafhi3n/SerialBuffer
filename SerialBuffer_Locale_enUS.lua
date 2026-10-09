@@ -18,7 +18,6 @@ local T = {
     ["Joueurs PvP cachés."]                                                         = "PvP-flagged players hidden.",
     ["Pas pendant un combat."]                                                      = "Not during combat.",
     ["PvP"]                                                                         = "PvP",
-    ["hors de portée"]                                                              = "out of range",
     ["En instance : seul ton groupe est listé."]                                    = "In an instance: only your group is listed.",
     ["Ta classe n'a pas de buff à poser sur les autres."]                           = "Your class has no buff to cast on others.",
     ["Plaques des joueurs amis coupées : seuls toi et ton groupe sont vus."]        = "Friendly player nameplates are off: only you and your group are seen.",

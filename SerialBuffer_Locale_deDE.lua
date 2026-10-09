@@ -17,7 +17,6 @@ local T = {
     ["Joueurs PvP cachés."]                                                         = "PvP-Spieler werden ausgeblendet.",
     ["Pas pendant un combat."]                                                      = "Nicht während eines Kampfes.",
     ["PvP"]                                                                         = "PvP",
-    ["hors de portée"]                                                              = "außer Reichweite",
     ["En instance : seul ton groupe est listé."]                                    = "In einer Instanz: nur deine Gruppe wird aufgelistet.",
     ["Ta classe n'a pas de buff à poser sur les autres."]                           = "Deine Klasse hat keinen Buff für andere.",
     ["Plaques des joueurs amis coupées : seuls toi et ton groupe sont vus."]        = "Namensplaketten freundlicher Spieler sind aus: nur du und deine Gruppe werden gesehen.",

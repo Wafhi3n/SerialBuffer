@@ -18,7 +18,6 @@ local T = {
     ["Joueurs PvP cachés."]                                                         = "Jugadores JcJ ocultos.",
     ["Pas pendant un combat."]                                                      = "No durante un combate.",
     ["PvP"]                                                                         = "JcJ",
-    ["hors de portée"]                                                              = "fuera de alcance",
     ["En instance : seul ton groupe est listé."]                                    = "En una instancia: solo se muestra tu grupo.",
     ["Ta classe n'a pas de buff à poser sur les autres."]                           = "Tu clase no tiene beneficios para lanzar a otros.",
     ["Plaques des joueurs amis coupées : seuls toi et ton groupe sont vus."]        = "Placas de jugadores amistosos desactivadas: solo se ve a ti y a tu grupo.",
