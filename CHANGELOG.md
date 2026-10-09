@@ -1,5 +1,11 @@
 # Changelog - Serial Buffer
 
+## v0.3.3-beta - 2026-10-09
+
+Hid the panel with /sbuff and couldn't get it back? The options now have a "Show the panel (/sbuff)"
+box, just above the PvP one (Esc, Options, AddOns, Serial Buffer). Hiding the panel also tells you in
+chat how to bring it back.
+
 ## v0.3.2-beta - 2026-10-09
 
 Found a bug, or have an idea? Click the little blue bug next to the gear at the top of the panel, or
