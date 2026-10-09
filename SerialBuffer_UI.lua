@@ -81,17 +81,18 @@ local function buildRow(panel)
     local hl = row:CreateTexture(nil, "HIGHLIGHT")
     hl:SetAllPoints()
     hl:SetColorTexture(1, 1, 1, 0.12)
-    row.icon = row:CreateTexture(nil, "ARTWORK")
-    row.icon:SetSize(ROW_H - 2, ROW_H - 2)
-    row.icon:SetPoint("LEFT")
-    -- La note (buff, temps restant) d'abord, à droite ; le nom prend la place qui reste et se tronque
-    -- au lieu de passer dessous (vu le 2026-10-05 avec « Blessing of Wisdom · 6 min »).
+    -- À droite : la note (PvP, hors de portée, temps restant), et devant elle l'ICÔNE du buff, qui
+    -- tient lieu de son nom (le user, 2026-10-09 : plus de nom de sort à traduire ni à tronquer).
+    -- Le nom du joueur prend la place qui reste et se tronque au lieu de passer dessous.
     row.note = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     row.note:SetPoint("RIGHT")
     row.note:SetJustifyH("RIGHT")
+    row.icon = row:CreateTexture(nil, "ARTWORK")
+    row.icon:SetSize(ROW_H - 2, ROW_H - 2)
+    row.icon:SetPoint("RIGHT", row.note, "LEFT", -3, 0)
     row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    row.name:SetPoint("LEFT", row.icon, "RIGHT", 4, 0)
-    row.name:SetPoint("RIGHT", row.note, "LEFT", -6, 0)
+    row.name:SetPoint("LEFT")
+    row.name:SetPoint("RIGHT", row.icon, "LEFT", -6, 0)
     row.name:SetJustifyH("LEFT")
     row.name:SetWordWrap(false)
     row.noteRGB = { row.note:GetTextColor() }
@@ -213,10 +214,10 @@ local function leftText(sec)
     return string.format(L["%d s"], math.ceil(sec))
 end
 
--- La note : PvP, hors de portée, le buff, puis le temps restant s'il y en a un (D39).
+-- La note : PvP, hors de portée, puis le temps restant s'il y en a un (D39). Le buff, c'est l'icône.
 local function setNote(row, sec)
     local text = row.baseNote
-    if sec then text = text .. " · " .. leftText(sec) end
+    if sec then text = (text ~= "" and text .. " · " or "") .. leftText(sec) end
     row.note:SetText(text)
 end
 
@@ -232,7 +233,6 @@ local function fillRow(row, r)
     local notes = {}
     if r.pvp then notes[#notes + 1] = L["PvP"] end
     if r.outOfRange then notes[#notes + 1] = L["hors de portée"] end
-    notes[#notes + 1] = r.buff.name
     row.baseNote = table.concat(notes, " · ")
     setNote(row, r.left)
     row.note:SetTextColor(unpack(row.noteRGB))

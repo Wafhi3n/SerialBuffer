@@ -476,6 +476,11 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
     décompte plus ;
   - un buff qui tombe en combat alors qu'il avait plus que le seuil au pull (dissipé, mort) n'a pas
     de ligne : le tableau ne peut pas en créer en combat.
+- **D42 : l'icône du buff remplace son nom sur la ligne** (user, 2026-10-09 : « un icône du buff à la
+  place du nom du buff, pour simplifier la localisation »). La ligne se lit : nom du joueur à gauche,
+  puis, à droite, l'icône du buff à lancer devant la note (PvP, hors de portée, temps restant D39).
+  Le nom du sort n'est plus affiché nulle part sur la ligne : plus de texte long à tronquer ni à
+  traduire. (D40 et D41 sont sur `feat/groupe-seul-touche`.)
 
 ## Questions ouvertes (au user)
 
