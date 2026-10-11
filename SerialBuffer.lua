@@ -80,8 +80,6 @@ function NS:Slash(msg)
         self:Printf(L["version %s"], self.VERSION)
     elseif cmd == "groupe" or cmd == "group" then
         if self.Comm then self.Comm:PrintPeers() end
-    elseif cmd == "tank" then                          -- D44 : ta cible, pour la session
-        if self.Tank then self.Tank:Cmd(arg) end
     elseif cmd == "bug" then
         if self.Report then self.Report:Open("bug") end
     elseif cmd == "idea" or cmd == "idee" or cmd == "idée" then
@@ -94,7 +92,6 @@ function NS:Slash(msg)
         self:Print("/sbuff touche - " .. L["ta touche « buff suivant », et la page des raccourcis pour la changer"])
         self:Print("/sbuff options - " .. L["ouvre les options"])
         self:Print("/sbuff groupe - " .. L["liste les Serial Buffer de ton groupe"])
-        self:Print("/sbuff tank [off] - " .. L["désigne ta cible comme tank pour la session (Épines ; clic droit sur sa ligne aussi)"])
         self:Print("/sbuff version - " .. L["affiche la version"])
         self:Print("/sbuff bug - " .. L["signaler un bug ou proposer une idée (lien vers un ticket GitHub)"])
     end

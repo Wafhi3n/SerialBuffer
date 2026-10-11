@@ -55,12 +55,9 @@ end
 
 -- Les deux sens du clic : l'action part sur l'enfoncé ou le relâché selon le réglage du joueur
 -- (ActionButtonUseKeyDown), une seule fois. C'est ce que la sonde a validé.
--- Clic GAUCHE seulement depuis le 2026-10-11 (D44) : le clic droit d'une ligne désigne le joueur
--- comme tank (SerialBuffer_Tank.lua) au lieu de lancer le buff. La touche « buff suivant » clique en
--- LeftButton (Bindings.xml) : rien ne change pour elle.
 local function secureMacroButton(name, parent)
     local b = CreateFrame("Button", name, parent, "SecureActionButtonTemplate")
-    b:RegisterForClicks("LeftButtonUp", "LeftButtonDown")
+    b:RegisterForClicks("AnyUp", "AnyDown")
     b:SetAttribute("type", "macro")
     b:HookScript("OnClick", function(self) NS.Cast:NoteClick(self, GetTime()) end)
     return b
@@ -74,7 +71,6 @@ local function setMacro(b, text, r)
         b.macro = text
     end
     b.guid = r and r.guid
-    b.who = r and r.name   -- D44 : le nom dit au clic droit
     b.buffName = r and r.buff and r.buff.name
     b.level = r and r.level
 end
@@ -101,11 +97,6 @@ local function buildRow(panel)
     row.name:SetJustifyH("LEFT")
     row.name:SetWordWrap(false)
     row.noteRGB = { row.note:GetTextColor() }
-    -- D44 : clic droit = désigner (ou retirer) ce joueur comme tank, pour la session. Un script
-    -- accroché à la construction (hors combat) ; il ne touche qu'une table de l'addon.
-    row:HookScript("OnMouseUp", function(self, button)
-        if button == "RightButton" and NS.Tank then NS.Tank:ToggleRow(self) end
-    end)
     row:Hide()
     return row
 end

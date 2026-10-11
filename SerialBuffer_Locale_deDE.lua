@@ -50,19 +50,13 @@ local T = {
     ["Pas de choix unique : sa grille s'applique."] = "Keine einzige Wahl: sein Raster gilt.",
     -- D44, D45 (2026-10-11) : Épines aux tanks, la ligne du druide, les buffs courts
     ["%s à tous"] = "%s für alle",
-    ["Coché : %s va à tous ceux qui ne l'ont pas. Décoché : aux tanks seulement (rôle Tank du groupe, main tank du raid, ou joueur désigné par un clic droit sur sa ligne, ou /sbuff tank)."] =
-        "Angehakt: %s geht an alle, denen es fehlt. Nicht angehakt: nur an Tanks (Tank-Rolle in deiner Gruppe, Haupttank des Schlachtzugs, oder ein Spieler, den du per Rechtsklick auf seine Zeile oder mit /sbuff tank bestimmst).",
+    ["Coché : %s va à tous ceux qui ne l'ont pas. Décoché : aux tanks de ton groupe seulement (rôle Tank, ou main tank du raid)."] =
+        "Angehakt: %s geht an alle, denen es fehlt. Nicht angehakt: nur an die Tanks deiner Gruppe (Tank-Rolle oder Haupttank des Schlachtzugs).",
     ["Buffs courts"] = "Kurze Buffs",
     ["Un buff de 10 min est reproposé quand il lui reste moins de %d min. Clic, clic droit ou molette : changer."] =
         "Ein 10-Minuten-Buff wird erneut angeboten, wenn er weniger als %d Min. übrig hat. Klick, Rechtsklick oder Mausrad: ändern.",
     ["courts : sous %d min"] = "kurz: unter %d Min.",
     ["Buffs courts (10 min) : rafraîchir s'il leur reste moins de %d min"] = "Kurze Buffs (10 Min.): erneuern, wenn weniger als %d Min. übrig",
-    ["%s : désigné comme tank pour cette session."] = "%s: für diese Sitzung als Tank bestimmt.",
-    ["%s : n'est plus désigné comme tank."] = "%s: nicht mehr als Tank bestimmt.",
-    ["Aucun tank désigné. Cible un joueur, puis /sbuff tank."] = "Kein Tank bestimmt. Wähle einen Spieler als Ziel, dann /sbuff tank.",
-    ["Tanks désignés : %s"] = "Bestimmte Tanks: %s",
-    ["désigne ta cible comme tank pour la session (Épines ; clic droit sur sa ligne aussi)"] =
-        "bestimmt dein Ziel für diese Sitzung als Tank (Dornen; Rechtsklick auf seine Zeile geht auch)",
     -- D43 (2026-10-11) : mage, prêtre, druide n'ont rien à régler
     ["Buffs sans restriction : il les pose à qui ne les a pas."] = "Buffs ohne Einschränkung: er wirkt sie auf alle, denen sie fehlen.",
     ["Tes buffs vont à tous ceux qui ne les ont pas : rien à régler. Un buff de mana n'est jamais proposé aux guerriers ni aux voleurs."] =

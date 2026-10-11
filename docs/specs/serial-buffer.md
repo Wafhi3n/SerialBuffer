@@ -533,17 +533,17 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   joueur désigné à la main**. Puis le même joueur : « it's nice buffing thorns to random low level
   players, since it's a big help » ; le user : une ligne sous l'en-tête, pour certaines classes, avec
   « buff random people with Thorns ». D'où :
-  - un tank = un membre du groupe qui a le rôle Tank (`UnitGroupRolesAssigned`) ou la marque main tank
-    du raid (`GetPartyAssignment("MAINTANK")`), ou un joueur désigné par un **clic droit sur sa
-    ligne** du tableau ou par **`/sbuff tank`** sur sa cible (`/sbuff tank off` le retire, sans cible
-    la liste) ; la désignation ne dure que la session, aucun nom n'est sauvegardé ;
+  - un tank = un membre du groupe à qui **le jeu** donne le rôle Tank (`UnitGroupRolesAssigned`), ou
+    la marque main tank du raid (`GetPartyAssignment("MAINTANK")`). Le user, le même jour : « pas
+    besoin de désigner le tank, le jeu a déjà une feature pour désigner qui est tank, heal et dps ».
+    Une première version désignait aussi à la main (clic droit sur la ligne, `/sbuff tank`) : retirée
+    avant d'être vue en jeu, le clic droit d'une ligne lance de nouveau le buff ;
   - la **ligne du druide**, sous le titre du tableau : la case « Épines à tous » (`db.tankAll`,
     décochée) rouvre Épines à tout le monde, groupe et joueurs autour ;
   - la Marque du fauve, elle, va toujours à tous.
-  *Conséquences dérivées, à confirmer :* le clic droit d'une ligne ne lance plus le buff (seul le
-  clic gauche lance, la touche « buff suivant » ne change pas) ; `/sbuff tank` ajouté pour désigner
-  un joueur qui n'a pas de ligne (déjà buffé de la Marque) ; le rôle et la marque main tank n'ont
-  jamais été lus sur Forever (lecture protégée, illisible = pas tank).
+  *À mesurer :* le rôle et la marque main tank n'ont jamais été lus sur Forever (lecture protégée,
+  illisible = pas tank). *Conséquence dérivée :* un joueur hors de ton groupe n'a pas de rôle, il
+  n'a donc Épines que si la case est cochée.
 - **D45 : un buff court a son propre seuil, 2 min par défaut** (même fil : « Let me pick say, 45
   minutes for the hour buffs, 6 minutes for the 10 minute buffs » ; le user : « avec les 2 min
   restantes »). Un buff dont l'aura dure 15 min ou moins (Épines, Protection contre l'Ombre : 10 min)

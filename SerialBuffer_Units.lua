@@ -50,7 +50,7 @@ local function snapshot(unit, group)
         dead = plain(UnitIsDeadOrGhost(unit)), combat = plain(UnitAffectingCombat(unit)),
         pvp = plain(UnitIsPVP(unit)), visible = plain(UnitIsVisible(unit)), level = plain(UnitLevel(unit)),
         group = group, self = (unit == "player"),
-        tank = NS.Tank and NS.Tank:Is(unit, guid, group) or false,   -- D44 (SerialBuffer_Tank.lua)
+        tank = NS.Tank and NS.Tank:Is(unit, group) or false,   -- D44 : le rôle donné par le jeu
     }
 end
 
