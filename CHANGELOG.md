@@ -1,5 +1,18 @@
 # Changelog - Serial Buffer
 
+## v0.4.1 - 2026-10-11
+
+Two layout fixes.
+
+- With "Next buff" on the mouse wheel, the header spelled the key out ("[Mouse Wheel Up]") right
+  over the "Group only" box. Mouse keys now show as short codes, the way action bar addons write
+  them: "[WU]", "[WD]", "[M4]", with the game's own modifier in front ("s-WU"). A key that still
+  doesn't fit gets cut short, and hovering it gives the full name.
+- On a paladin, the bottom of the options page ran past the frame and cut "Group only" in half.
+  "Show the panel" and "Show PvP-flagged players" now share a line. If a page is still too tall
+  (a priest has the extra "Refresh" line), a thin scroll bar shows up on the right. The mouse wheel
+  doesn't scroll the page, because it already changes the buffs in the grid.
+
 ## v0.4.0 - 2026-10-09
 
 The first stable version since 0.2.0. It has everything from the 0.3 betas below (time left on each
