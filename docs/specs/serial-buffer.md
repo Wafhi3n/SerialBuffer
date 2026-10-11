@@ -527,6 +527,30 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   Une colonne ou un choix unique réglés avant restent dans la base, sans effet. À la page d'options,
   une phrase remplace la grille ; « qui pose quoi » reste visible, sans option « qui peut régler ta
   ligne » (un mage annonce « personne »). Code : `Buffs:Free`, `Comm.MyWho`.
+- **D44 : Épines ne va qu'aux tanks, sauf « Épines à tous »** (user, 2026-10-11, après un joueur sur
+  Reddit : « I play a druid. It constantly wants to renew my 10 minute thorns »). Questions posées,
+  le user a choisi : **aux tanks seulement** par défaut ; un tank, c'est **le rôle (automatique) ET un
+  joueur désigné à la main**. Puis le même joueur : « it's nice buffing thorns to random low level
+  players, since it's a big help » ; le user : une ligne sous l'en-tête, pour certaines classes, avec
+  « buff random people with Thorns ». D'où :
+  - un tank = un membre du groupe qui a le rôle Tank (`UnitGroupRolesAssigned`) ou la marque main tank
+    du raid (`GetPartyAssignment("MAINTANK")`), ou un joueur désigné par un **clic droit sur sa
+    ligne** du tableau ou par **`/sbuff tank`** sur sa cible (`/sbuff tank off` le retire, sans cible
+    la liste) ; la désignation ne dure que la session, aucun nom n'est sauvegardé ;
+  - la **ligne du druide**, sous le titre du tableau : la case « Épines à tous » (`db.tankAll`,
+    décochée) rouvre Épines à tout le monde, groupe et joueurs autour ;
+  - la Marque du fauve, elle, va toujours à tous.
+  *Conséquences dérivées, à confirmer :* le clic droit d'une ligne ne lance plus le buff (seul le
+  clic gauche lance, la touche « buff suivant » ne change pas) ; `/sbuff tank` ajouté pour désigner
+  un joueur qui n'a pas de ligne (déjà buffé de la Marque) ; le rôle et la marque main tank n'ont
+  jamais été lus sur Forever (lecture protégée, illisible = pas tank).
+- **D45 : un buff court a son propre seuil, 2 min par défaut** (même fil : « Let me pick say, 45
+  minutes for the hour buffs, 6 minutes for the 10 minute buffs » ; le user : « avec les 2 min
+  restantes »). Un buff dont l'aura dure 15 min ou moins (Épines, Protection contre l'Ombre : 10 min)
+  est reproposé sous `db.refreshShort` minutes (1 à 9, 2 par défaut) ; les autres gardent D28
+  (45 min). La durée se lit sur l'aura posée ; illisible, le seuil long s'applique comme avant. Le
+  réglage est sur la ligne du druide (clic, clic droit, molette) et dans les options du druide et
+  du prêtre. *Dérivé :* deux paliers (court, long) plutôt qu'un seuil par buff ; 15 min comme limite.
 
 ## Questions ouvertes (au user)
 

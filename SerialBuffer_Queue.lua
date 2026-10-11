@@ -98,13 +98,30 @@ local function learnedLow(snap, w, low)
     return max ~= nil and type(snap.level) == "number" and snap.level > 0 and snap.level <= max
 end
 
--- low : les refus « trop bas » appris (db.tooLow). wanted.single (D37) : le 1er est le choix unique
--- du groupe ; présent sur le joueur, il vaut « servi » pour un lanceur non paladin (la colonne qui
--- suit n'est qu'un repli s'il ne peut pas passer).
-local function nextMissing(snap, wanted, probe, refreshBelow, low)
+-- D45 : un buff COURT (Épines, 10 min) a son propre seuil : celui d'une heure (45 min) le reproposait
+-- sans arrêt (Reddit, 2026-10-11 : « it constantly wants to renew my 10 minute thorns »). La durée se
+-- lit sur l'aura posée (probe.aura, 3e retour) : absente, le buff manque de toute façon.
+Q.SHORT_MAX = 900   -- s : jusqu'à 15 min, un buff est court
+Q.REFRESH_SHORT = 120
+
+local function threshold(dur, opts)
+    if type(dur) == "number" and dur > 0 and dur <= Q.SHORT_MAX then return opts.refreshShort or Q.REFRESH_SHORT end
+    return opts.refreshBelow
+end
+
+-- D44 : un buff réservé aux tanks saute les autres joueurs, sauf « à tous » (opts.tankAll).
+local function skipTank(snap, w, opts)
+    return w.tankOnly and not snap.tank and not opts.tankAll
+end
+
+-- opts.tooLow : les refus « trop bas » appris (db.tooLow). wanted.single (D37) : le 1er est le choix
+-- unique du groupe ; présent sur le joueur, il vaut « servi » pour un lanceur non paladin (la colonne
+-- qui suit n'est qu'un repli s'il ne peut pas passer).
+local function nextMissing(snap, wanted, probe, opts)
+    local low = opts.tooLow
     for i, w in ipairs(wanted) do
-        if not isBlocked(snap, w.name) and not learnedLow(snap, w, low) then
-            local left, mine = probe.aura(snap.unit, w.name)
+        if not isBlocked(snap, w.name) and not learnedLow(snap, w, low) and not skipTank(snap, w, opts) then
+            local left, mine, dur = probe.aura(snap.unit, w.name)
             if left == nil then return nil, "unread" end
             if mine ~= true and left ~= "absent" and castByMe(snap, w.name) then mine = true end
             if wanted.exclusive then
@@ -115,7 +132,7 @@ local function nextMissing(snap, wanted, probe, refreshBelow, low)
                 elseif v == "stop" then st.stopMine = st.stopMine + 1 end
                 if v == "take" then return w, left end
                 if v == "stop" then return nil end
-            elseif needs(left, refreshBelow) then   -- D28 : seuil réglable hors paladin
+            elseif needs(left, threshold(dur, opts)) then   -- D28 / D45 : seuils réglables hors paladin
                 return w, left
             elseif wanted.single and i == 1 then     -- D37 : le choix unique est là
                 return nil
@@ -160,7 +177,7 @@ function Q:Eligible(snap, wantedFor, probe, opts)
     opts = opts or {}
     local ok, why = admissible(snap, opts)
     if not ok then return nil, why end
-    local buff, info = nextMissing(snap, wantedFor(snap.class, snap.group), probe, opts.refreshBelow, opts.tooLow)
+    local buff, info = nextMissing(snap, wantedFor(snap.class, snap.group), probe, opts)
     if not buff then return nil, info end   -- info : "unread", ou rien
     -- D39 : le temps qui reste au buff que la ligne refait (nil s'il est absent), et son heure de fin.
     local left = (type(info) == "number" and info ~= math.huge) and info or nil

@@ -29,7 +29,12 @@ What it offers depends on your class:
 - Mages, priests and druids cast all their buffs on each player who doesn't have them, one after
   another, with nothing to set. Two mages in a group each see who's still missing Arcane Intellect,
   and a player drops off both lists once either of them buffs him. A buff with more than 45 minutes
-  left counts as done (you can change that in the options).
+  left counts as done, and a 10-minute buff like Thorns or Shadow Protection with more than 2 (you
+  can change both in the options).
+- Druids put Thorns on tanks only: whoever has the Tank role in your group, your raid's main tank,
+  or a player you pick by right-clicking their line or with /sbuff tank on your target. Tick
+  "Thorns for everyone" under the panel title to give it to anyone who lacks it, low-level players
+  passing by included. The same line sets the 10-minute threshold.
 - Paladins put one blessing per player. For each class you pick a first, second and third choice
   (Kings, then Wisdom, then Might by default). If another paladin already gave that player the
   same blessing with more than half an hour left, you're offered the next one. You can also set a

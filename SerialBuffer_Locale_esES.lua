@@ -49,6 +49,21 @@ local T = {
     [" (réglable)"] = " (ajustable)",
     ["Choix unique pour cette classe."] = "Opción única para esta clase.",
     ["Pas de choix unique : sa grille s'applique."] = "Sin opción única: se aplica su tabla.",
+    -- D44, D45 (2026-10-11) : Épines aux tanks, la ligne du druide, les buffs courts
+    ["%s à tous"] = "%s para todos",
+    ["Coché : %s va à tous ceux qui ne l'ont pas. Décoché : aux tanks seulement (rôle Tank du groupe, main tank du raid, ou joueur désigné par un clic droit sur sa ligne, ou /sbuff tank)."] =
+        "Marcada: %s va a todos los que no lo tienen. Sin marcar: solo a los tanques (rol de tanque en tu grupo, tanque principal de la banda, o un jugador que elijas con clic derecho en su línea o con /sbuff tank).",
+    ["Buffs courts"] = "Beneficios cortos",
+    ["Un buff de 10 min est reproposé quand il lui reste moins de %d min. Clic, clic droit ou molette : changer."] =
+        "Un beneficio de 10 min se vuelve a ofrecer cuando le quedan menos de %d min. Clic, clic derecho o rueda: cambiar.",
+    ["courts : sous %d min"] = "cortos: menos de %d min",
+    ["Buffs courts (10 min) : rafraîchir s'il leur reste moins de %d min"] = "Beneficios cortos (10 min): renovar si les quedan menos de %d min",
+    ["%s : désigné comme tank pour cette session."] = "%s: marcado como tanque para esta sesión.",
+    ["%s : n'est plus désigné comme tank."] = "%s: ya no está marcado como tanque.",
+    ["Aucun tank désigné. Cible un joueur, puis /sbuff tank."] = "Ningún tanque marcado. Selecciona a un jugador y luego /sbuff tank.",
+    ["Tanks désignés : %s"] = "Tanques marcados: %s",
+    ["désigne ta cible comme tank pour la session (Épines ; clic droit sur sa ligne aussi)"] =
+        "marca tu objetivo como tanque para esta sesión (Espinas; también con clic derecho en su línea)",
     -- D43 (2026-10-11) : mage, prêtre, druide n'ont rien à régler
     ["Buffs sans restriction : il les pose à qui ne les a pas."] = "Beneficios sin restricción: los lanza a quien no los tenga.",
     ["Tes buffs vont à tous ceux qui ne les ont pas : rien à régler. Un buff de mana n'est jamais proposé aux guerriers ni aux voleurs."] =

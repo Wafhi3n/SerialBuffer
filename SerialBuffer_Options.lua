@@ -38,7 +38,9 @@ function O:StepRefresh(delta)
     self:Refresh()
 end
 
-local function refreshRow(panel, y)
+-- step(delta) : le geste du « - » (-1) et du « + » (+1).
+local function refreshRow(panel, y, step)
+    step = step or function(d) O:StepRefresh(d * STEP) end
     local row = CreateFrame("Frame", nil, panel)
     row:SetSize(560, 26)
     row:SetPoint("TOPLEFT", PAD, y)
@@ -46,12 +48,12 @@ local function refreshRow(panel, y)
     row.minus:SetSize(28, 22)
     row.minus:SetPoint("LEFT")
     row.minus:SetText("-")
-    row.minus:SetScript("OnClick", function() O:StepRefresh(-STEP) end)
+    row.minus:SetScript("OnClick", function() step(-1) end)
     row.plus = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
     row.plus:SetSize(28, 22)
     row.plus:SetPoint("LEFT", row.minus, "RIGHT", 4, 0)
     row.plus:SetText("+")
-    row.plus:SetScript("OnClick", function() O:StepRefresh(STEP) end)
+    row.plus:SetScript("OnClick", function() step(1) end)
     row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     row.label:SetPoint("LEFT", row.plus, "RIGHT", 8, 0)
     return row
@@ -161,6 +163,11 @@ function O:Build(panel)
         y = self:FreeNote(page, y)
         y = NS.Grid:BuildWatch(page, y)   -- « qui pose quoi » reste à voir ; rien à y régler
         self.refreshRow = refreshRow(page, y); y = y - LINE - 4
+        -- D45 : le seuil des buffs courts (le même que sur la ligne du druide, sous l'en-tête), pour une
+        -- classe qui en a un (pas le mage).
+        if NS.Buffs:HasShort(class) then
+            self.shortRow = refreshRow(page, y, function(d) NS.Tank:StepShort(d) end); y = y - LINE - 4
+        end
     elseif NS.Buffs:HasCatalog(class) then
         y = NS.Grid:Build(page, y, class)
         y = self:WhoRow(page, y)
@@ -187,6 +194,12 @@ function O:Refresh()
         self.refreshRow.label:SetText(string.format(L["Rafraîchir un buff s'il lui reste moins de %d min"], v))
         self.refreshRow.minus:SetEnabled(v > MIN_REFRESH)
         self.refreshRow.plus:SetEnabled(v < MAX_REFRESH)
+    end
+    if self.shortRow then
+        local s, T = NS.db.refreshShort or 2, NS.Tank
+        self.shortRow.label:SetText(string.format(L["Buffs courts (10 min) : rafraîchir s'il leur reste moins de %d min"], s))
+        self.shortRow.minus:SetEnabled(s > T.SHORT_MIN)
+        self.shortRow.plus:SetEnabled(s < T.SHORT_MAX)
     end
     NS.Grid:Refresh()
 end

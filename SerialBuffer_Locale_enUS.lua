@@ -49,6 +49,21 @@ local T = {
     [" (réglable)"] = " (you can set it)",
     ["Choix unique pour cette classe."] = "Single choice for this class.",
     ["Pas de choix unique : sa grille s'applique."] = "No single choice: their grid applies.",
+    -- D44, D45 (2026-10-11) : Épines aux tanks, la ligne du druide, les buffs courts
+    ["%s à tous"] = "%s for everyone",
+    ["Coché : %s va à tous ceux qui ne l'ont pas. Décoché : aux tanks seulement (rôle Tank du groupe, main tank du raid, ou joueur désigné par un clic droit sur sa ligne, ou /sbuff tank)."] =
+        "Ticked: %s goes to everyone who doesn't have it. Unticked: tanks only (Tank role in your group, raid main tank, or a player you pick by right-clicking their line, or /sbuff tank).",
+    ["Buffs courts"] = "Short buffs",
+    ["Un buff de 10 min est reproposé quand il lui reste moins de %d min. Clic, clic droit ou molette : changer."] =
+        "A 10-minute buff is offered again once it has less than %d min left. Click, right-click or mouse wheel: change.",
+    ["courts : sous %d min"] = "short: under %d min",
+    ["Buffs courts (10 min) : rafraîchir s'il leur reste moins de %d min"] = "Short buffs (10 min): refresh when less than %d min left",
+    ["%s : désigné comme tank pour cette session."] = "%s: marked as a tank for this session.",
+    ["%s : n'est plus désigné comme tank."] = "%s: no longer marked as a tank.",
+    ["Aucun tank désigné. Cible un joueur, puis /sbuff tank."] = "No tank marked. Target a player, then /sbuff tank.",
+    ["Tanks désignés : %s"] = "Marked tanks: %s",
+    ["désigne ta cible comme tank pour la session (Épines ; clic droit sur sa ligne aussi)"] =
+        "marks your target as a tank for this session (Thorns; right-clicking their line works too)",
     -- D43 (2026-10-11) : mage, prêtre, druide n'ont rien à régler
     ["Buffs sans restriction : il les pose à qui ne les a pas."] = "Unrestricted buffs: they cast them on whoever lacks them.",
     ["Tes buffs vont à tous ceux qui ne les ont pas : rien à régler. Un buff de mana n'est jamais proposé aux guerriers ni aux voleurs."] =

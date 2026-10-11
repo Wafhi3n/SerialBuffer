@@ -50,6 +50,7 @@ local function snapshot(unit, group)
         dead = plain(UnitIsDeadOrGhost(unit)), combat = plain(UnitAffectingCombat(unit)),
         pvp = plain(UnitIsPVP(unit)), visible = plain(UnitIsVisible(unit)), level = plain(UnitLevel(unit)),
         group = group, self = (unit == "player"),
+        tank = NS.Tank and NS.Tank:Is(unit, guid, group) or false,   -- D44 (SerialBuffer_Tank.lua)
     }
 end
 
@@ -101,7 +102,15 @@ local function fromMe(a)
     return same and true or false
 end
 
--- "absent", ou les secondes restantes (math.huge : sans fin) et « est-ce la mienne » ; nil = illisible.
+-- La durée totale de l'aura (D45 : un buff court a son seuil), ou nil si illisible.
+local function duration(a)
+    local d = a.duration
+    if sec(d) or type(d) ~= "number" or d <= 0 then return nil end
+    return d
+end
+
+-- "absent", ou les secondes restantes (math.huge : sans fin), « est-ce la mienne » et la durée
+-- totale ; nil = illisible.
 function U.probe.aura(unit, buffName)
     local ok, a = pcall(C_UnitAuras.GetAuraDataBySpellName, unit, buffName, "HELPFUL")
     if not ok or sec(a) then return nil end
@@ -114,7 +123,7 @@ function U.probe.aura(unit, buffName)
     if mine == true then st.me = st.me + 1 elseif mine == false then st.other = st.other + 1
     else st.unknown = st.unknown + 1 end
     if type(e) ~= "number" or e <= 0 then return math.huge, mine end
-    return math.max(0, e - GetTime()), mine
+    return math.max(0, e - GetTime()), mine, duration(a)
 end
 
 -- true, false, ou nil = inconnu.

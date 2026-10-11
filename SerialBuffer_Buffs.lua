@@ -49,6 +49,22 @@ B.CLASSES = { "WARRIOR", "PALADIN", "PRIEST", "SHAMAN", "DRUID", "ROGUE", "MAGE"
 B.MANA_BUFFS = { [19742] = true, [1459] = true, [14752] = true }   -- Sagesse, Intelligence, Esprit divin
 B.NO_MANA = { WARRIOR = true, ROGUE = true }
 
+-- D44 : les buffs qui ne vont qu'aux TANKS (rôle du groupe, main tank, ou joueur désigné), sauf si la
+-- case « Épines à tous » du tableau est cochée (SerialBuffer_Tank.lua). Épines : un joueur l'a vue
+-- reproposée sans fin sur lui (Reddit, 2026-10-11).
+B.TANK_ONLY = { [467] = true }
+
+-- D45 : les buffs connus pour être COURTS (10 min en vanilla : Épines, Protection contre l'Ombre). Ne
+-- sert qu'à montrer leur réglage aux bonnes classes ; la file, elle, lit la vraie durée sur l'aura.
+B.SHORT_BUFFS = { [467] = true, [976] = true }
+
+function B:HasShort(class)
+    for _, id in ipairs(self:Ids(class)) do
+        if self.SHORT_BUFFS[id] then return true end
+    end
+    return false
+end
+
 -- Le client, remplaçable par un test headless.
 B.client = {
     known = function(id)
@@ -111,7 +127,8 @@ local function entry(id)
     if not c.known(id) then return nil end
     local name = c.name(id)
     if type(name) ~= "string" or name == "" then return nil end
-    return { id = id, name = name, icon = c.icon(id), rank = (c.rank and c.rank(name)) or id }
+    return { id = id, name = name, icon = c.icon(id), rank = (c.rank and c.rank(name)) or id,
+             tankOnly = B.TANK_ONLY[id] or nil }
 end
 
 -- Le buff connu de ce nom, ou nil (Run : relier un clic à son rang).
