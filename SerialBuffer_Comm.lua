@@ -11,7 +11,8 @@
 --   - un expéditeur se relie à un membre par la table nom complet → jeton, refaite au changement du
 --     groupe : ton propre écho et les inconnus sont écartés sans comparer les noms à la main ;
 --   - seul un lanceur qui a des buffs parle (un guerrier avec l'addon ne répond pas aux demandes) ;
---   - un envoi pendant un verrou de messagerie attend ; rien n'est sauvegardé du réseau (aucun nom).
+--   - un envoi pendant un verrou de messagerie, ou refusé un instant (débit), attend et repart ; rien
+--     n'est sauvegardé du réseau (aucun nom).
 local _, NS = ...
 NS = NS or _G.SerialBuffer
 
@@ -80,11 +81,13 @@ end
 
 function C.Request() return C.VERSION .. "|R" end
 
+-- Un id de sort tient en 9 chiffres : plus long, ce n'est pas un id, et il n'atteint pas C_Spell
+-- (revue de code du 2026-10-11).
 local function decodeIds(e)
     local ids = {}
     if e == "0" then return ids end
     for tok in (e .. "+"):gmatch("([^+]*)%+") do
-        if tok == "" or tok:find("%D") then return nil end
+        if tok == "" or #tok > 9 or tok:find("%D") then return nil end
         ids[#ids + 1] = tonumber(tok)
     end
     return ids
@@ -141,7 +144,7 @@ end
 
 local function fullName(unit)
     local ok, n = pcall(GetUnitName, unit, true)
-    if ok and type(n) == "string" and n ~= "" and not sec(n) then return n end
+    if ok and not sec(n) and type(n) == "string" and n ~= "" then return n end   -- secret : pas comparé
     return nil
 end
 
@@ -192,6 +195,12 @@ function C:Schedule(delay)
     self.timer = C_Timer.NewTimer(delay, function() C.timer = nil; C:Flush() end)
 end
 
+-- Les refus PASSAGERS (Enum.SendAddonMessageResult, ChatConstantsDocumentation.lua) : débit du
+-- préfixe (3) ou du canal (8), verrou des messages (11). Flush réessaie ; les autres ne passeraient
+-- pas mieux (revue de code du 2026-10-11 : une annonce refusée était perdue jusqu'au changement suivant).
+C.TRANSIENT = { [3] = true, [8] = true, [11] = true }
+
+-- Rend true si le message est parti ; sinon false, et en second true si le refus est passager.
 function C:SendRaw(msg, ch)
     local ok, res = pcall(C_ChatInfo.SendAddonMessage, C.PREFIX, msg, ch)
     if ok and (res == nil or res == 0 or res == true) then
@@ -199,7 +208,7 @@ function C:SendRaw(msg, ch)
         return true
     end
     self.stats.refused = self.stats.refused + 1
-    return false
+    return false, (ok and C.TRANSIENT[res]) or false
 end
 
 -- Envoie ce qui attend. Une annonce identique à la dernière ne repart pas, sauf en réponse à une
@@ -216,14 +225,23 @@ function C:Flush()
         self:Schedule(C.RETRY)
         return
     end
-    if self.wantR and self:SendRaw(C.Request(), ch) then self.wantR = false end
+    local again = false   -- un refus passager : ce qui n'est pas parti repart dans RETRY secondes
+    if self.wantR then
+        local sent, retry = self:SendRaw(C.Request(), ch)
+        if sent then self.wantR = false end
+        again = again or retry
+    end
     if self.wantA then
         local plan, picked = NS.Buffs:GroupPlan(NS.db)
         local msg = C.Encode(NS.Buffs.class, plan, self.since, C.MyWho(), picked)
-        if (msg ~= self.lastA or self.forceA) and self:SendRaw(msg, ch) then self.lastA = msg end
-        self.wantA, self.forceA = false, false
+        local sent, retry = true, false
+        if msg ~= self.lastA or self.forceA then sent, retry = self:SendRaw(msg, ch) end
+        if sent then self.lastA = msg end
+        if not retry then self.wantA, self.forceA = false, false end
+        again = again or retry
         self.stats.seniors, self.stats.juniors = NS.Share.Rank(self.peers, self:Me())
     end
+    if again then self:Schedule(C.RETRY) end
 end
 
 -- Toi, pour la répartition (palier 2) : ton nom complet et ton heure d'arrivée dans le groupe.

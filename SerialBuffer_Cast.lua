@@ -98,8 +98,19 @@ function C.Classify(errorName, msg)
 end
 
 -- Le dernier clic, noté par les boutons (SerialBuffer_UI.lua) : le joueur, le buff, son niveau.
-function C:NoteClick(b, now)
+-- Un clic qui ne lance RIEN n'est pas noté : en combat, la touche « buff suivant » n'a plus de type
+-- (b.nextKey, D36) et la ligne d'un inconnu s'arrête sur /stopmacro [combat] (b.combatOk faux).
+-- Noté, il prenait pour lui l'erreur d'un sort lancé à la main dans les 2 s, et un faux « trop bas »
+-- s'apprenait pour de bon (D38 ; revue de code du 2026-10-11).
+function C:NoteClick(b, now, inCombat)
+    if inCombat and not (b and b.combatOk and not b.nextKey) then return end
     self.last = (b and b.guid) and { guid = b.guid, buff = b.buffName, level = b.level, t = now } or nil
+end
+
+-- Le sort du dernier clic a réussi (SerialBuffer_Run.lua, OnCast) : une erreur qui suit n'est plus la
+-- sienne.
+function C:Done()
+    self.last = nil
 end
 
 -- Le dernier clic, s'il date de moins de RECENT secondes.

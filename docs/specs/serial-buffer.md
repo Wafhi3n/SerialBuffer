@@ -463,6 +463,16 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
     niveau sous le seuil coûte un clic de plus (Rois, sans doute refusé jusqu'au niveau 9 selon la
     règle de vanilla « niveau du sort − 10 », jamais mesurée sur Forever) ;
   - le refus « trop bas » d'un joueur précis pendant la séance (D24) reste, en plus.
+
+  **Corrigé le 2026-10-11 (revue de code, `fix/sb-revue-code`)** : jusqu'à la v0.5.0, l'erreur
+  s'imputait au dernier clic de moins de 2 s, même s'il n'avait rien lancé (la touche « buff
+  suivant » en combat, une ligne d'inconnu sous `/stopmacro [combat]`) ou si son sort avait déjà
+  réussi. Un « Target is too low level » venu d'un sort lancé à la main apprenait alors le niveau de
+  la ligne cliquée : à 60, ce rang n'était plus proposé à personne, sans retour possible. Désormais
+  un clic qui ne lance rien n'est pas noté, un sort réussi solde la note (`Cast:NoteClick`,
+  `Cast:Done`), et les seuils appris repartent de zéro une fois (`schemaVer` 4). *Pas fait :* relier
+  l'erreur au sort qui échoue (`UI_ERROR_MESSAGE` ne le porte pas ; `UNIT_SPELLCAST_FAILED` n'a pas
+  été mesuré sur Forever pour ce refus).
 - **D39 : une ligne affiche le temps qui reste au buff qu'elle refait, décompté en combat** (user,
   2026-10-05, après un donjon : « c'est quand les buffs dépop en combat », puis « rajouter les
   lignes des membres où il ne reste que 10 min, avec le temps restant »). Un buff qui expire bientôt

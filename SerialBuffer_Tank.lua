@@ -32,7 +32,8 @@ function T:Is(unit, group)
     local ok, role = pcall(UnitGroupRolesAssigned, unit)
     if ok and not sec(role) and role == "TANK" then return true end
     local ok2, mt = pcall(GetPartyAssignment, "MAINTANK", unit)
-    return ok2 and not sec(mt) and mt == true
+    -- Vrai / faux, comme le code de Blizzard qui la lit (SecureGroupHeaders.lua) : un 1 compte aussi.
+    return (ok2 and not sec(mt) and mt) and true or false
 end
 
 local function refresh()
