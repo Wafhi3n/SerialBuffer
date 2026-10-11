@@ -508,6 +508,23 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   traduire. Même jour, sur capture : une ligne **hors de portée** n'écrit plus « hors de portée » ;
   nom gris, icône désaturée, ligne estompée, « comme le fait le jeu de base » (le user) ; sa section
   « Hors de portée » reste. (D40 et D41 sont sur `feat/groupe-seul-touche`.)
+- **D43 : un buff sans restriction ne se règle pas ; il va à qui ne l'a pas** (user, 2026-10-11,
+  pendant une séance de test : « un personnage qui peut buffer sans restriction, ex. les mages avec le
+  buff int ou les druides avec la papatte : ne pas les laisser pouvoir set leur buff, et faire comme
+  les paladins, c'est-à-dire fill ce qui manque en buff/joueur »). Questions posées le même jour, le
+  user a choisi :
+  - **le mage, le prêtre et le druide perdent TOUTE leur grille**, pas seulement la ligne « Groupe /
+    raid » : plus de colonnes (D34), plus de choix unique (D35, D37), personne ne règle leur ligne
+    (C1). Chacun de leurs buffs est proposé à tout joueur qui ne l'a pas, Épines et Protection contre
+    l'Ombre comprises. D23 tient toujours (un buff de mana ne va ni aux guerriers ni aux voleurs) : ce
+    n'est pas un réglage mais une règle de l'addon (*conséquence dérivée, à confirmer*) ;
+  - **à plusieurs lanceurs de la même classe, chacun propose tout ce qui manque** : dès qu'un joueur a
+    le buff (de n'importe qui), il sort de la liste des autres. Aucun partage des joueurs par le
+    réseau.
+  Le paladin, dont les bénédictions s'excluent, garde sa grille, sa ligne et sa répartition (C4).
+  Une colonne ou un choix unique réglés avant restent dans la base, sans effet. À la page d'options,
+  une phrase remplace la grille ; « qui pose quoi » reste visible, sans option « qui peut régler ta
+  ligne » (un mage annonce « personne »). Code : `Buffs:Free`, `Comm.MyWho`.
 
 ## Questions ouvertes (au user)
 

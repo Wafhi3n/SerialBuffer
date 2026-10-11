@@ -111,6 +111,12 @@ Toutes prises par le user le 2026-10-05, en réponse aux questions Q1 à Q5 du b
   manquants »).
 - **C5 : on reste entre utilisateurs de Serial Buffer** pour le moment : pas de lecture des messages
   de PallyPower ou d'un autre addon.
+- **C6 (2026-10-11, user) : l'ouverture de C2 aux prêtres, mages et druides est REFERMÉE** (spec mère,
+  D43). Leurs buffs n'ont pas de restriction : ils n'ont plus de grille ni de choix unique, et
+  personne ne règle leur ligne, pas même le chef. Ils annoncent « personne » ; une ligne de mage
+  n'est jamais réglable, même annoncée autrement par un client plus ancien, et un réglage reçu par un
+  mage est refusé. À plusieurs, chacun propose ce qui manque, sans partage par le réseau. Le palier 3
+  et le palier 4 ne valent donc plus que pour les paladins.
 
 ## Critères d'acceptation (provisoires)
 

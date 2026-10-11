@@ -62,6 +62,13 @@ for _, cl in ipairs(C.WIRE_CLASSES) do WIRE_SET[cl] = true end
 -- La politique locale (db.coordWho) en lettre du message, et inversement.
 C.WHO_LETTER = { none = "N", leader = "L", anyone = "A" }
 
+-- D43 : un mage, un prêtre ou un druide n'a rien à régler (Buffs:Free) : il annonce « personne »,
+-- quelle que soit l'option gardée dans sa base (elle sert encore à son paladin du même compte).
+function C.MyWho()
+    if NS.Buffs:Free(NS.Buffs.class) then return "N" end
+    return C.WHO_LETTER[NS.db.coordWho] or "N"
+end
+
 -- Palier 3 : l'expéditeur a-t-il le droit de régler ta ligne ? policy : lettre N / L / A ;
 -- isChief : il est chef du groupe ou du raid, ou assistant.
 function C.Allowed(policy, isChief)
@@ -211,7 +218,7 @@ function C:Flush()
     if self.wantR and self:SendRaw(C.Request(), ch) then self.wantR = false end
     if self.wantA then
         local plan, picked = NS.Buffs:GroupPlan(NS.db)
-        local msg = C.Encode(NS.Buffs.class, plan, self.since, C.WHO_LETTER[NS.db.coordWho] or "N", picked)
+        local msg = C.Encode(NS.Buffs.class, plan, self.since, C.MyWho(), picked)
         if (msg ~= self.lastA or self.forceA) and self:SendRaw(msg, ch) then self.lastA = msg end
         self.wantA, self.forceA = false, false
         self.stats.seniors, self.stats.juniors = NS.Share.Rank(self.peers, self:Me())
@@ -293,7 +300,7 @@ end
 -- tient déjà cette bénédiction, palier 2).
 function C:OnSet(m, sender, unit)
     if m.target ~= self.me then return end
-    if C.Allowed(C.WHO_LETTER[NS.db.coordWho] or "N", isChief(unit)) then
+    if C.Allowed(C.MyWho(), isChief(unit)) then   -- D43 : jamais pour un buff sans restriction
         NS.Buffs:SetGroupPick(NS.Buffs.class, m.class, m.id, NS.db)
         self.stats.applied = self.stats.applied + 1
         NS:Printf(NS.L["%s a réglé ta ligne Groupe / raid."], sender)
@@ -306,9 +313,11 @@ function C:OnSet(m, sender, unit)
 end
 
 -- Peux-tu régler la ligne de ce joueur ? (son option, annoncée, et ton rang à toi)
+-- D43 : jamais la ligne d'un mage, d'un prêtre ou d'un druide, même si un client d'avant la v0.5
+-- l'annonce réglable.
 function C:CanEdit(name)
     local p = self.peers[name]
-    return p ~= nil and self.grouped and C.Allowed(p.who, isChief("player"))
+    return p ~= nil and self.grouped and not NS.Buffs:Free(p.caster) and C.Allowed(p.who, isChief("player"))
 end
 
 -- Tu changes une case de sa ligne : affichée tout de suite chez toi, envoyée une seconde après ton
@@ -398,7 +407,7 @@ function C:PrintPeers()
         NS:Printf("%s%s [%s]%s : %s", name, rank, p.who or "?", edit, planText(p.plan))
     end
     NS:Printf(L["Toi : chef ou assistant = %s, ton option = %s"], isChief("player") and L["oui"] or L["non"],
-        C.WHO_LETTER[NS.db.coordWho] or "N")
+        C.MyWho())
 end
 
 -- Démarre après la boucle (SerialBuffer_Run.lua), quand la classe est lue.

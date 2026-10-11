@@ -80,6 +80,17 @@ function O:WhoRow(panel, y)
     return y - 54
 end
 
+-- D43 (user, 2026-10-11) : un mage, un prêtre ou un druide n'a ni grille ni ligne « Groupe / raid » :
+-- chacun de ses buffs va à qui ne l'a pas. Une phrase le dit à la place. Rend le y libre suivant.
+function O:FreeNote(panel, y)
+    local note = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    note:SetPoint("TOPLEFT", PAD, y)
+    note:SetWidth(600)
+    note:SetJustifyH("LEFT")
+    note:SetText(L["Tes buffs vont à tous ceux qui ne les ont pas : rien à régler. Un buff de mana n'est jamais proposé aux guerriers ni aux voleurs."])
+    return y - 12 - math.ceil(math.max(note:GetStringHeight(), 24))
+end
+
 -- Les cases générales, en bas de la page ; rend le bas de la dernière. Les deux courtes côte à côte,
 -- sur la 3e colonne de WhoRow : la page du paladin dépassait du cadre du jeu d'une ligne (capture
 -- du user, 2026-10-11 : « Groupe seul » coupée par le bord).
@@ -146,7 +157,11 @@ function O:Build(panel)
     title:SetPoint("TOPLEFT", PAD, -PAD)
     title:SetText("Serial Buffer")
     local y = -PAD - 30
-    if NS.Buffs:HasCatalog(class) then
+    if NS.Buffs:Free(class) then
+        y = self:FreeNote(page, y)
+        y = NS.Grid:BuildWatch(page, y)   -- « qui pose quoi » reste à voir ; rien à y régler
+        self.refreshRow = refreshRow(page, y); y = y - LINE - 4
+    elseif NS.Buffs:HasCatalog(class) then
         y = NS.Grid:Build(page, y, class)
         y = self:WhoRow(page, y)
         local note = page:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
@@ -155,9 +170,6 @@ function O:Build(panel)
         note:SetJustifyH("LEFT")
         note:SetText(L["Groupe / raid : un choix unique pour les membres de ton groupe ou raid ; vide, la grille du dessus s'applique. Un buff de mana n'est jamais proposé aux guerriers ni aux voleurs."])
         y = y - 10 - math.ceil(math.max(note:GetStringHeight(), 24))   -- sa hauteur suit la langue
-        if class ~= "PALADIN" then
-            self.refreshRow = refreshRow(page, y); y = y - LINE - 4
-        end
     else
         y = NS.Grid:BuildWatch(page, y)   -- palier 3 : un chef sans buff voit et règle les lignes
     end

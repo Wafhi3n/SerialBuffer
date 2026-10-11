@@ -88,6 +88,15 @@ function B:HasCatalog(class)
     return class == "PALADIN" or self.CATALOG[class] ~= nil
 end
 
+-- D43 (user, 2026-10-11) : un buff « sans restriction » (mage, prêtre, druide : n'importe qui peut le
+-- poser à n'importe qui, plusieurs lanceurs ne se gênent pas) ne se RÈGLE pas. Pas de grille, pas de
+-- choix unique, personne ne règle leur ligne : chacun de leurs buffs va à tout joueur qui ne l'a pas,
+-- et D23 (pas de buff de mana aux guerriers ni aux voleurs) tient toujours. Seul le paladin, dont les
+-- bénédictions s'excluent, garde sa grille et sa répartition (C4).
+function B:Free(caster)
+    return caster ~= "PALADIN" and self.CATALOG[caster] ~= nil
+end
+
 -- Les classes de lanceur qui ont une grille (la base est commune au compte : une grille chacune).
 function B:Casters()
     local out = { "PALADIN" }
@@ -185,15 +194,17 @@ function B:DefaultOrder(caster, t)
     return clean(caster, t, out)
 end
 
+-- D43 : une colonne réglée avant la v0.5 pour un mage, un prêtre ou un druide reste dans la base mais
+-- ne compte plus (la retrouver si le user change d'avis).
 function B:Order(caster, t, db)
-    local s = bucket(db, "orders", caster)
+    local s = not self:Free(caster) and bucket(db, "orders", caster)
     if s and t and s[t] then return clean(caster, t, s[t]) end
     return self:DefaultOrder(caster, t)
 end
 
 -- Seul un écart au défaut est gardé.
 function B:SetOrder(caster, t, list, db)
-    if not (db and t) then return end
+    if not (db and t) or self:Free(caster) then return end
     list = clean(caster, t, list)
     if same(list, self:DefaultOrder(caster, t)) then
         local s = bucket(db, "orders", caster)
@@ -204,15 +215,16 @@ function B:SetOrder(caster, t, list, db)
 end
 
 -- D35 : le choix unique de la ligne « Groupe / raid » (0 = vide : la colonne s'applique).
+-- D43 : jamais de choix unique pour un buff sans restriction.
 function B:GroupPick(caster, t, db)
-    local s = bucket(db, "groupPick", caster)
+    local s = not self:Free(caster) and bucket(db, "groupPick", caster)
     local id = s and t and s[t]
     if type(id) == "number" and owns(caster, id) and not self:Locked(id, t) then return id end
     return 0
 end
 
 function B:SetGroupPick(caster, t, id, db)
-    if not (db and t) then return end
+    if not (db and t) or self:Free(caster) then return end
     local ok = type(id) == "number" and owns(caster, id) and not self:Locked(id, t)
     if ok then bucket(db, "groupPick", caster, true)[t] = id
     else

@@ -48,6 +48,10 @@ local T = {
     [" (réglable)"] = " (einstellbar)",
     ["Choix unique pour cette classe."] = "Einzige Wahl für diese Klasse.",
     ["Pas de choix unique : sa grille s'applique."] = "Keine einzige Wahl: sein Raster gilt.",
+    -- D43 (2026-10-11) : mage, prêtre, druide n'ont rien à régler
+    ["Buffs sans restriction : il les pose à qui ne les a pas."] = "Buffs ohne Einschränkung: er wirkt sie auf alle, denen sie fehlen.",
+    ["Tes buffs vont à tous ceux qui ne les ont pas : rien à régler. Un buff de mana n'est jamais proposé aux guerriers ni aux voleurs."] =
+        "Deine Buffs gehen an alle, denen sie fehlen: nichts einzustellen. Ein Mana-Buff wird Kriegern und Schurken nie angeboten.",
     ["Toi : chef ou assistant = %s, ton option = %s"] = "Du: Anführer oder Assistent = %s, deine Option = %s",
     ["oui"] = "ja",
     ["non"] = "nein",

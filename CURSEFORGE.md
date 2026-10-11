@@ -26,16 +26,18 @@ its own, so Serial Buffer lines them up and you press the button.
 
 What it offers depends on your class:
 
-- Mages, priests and druids cast all their buffs on each player, one after another. A buff with
-  more than 45 minutes left counts as done (you can change that in the options).
+- Mages, priests and druids cast all their buffs on each player who doesn't have them, one after
+  another, with nothing to set. Two mages in a group each see who's still missing Arcane Intellect,
+  and a player drops off both lists once either of them buffs him. A buff with more than 45 minutes
+  left counts as done (you can change that in the options).
 - Paladins put one blessing per player. For each class you pick a first, second and third choice
   (Kings, then Wisdom, then Might by default). If another paladin already gave that player the
   same blessing with more than half an hour left, you're offered the next one. You can also set a
   single blessing per class for your own group or raid.
 - Mana buffs (Wisdom, Arcane Intellect, Divine Spirit) skip warriors and rogues.
 
-The gear icon on the panel opens the options: a grid with one column per class, where each box is
-a buff icon you change with a click or the mouse wheel.
+For a paladin, the gear icon on the panel opens the options: a grid with one column per class, where
+each box is a buff icon you change with a click or the mouse wheel.
 
 Players who can't take a buff don't stay stuck at the top. If the game answers "Target is too low
 level" or "A more powerful spell is already active", you're offered their next buff instead. Too
