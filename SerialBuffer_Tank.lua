@@ -10,10 +10,11 @@
 -- seuil des buffs courts (D45, db.refreshShort : SerialBuffer_Queue.lua).
 -- D47 (user, 2026-10-11, avec le démoniste de D46 : « comme pour Épines, sur les buffs à durée
 -- mineure, il faut que les gens puissent cocher pour opt-in, opt-out ») : CHAQUE buff court
--- (Buffs.SHORT_BUFFS) a sa ligne et sa case « à tous », décochée par défaut. Décochée, Épines va aux
--- tanks, les autres à toi et à ton groupe ; cochée (db.shortAll[id]), à tous ceux qui ne l'ont pas.
--- Une ligne par buff : deux noms de sort ne tiennent pas côte à côte dans 300 px. Le seuil est à
--- droite de la première.
+-- (Buffs.SHORT_BUFFS) a sa case « à tous », décochée par défaut. Décochée, Épines va aux tanks, les
+-- autres à toi et à ton groupe ; cochée (db.shortAll[id]), à tous ceux qui ne l'ont pas. Sur une
+-- capture de la ligne d'Épines, le user : « pour le design, c'est pas mieux de mettre une icône au
+-- lieu de XX for everyone ? ». D'où UNE ligne : « À tous : », puis case + icône par buff (le nom est
+-- dans l'infobulle), le seuil à droite. Deux noms de sort, eux, ne tenaient pas dans 300 px.
 -- Le rôle et la marque main tank n'ont jamais été lus sur Forever : pcall, et une valeur secrète ou
 -- illisible vaut « pas tank ».
 local _, NS = ...
@@ -41,9 +42,9 @@ end
 -- ---------------------------------------------------------------- la ligne sous l'en-tête
 
 T.SHORT_MIN, T.SHORT_MAX = 1, 9   -- minutes (un buff court dure 10 min)
-T.LINE_H = 18
+T.LINE_H, T.ICON = 18, 16
 
--- D47 : les buffs courts de la classe, dans l'ordre du catalogue ; une ligne chacun.
+-- D47 : les buffs courts de la classe, dans l'ordre du catalogue ; une case chacun.
 function T:LineIds(class)
     local out = {}
     for _, id in ipairs(NS.Buffs:Ids(class)) do
@@ -89,32 +90,22 @@ local function allTip(id, spell)
     return string.format(L["Coché : %s va à tous ceux qui ne l'ont pas. Décoché : à toi et à ton groupe seulement."], spell)
 end
 
-local function allCheck(panel, y, id)
+-- Une case et l'icône du sort juste après ; un clic sur l'icône coche aussi (zone de clic élargie), et
+-- l'infobulle donne le nom du sort et la règle. Placée par BuildLine.
+local function allCheck(panel, id)
     local spell = NS.Buffs.client.name(id) or "?"
     local cb = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
     cb:SetSize(18, 18)
-    cb:SetPoint("TOPLEFT", 6, -y)
     cb.id = id
-    cb.label = cb:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    cb.label:SetPoint("LEFT", cb, "RIGHT", 1, 0)
-    cb.label:SetText(string.format(L["%s à tous"], spell))
-    cb:SetHitRectInsets(0, -(cb.label:GetStringWidth() + 2), 0, 0)
-    cb:SetScript("OnClick", function(self) T:SetAll(id, self:GetChecked()); refresh() end)
+    cb.icon = cb:CreateTexture(nil, "ARTWORK")
+    cb.icon:SetSize(T.ICON, T.ICON)
+    cb.icon:SetPoint("LEFT", cb, "RIGHT", 1, 0)
+    cb.icon:SetTexture(NS.Buffs.client.icon(id))
+    cb:SetHitRectInsets(0, -(T.ICON + 2), 0, 0)
+    cb:SetScript("OnClick", function(self) T:SetAll(id, self:GetChecked()); T:RefreshLine(); refresh() end)
     cb:SetScript("OnEnter", function(self) tooltip(self, string.format(L["%s à tous"], spell), allTip(id, spell)) end)
     cb:SetScript("OnLeave", function() GameTooltip:Hide() end)
     return cb
-end
-
--- La case de la 1re ligne partage sa ligne avec le seuil : un nom de sort trop long est coupé (« … »)
--- avant le texte du seuil, au lieu de passer dessous ; l'infobulle garde le nom entier. Calculé sur
--- la géométrie posée ici (case à 6 px du bord, libellé 1 px après ses 18 px, seuil à 8 px du bord
--- droit) : le panneau n'est pas encore placé quand on le construit, GetLeft y rendrait nil.
-local function fit(panel, cb, short)
-    local room = panel:GetWidth() - 8 - short.text:GetStringWidth() - 6 - (6 + 18 + 1)
-    if room <= 0 or cb.label:GetStringWidth() <= room then return end
-    cb.label:SetWidth(room)
-    cb.label:SetWordWrap(false)
-    cb:SetHitRectInsets(0, -(room + 2), 0, 0)
 end
 
 local function shortButton(panel, y)
@@ -137,20 +128,33 @@ local function shortButton(panel, y)
     return b
 end
 
--- Appelé par UI:Build sous le titre (y = haut de la 1re ligne). Rend la hauteur prise (0 : aucune).
+-- Appelé par UI:Build sous le titre (y = haut de la ligne). Rend la hauteur prise (0 : pas de ligne).
+-- « À tous : » une fois, puis case + icône pour chaque buff court, le seuil à droite.
 function T:BuildLine(panel, y)
     local ids = self:LineIds(NS.Buffs.class)
     if not ids[1] then return 0 end
+    local label = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    label:SetPoint("LEFT", panel, "TOPLEFT", 8, -y - self.LINE_H / 2)
+    label:SetText(L["À tous :"])
     self.checks = {}
-    for i, id in ipairs(ids) do self.checks[i] = allCheck(panel, y + (i - 1) * self.LINE_H, id) end
+    local anchor, gap = label, 2
+    for i, id in ipairs(ids) do
+        local cb = allCheck(panel, id)
+        cb:SetPoint("LEFT", anchor, "RIGHT", gap, 0)
+        self.checks[i], anchor, gap = cb, cb.icon, 8
+    end
     self.short = shortButton(panel, y)
     self:RefreshLine()
-    fit(panel, self.checks[1], self.short)
-    return self.LINE_H * #ids
+    return self.LINE_H
 end
 
--- Les coches et le seuil, relus de la base (à chaque rendu et après un geste).
+-- Les coches et le seuil, relus de la base (à chaque rendu et après un geste). Une icône décochée est
+-- grisée : en couleur, le buff va à tous.
 function T:RefreshLine()
-    for _, cb in ipairs(self.checks or {}) do cb:SetChecked(self:IsAll(cb.id)) end
+    for _, cb in ipairs(self.checks or {}) do
+        local on = self:IsAll(cb.id)
+        cb:SetChecked(on)
+        cb.icon:SetDesaturated(not on)
+    end
     if self.short then self.short.text:SetText(string.format(L["courts : sous %d min"], NS.db.refreshShort or 2)) end
 end

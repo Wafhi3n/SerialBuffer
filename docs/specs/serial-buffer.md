@@ -579,9 +579,11 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
     Respiration interminable et Détection de l'invisibilité du démoniste. *Conséquence acceptée :* un
     prêtre ne pose plus Protection contre l'Ombre aux inconnus tant qu'il ne coche pas sa case.
 
-  Une ligne par buff court sous le titre du tableau (deux noms de sort ne tiennent pas côte à côte
-  dans 300 px), le seuil de D45 à droite de la première ; un nom trop long y est coupé avant le
-  seuil. Épines garde `db.tankAll`, les autres `db.shortAll[id]`. « Toi » compte dans ton groupe même
+  **Une seule ligne sous le titre, des icônes** (user, sur une capture de « Thorns for everyone » :
+  « pour le design, c'est pas mieux de mettre une icône au lieu de XX for everyone ? ») : « À tous : »
+  une fois, puis pour chaque buff court sa case et son icône, grisée tant que la case est décochée ;
+  le nom du sort et la règle sont dans l'infobulle ; le seuil de D45 à droite. Deux noms de sort
+  côte à côte ne tenaient pas dans 300 px. Épines garde `db.tankAll`, les autres `db.shortAll[id]`. « Toi » compte dans ton groupe même
   seul, comme pour « Groupe seul » (D40) ; *dérivé.* Les options du prêtre, du druide et du démoniste
   le disent en une phrase. Code : `Tank:LineIds`, `Tank:IsAll` / `SetAll`, `Queue` (`skipLimited`).
   *À mesurer :* les noms et les ids sur le client français (`C_Spell.GetSpellName` de 132, 2970,
@@ -740,14 +742,16 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     Le tableau propose les deux buffs à un joueur qui ne les a pas ; un clic les pose, le joueur sort
     de la liste ; l'icône de la ligne est la bonne. Aucune erreur Lua (BugGrabber). Témoin connu-bon :
     la barre de buffs du joueur ciblé.
-36. [test] (D47) Le démoniste a deux lignes (Respiration, Détection), le prêtre une, le druide celle
-    d'Épines, ni le mage ni le paladin ; cases décochées par défaut ; décochées, un inconnu n'a aucun
-    des deux, toi seul oui ; une case cochée ouvre ce buff seul aux inconnus ; décocher efface
-    l'entrée sans toucher `tankAll` ; Protection contre l'Ombre décochée ne va pas à un inconnu.
-37. [humain] (D47) Sur le démoniste du banc, en ville : sous le titre du tableau, deux lignes
-    « Respiration interminable à tous » (le seuil « courts : sous 2 min » à droite, sans
-    chevauchement) et « Détection de l'invisibilité à tous », décochées ; aucun inconnu n'est proposé
-    pour ces buffs. Cocher Respiration : les inconnus qui ne l'ont pas apparaissent, pour elle seule.
+36. [test] (D47) Le démoniste a deux cases (Respiration, Détection) sur UNE ligne, chacune avec
+    l'icône de son sort, grisée décochée ; le prêtre une case, le druide celle d'Épines, ni le mage ni
+    le paladin ; cases décochées par défaut ; décochées, un inconnu n'a aucun des deux, toi seul oui ;
+    une case cochée ouvre ce buff seul aux inconnus ; décocher efface l'entrée sans toucher
+    `tankAll` ; Protection contre l'Ombre décochée ne va pas à un inconnu.
+37. [humain] (D47) Sur le démoniste du banc, en ville : sous le titre du tableau, une ligne « À
+    tous : » suivie de deux cases, chacune avec l'icône de son sort (grisée), et le seuil « courts :
+    sous 2 min » à droite, sans chevauchement ; l'infobulle d'une case nomme le sort. Aucun inconnu
+    n'est proposé pour ces buffs. Cocher Respiration : son icône prend sa couleur, les inconnus qui
+    ne l'ont pas apparaissent, pour elle seule.
     Un `/reload` garde la case. Sur le prêtre : une ligne pour Protection contre l'Ombre. Témoin
     connu-bon : la case « Groupe seul » de l'en-tête (publiée, vue en jeu), qui retire les mêmes
     inconnus de la liste.

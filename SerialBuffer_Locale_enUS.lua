@@ -59,6 +59,7 @@ local T = {
     ["courts : sous %d min"] = "short: under %d min",
     ["Buffs courts (10 min) : rafraîchir s'il leur reste moins de %d min"] = "Short buffs (10 min): refresh when less than %d min left",
     -- D47 (2026-10-11) : une case « à tous » par buff court
+    ["À tous :"] = "For everyone:",
     ["Coché : %s va à tous ceux qui ne l'ont pas. Décoché : à toi et à ton groupe seulement."] =
         "Ticked: %s goes to everyone who doesn't have it. Unticked: only you and your group.",
     ["Un buff court (10 min) ne va qu'à toi et à ton groupe (un buff de tank : aux tanks), sauf si tu coches « à tous » sous le titre du tableau."] =
