@@ -40,9 +40,10 @@ What it offers depends on your class:
   shows a box with the icon of each of your 10-minute buffs: tick one and it goes to anyone who
   lacks it, low-level players passing by included. The same line sets the 10-minute threshold.
 - Paladins put one blessing per player. For each class you pick a first, second and third choice
-  (Kings, then Wisdom, then Might by default). If another paladin already gave that player the
-  same blessing with more than half an hour left, you're offered the next one. You can also set a
-  single blessing per class for your own group or raid.
+  (Kings, then Wisdom, then Might by default, with no Might for priests, mages and warlocks). If
+  another paladin already gave that player the same blessing with more than half an hour left,
+  you're offered the next one. You can also set a single blessing per class for your own group or
+  raid.
 - Mana buffs (Wisdom, Arcane Intellect, Divine Spirit) skip warriors and rogues.
 
 For a paladin, the gear icon on the panel opens the options: a grid with one column per class, where

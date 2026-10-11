@@ -52,6 +52,9 @@ B.BLESSINGS = {
 -- 2026-10-05) mais dans aucune colonne par défaut (un tank ne veut pas de Salut).
 B.PRIORITY_DEFAULT = { "KINGS", "WISDOM", "MIGHT", "SALVATION", "LIGHT", "SANCTUARY" }
 B.DEFAULT_OFF = { [1038] = true, [19977] = true, [20911] = true }
+-- D49 (user, 2026-10-11) : Puissance ne sert à rien aux lanceurs de sorts ; hors de LEUR colonne par
+-- défaut seulement (la case la propose toujours, la colonne « Toutes » la garde).
+B.DEFAULT_OFF_FOR = { [19740] = { PRIEST = true, MAGE = true, WARLOCK = true } }
 B.PALADIN_RANKS = 3   -- D34 : trois choix par classe, comme la maquette validée par le user
 
 -- Les colonnes de la grille, les neuf classes de Forever, dans l'ordre CLASS_SORT_ORDER de Camelot
@@ -258,11 +261,17 @@ local function bucket(db, field, caster, create)
     return db[field][caster]
 end
 
+-- Un buff écarté d'office de la colonne par défaut : pour toutes les classes, ou pour celle-ci (D49).
+function B:DefaultOff(id, t)
+    local per = t and self.DEFAULT_OFF_FOR[id]
+    return (self.DEFAULT_OFF[id] or (per and per[t])) and true or false
+end
+
 -- La colonne par défaut : l'ordre du catalogue, sans les buffs écartés d'office ni ceux de D23.
 function B:DefaultOrder(caster, t)
     local out = {}
     for _, id in ipairs(self:Ids(caster)) do
-        if #out < self:Ranks(caster) and not self.DEFAULT_OFF[id] and not self:Locked(id, t) then
+        if #out < self:Ranks(caster) and not self:DefaultOff(id, t) and not self:Locked(id, t) then
             out[#out + 1] = id
         end
     end
@@ -449,13 +458,14 @@ end
 -- ---------------------------------------------------------------- migration (schemaVer 3)
 
 -- Ce que voulaient les réglages d'avant : la v0.1.0 (off[id] = décoché partout, priority = ordre du
--- paladin) et la grille D33 (classBuffs[cible][id] = coché ou non).
+-- paladin) et la grille D33 (classBuffs[cible][id] = coché ou non). Un buff jamais touché suit le
+-- défaut d'aujourd'hui (D49 compris), comme une colonne jamais réglée.
 local function legacyOn(id, t, db)
     if B:Locked(id, t) then return false end
     local cb = type(db.classBuffs) == "table" and db.classBuffs[t]
     if type(cb) == "table" and cb[id] ~= nil then return cb[id] and true or false end
     if type(db.off) == "table" and db.off[id] then return false end
-    return not B.DEFAULT_OFF[id]
+    return not B:DefaultOff(id, t)
 end
 
 local function legacyIds(caster, db)
