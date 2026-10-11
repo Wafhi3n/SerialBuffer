@@ -88,6 +88,10 @@ local T = {
     ["Aucune touche pour « buff suivant »."] = "Ninguna tecla asignada a «Siguiente beneficio».",
     ["Clic : la page Raccourcis du jeu, section Serial Buffer."] = "Clic: la página de asignación de teclas del juego, sección Serial Buffer.",
     ["touche ?"] = "¿tecla?",
+    -- Codes courts de la souris dans l'en-tête (Molette Haut / Bas, bouton de Souris N)
+    ["MH"] = "RA",
+    ["MB"] = "RB",
+    ["S%d"] = "R%d",
     ["Page des raccourcis indisponible : Échap > Options > Raccourcis > Serial Buffer."] = "Página de teclas no disponible: Esc > Opciones > Asignación de teclas > Serial Buffer.",
     ["ta touche « buff suivant », et la page des raccourcis pour la changer"] = "tu tecla «Siguiente beneficio» y la página de teclas para cambiarla",
     -- Signaler un bug ou une idée (SerialBuffer_Report.lua, 2026-10-07)

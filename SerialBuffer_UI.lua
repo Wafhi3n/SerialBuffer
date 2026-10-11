@@ -392,11 +392,11 @@ end
 function UI:Render(rows, info)
     if not self.panel or InCombatLockdown() then return end
     if not self.panel.anchored then anchorTop(self.panel) end
-    NS.Header:Refresh()
     local nextRow = NS.Cast.NextRow(rows)
     setMacro(self.next, nextRow and NS.Cast.MacroFor(nextRow), nextRow)
     local y = self:Layout(rows, info.group)
     self.panel.count:SetText(string.format(L["%d à buffer"], #rows))
+    NS.Header:Refresh()   -- après le compteur : la place de la touche dépend de sa largeur
     local msg = footer(rows, info)
     self.panel.msg:ClearAllPoints()
     self.panel.msg:SetPoint("TOPLEFT", PAD, -(y + 2))

@@ -18,13 +18,61 @@ NS.Header = H
 
 local function action() return "CLICK " .. NS.Cast.NEXT_BUTTON .. ":LeftButton" end   -- Bindings.xml
 
--- La touche, abrégée comme sur les barres d'action, ou nil. pcall : jamais éprouvé sur Forever.
-function H.KeyText()
+-- La touche brute (« SHIFT-MOUSEWHEELUP »), ou nil.
+local function rawKey()
     local ok, key = pcall(GetBindingKey, action())
     if not ok or type(key) ~= "string" or key == "" then return nil end
-    local okText, text = pcall(GetBindingText, key, 1)   -- comme ActionButton.lua (Forever 70205)
-    if okText and type(text) == "string" and text ~= "" then return text end
     return key
+end
+
+-- Le nom d'une touche, abrégé comme sur les barres d'action. pcall : jamais éprouvé sur Forever.
+local function bindingText(key)
+    local ok, text = pcall(GetBindingText, key, 1)   -- comme ActionButton.lua (Forever 70205)
+    if ok and type(text) == "string" and text ~= "" then return text end
+    return key
+end
+
+-- La touche en toutes lettres (l'infobulle), ou nil.
+function H.KeyText()
+    local key = rawKey()
+    return key and bindingText(key)
+end
+
+-- La touche pour l'en-tête. L'abréviation du jeu laisse la souris en toutes lettres (« Mouse Wheel
+-- Up », vu par le user le 2026-10-11 : elle couvrait la case « Groupe seul ») : la molette et les
+-- boutons de la souris prennent un code court, comme dans les addons de barres d'action ; les
+-- modificateurs (« s- ») restent ceux du jeu. Hors souris, le texte du jeu tel quel.
+function H.ShortKey(key)
+    local text = bindingText(key)
+    local base = key:match("([^%-]+)$") or key
+    local short = (base == "MOUSEWHEELUP" and L["MH"]) or (base == "MOUSEWHEELDOWN" and L["MB"])
+    local button = base:match("^BUTTON(%d+)$")
+    if button then short = string.format(L["S%d"], tonumber(button)) end
+    if not short then return text end
+    local long = bindingText(base)
+    if #long < #text and text:sub(-#long) == long then return text:sub(1, #text - #long) .. short end
+    if long == text then return short end
+    return text
+end
+
+-- La place de la touche (le bouton entier), entre le libellé de la case et le compteur. CALCULÉE
+-- d'après les ancres, pas lue à l'écran : GetLeft/GetRight rendent nil tant que le tableau est
+-- caché. Les écarts viennent des ancres elles-mêmes (le titre et le rouage : SerialBuffer_UI.lua ;
+-- le scarabée : SerialBuffer_Report.lua), donc un déplacement de l'un d'eux est suivi.
+local GAP = 6   -- entre la touche et ses voisins (son ancre sur le compteur, keyButton)
+
+local function offsetX(region)
+    local _, _, _, x = region:GetPoint(1)
+    return x or 0
+end
+
+function H:Room()
+    local p, cb = self.panel, self.check
+    local left = offsetX(p.title) + p.title:GetStringWidth() + offsetX(cb) + cb:GetWidth()
+        + offsetX(cb.label) + cb.label:GetStringWidth()
+    local right = p.count:GetStringWidth() - offsetX(p.count) + p.gear:GetWidth() - offsetX(p.gear)
+    if p.report then right = right + p.report:GetWidth() - offsetX(p.report) end
+    return p:GetWidth() - left - right - 2 * GAP
 end
 
 -- La page Raccourcis du jeu, déroulée jusqu'à la section « Serial Buffer » : son nom est la valeur de
@@ -81,9 +129,10 @@ end
 local function keyButton(panel)
     local b = CreateFrame("Button", nil, panel)
     b:SetHeight(14)
-    b:SetPoint("RIGHT", panel.count, "LEFT", -6, 0)
+    b:SetPoint("RIGHT", panel.count, "LEFT", -GAP, 0)
     b.text = b:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     b.text:SetPoint("CENTER")
+    b.text:SetWordWrap(false)   -- trop large pour sa place : coupée par « … », pas sur deux lignes
     local hl = b:CreateTexture(nil, "HIGHLIGHT")
     hl:SetAllPoints()
     hl:SetColorTexture(1, 1, 1, 0.15)
@@ -97,20 +146,28 @@ local function keyButton(panel)
     return b
 end
 
--- La coche et la touche, relues de la base et du client : à chaque rendu (hors combat), sur
--- UPDATE_BINDINGS et après une bascule.
+-- La coche et la touche, relues de la base et du client : à chaque rendu (hors combat, APRÈS le
+-- compteur, dont la largeur compte), sur UPDATE_BINDINGS et après une bascule. Trop large pour sa
+-- place, la touche est coupée ; l'infobulle la donne en entier.
 function H:Refresh()
     if self.check then self.check:SetChecked(NS.db.groupOnly and true or false) end
     local b = self.key
     if not b then return end
-    local key = H.KeyText()
-    b.text:SetText(key and ("[" .. key .. "]") or L["touche ?"])
+    local key = rawKey()
+    b.text:SetWidth(0)   -- 0 : la largeur suit le texte, pour le mesurer
+    b.text:SetText(key and ("[" .. H.ShortKey(key) .. "]") or L["touche ?"])
     if key then b.text:SetTextColor(1, 0.82, 0) else b.text:SetTextColor(0.5, 0.5, 0.5) end
-    b:SetWidth(b.text:GetStringWidth() + 6)
+    local w, room = b.text:GetStringWidth() + 6, self:Room()
+    if w > room then
+        w = math.max(room, 12)
+        b.text:SetWidth(w - 6)
+    end
+    b:SetWidth(w)
 end
 
 -- Appelé par UI:Build, une fois le titre et le compteur posés.
 function H:Build(panel)
+    self.panel = panel
     self.check = groupCheck(panel)
     self.key = keyButton(panel)
     local f = CreateFrame("Frame")

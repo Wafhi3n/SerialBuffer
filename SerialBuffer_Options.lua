@@ -80,42 +80,28 @@ function O:WhoRow(panel, y)
     return y - 54
 end
 
--- Construit le contenu une fois, à la première ouverture.
-function O:Build(panel)
-    local _, class = UnitClass("player")
-    local title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    title:SetPoint("TOPLEFT", PAD, -PAD)
-    title:SetText("Serial Buffer")
-    local y = -PAD - 30
-    if NS.Buffs:HasCatalog(class) then
-        y = NS.Grid:Build(panel, y, class)
-        y = self:WhoRow(panel, y)
-        local note = panel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-        note:SetPoint("TOPLEFT", PAD, y - 6)
-        note:SetWidth(600)
-        note:SetJustifyH("LEFT")
-        note:SetText(L["Groupe / raid : un choix unique pour les membres de ton groupe ou raid ; vide, la grille du dessus s'applique. Un buff de mana n'est jamais proposé aux guerriers ni aux voleurs."])
-        y = y - 36
-        if class ~= "PALADIN" then
-            self.refreshRow = refreshRow(panel, y); y = y - LINE - 4
-        end
-    else
-        y = NS.Grid:BuildWatch(panel, y)   -- palier 3 : un chef sans buff voit et règle les lignes
-    end
+-- Les cases générales, en bas de la page ; rend le bas de la dernière. Les deux courtes côte à côte,
+-- sur la 3e colonne de WhoRow : la page du paladin dépassait du cadre du jeu d'une ligne (capture
+-- du user, 2026-10-11 : « Groupe seul » coupée par le bord).
+function O:GeneralChecks(page, y)
     -- Le tableau caché par /sbuff se retrouve ici (le user, 2026-10-09). Refusé en combat : la case
     -- reprend l'état réel à la prochaine ouverture du panneau (O:Refresh au OnShow).
-    self.checks[#self.checks + 1] = checkbox(panel, PAD, y, L["Afficher le tableau (/sbuff)"],
+    self.checks[#self.checks + 1] = checkbox(page, PAD, y, L["Afficher le tableau (/sbuff)"],
         function() return NS.db.shown end, function(v) NS.UI:SetVisible(v) end)
-    y = y - LINE
-    self.checks[#self.checks + 1] = checkbox(panel, PAD, y, L["Montrer les joueurs marqués PvP"],
+    self.checks[#self.checks + 1] = checkbox(page, PAD + 330, y, L["Montrer les joueurs marqués PvP"],
         function() return NS.db.showPvP end, function(v) NS.db.showPvP = v end)
+    y = y - LINE
     -- D40 : la même case que dans l'en-tête du tableau (SerialBuffer_Header.lua).
-    self.checks[#self.checks + 1] = checkbox(panel, PAD, y - LINE, L["Groupe seul : ignorer les joueurs autour de toi"],
+    self.checks[#self.checks + 1] = checkbox(page, PAD, y, L["Groupe seul : ignorer les joueurs autour de toi"],
         function() return NS.db.groupOnly end, function(v) NS.Header:SetGroupOnly(v) end)
-    -- Signaler un bug ou une idée (SerialBuffer_Report.lua) : sa fenêtre passe devant ce panneau.
-    -- À droite du TITRE (le user, 2026-10-09) : vu dès l'ouverture, et rien ne le pousse. Sous la
-    -- dernière case, il débordait du panneau, posé sur sa bordure à côté de « Fermer » (capture).
-    local report = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+    return y - 24
+end
+
+-- Signaler un bug ou une idée (SerialBuffer_Report.lua) : sa fenêtre passe devant ce panneau.
+-- À droite du TITRE (le user, 2026-10-09) : vu dès l'ouverture, et rien ne le pousse. Sous la
+-- dernière case, il débordait du panneau, posé sur sa bordure à côté de « Fermer » (capture).
+local function reportButton(page, title)
+    local report = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
     report:SetSize(260, 22)
     report:SetPoint("LEFT", title, "RIGHT", 16, 0)
     report:SetText(L["Signaler un bug ou proposer une idée"])
@@ -124,6 +110,58 @@ function O:Build(panel)
     bug:SetTexture(NS.Report.ICON)
     bug:SetSize(18, 18)
     bug:SetPoint("LEFT", 6, 0)
+end
+
+-- La page, dans un cadre qui défile si elle dépasse celui du jeu (≈ 665 × 601 : Blizzard l'étire
+-- sur son conteneur, Blizzard_SettingsPanel.xml) : un prêtre, qui a la ligne « Rafraîchir » en plus,
+-- ou une langue plus longue. Montage du gabarit ScrollFrameTemplate de Forever, comme
+-- Skin.MakeScrollFrame de COC. Par la BARRE seulement : la molette reste aux cases de la grille, qui
+-- changent de buff avec elle, et une page qui défilerait amènerait une case sous le curseur.
+-- La barre se cache quand tout tient. Sans ScrollUtil, la page se pose sur le panneau, comme avant.
+local function scrollPage(panel)
+    if not (ScrollUtil and ScrollUtil.InitScrollFrameWithScrollBar) then return panel end
+    local bar = CreateFrame("EventFrame", nil, panel, "MinimalScrollBar")
+    bar:SetPoint("TOPRIGHT", -4, -4)
+    bar:SetPoint("BOTTOMRIGHT", -4, 4)
+    local sf = CreateFrame("ScrollFrame", nil, panel)
+    sf:SetPoint("TOPLEFT")
+    sf:SetPoint("BOTTOMRIGHT", bar, "BOTTOMLEFT", -4, -4)
+    local page = CreateFrame("Frame", nil, sf)
+    page:SetSize(1, 1)
+    sf:SetScrollChild(page)
+    sf:SetScript("OnSizeChanged", function(_, w) page:SetWidth(w) end)
+    bar:SetHideIfUnscrollable(true)
+    ScrollUtil.InitScrollFrameWithScrollBar(sf, bar)
+    sf:EnableMouseWheel(false)   -- après Init, qui pose son OnMouseWheel
+    return page
+end
+
+-- Construit le contenu une fois, à la première ouverture.
+function O:Build(panel)
+    local _, class = UnitClass("player")
+    local page = scrollPage(panel)
+    local title = page:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    title:SetPoint("TOPLEFT", PAD, -PAD)
+    title:SetText("Serial Buffer")
+    local y = -PAD - 30
+    if NS.Buffs:HasCatalog(class) then
+        y = NS.Grid:Build(page, y, class)
+        y = self:WhoRow(page, y)
+        local note = page:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+        note:SetPoint("TOPLEFT", PAD, y - 6)
+        note:SetWidth(600)
+        note:SetJustifyH("LEFT")
+        note:SetText(L["Groupe / raid : un choix unique pour les membres de ton groupe ou raid ; vide, la grille du dessus s'applique. Un buff de mana n'est jamais proposé aux guerriers ni aux voleurs."])
+        y = y - 10 - math.ceil(math.max(note:GetStringHeight(), 24))   -- sa hauteur suit la langue
+        if class ~= "PALADIN" then
+            self.refreshRow = refreshRow(page, y); y = y - LINE - 4
+        end
+    else
+        y = NS.Grid:BuildWatch(page, y)   -- palier 3 : un chef sans buff voit et règle les lignes
+    end
+    y = self:GeneralChecks(page, y)
+    if page ~= panel then page:SetHeight(-y + 2) end
+    reportButton(page, title)
     self.built = true
 end
 

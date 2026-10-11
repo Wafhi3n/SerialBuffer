@@ -88,6 +88,10 @@ local T = {
     ["Aucune touche pour « buff suivant »."] = "No key bound to “Next buff”.",
     ["Clic : la page Raccourcis du jeu, section Serial Buffer."] = "Click: the game's Keybindings page, Serial Buffer section.",
     ["touche ?"] = "key?",
+    -- Codes courts de la souris dans l'en-tête (Molette Haut / Bas, bouton de Souris N)
+    ["MH"] = "WU",
+    ["MB"] = "WD",
+    ["S%d"] = "M%d",
     ["Page des raccourcis indisponible : Échap > Options > Raccourcis > Serial Buffer."] = "Keybindings page unavailable: Esc > Options > Keybindings > Serial Buffer.",
     ["ta touche « buff suivant », et la page des raccourcis pour la changer"] = "your “Next buff” key, and the Keybindings page to change it",
     -- Signaler un bug ou une idée (SerialBuffer_Report.lua, 2026-10-07)

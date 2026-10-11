@@ -87,6 +87,10 @@ local T = {
     ["Aucune touche pour « buff suivant »."] = "Keine Taste für „Nächster Buff“ belegt.",
     ["Clic : la page Raccourcis du jeu, section Serial Buffer."] = "Klick: die Tastaturbelegung des Spiels, Abschnitt Serial Buffer.",
     ["touche ?"] = "Taste?",
+    -- Codes courts de la souris dans l'en-tête (Molette Haut / Bas, bouton de Souris N)
+    ["MH"] = "MH",
+    ["MB"] = "MR",
+    ["S%d"] = "M%d",
     ["Page des raccourcis indisponible : Échap > Options > Raccourcis > Serial Buffer."] = "Tastaturbelegung nicht verfügbar: Esc > Optionen > Tastaturbelegung > Serial Buffer.",
     ["ta touche « buff suivant », et la page des raccourcis pour la changer"] = "deine Taste „Nächster Buff“ und die Tastaturbelegung, um sie zu ändern",
     -- Signaler un bug ou une idée (SerialBuffer_Report.lua, 2026-10-07)
