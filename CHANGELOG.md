@@ -1,5 +1,33 @@
 # Changelog - Serial Buffer
 
+## v0.5.0 - 2026-10-11
+
+Warlocks and shamans can use Serial Buffer now, and 10-minute buffs stop coming back the moment you
+cast them.
+
+- Warlocks get Unending Breath and Detect Invisibility (the highest rank you know). Shamans get
+  Water Walking and Water Breathing, which need a reagent (Fish Oil, Shiny Fish Scales). When you
+  run out, that buff isn't offered anymore and its icon turns red until you restock.
+- Mages, priests and druids no longer have a grid to set up. Each of their buffs goes to anyone who
+  doesn't have it, and mana buffs still skip warriors and rogues. What you set before is kept but
+  no longer used, and a group leader can't set their Group / raid row anymore.
+- 10-minute buffs (Thorns, Shadow Protection, and the new warlock and shaman ones) used to come
+  back right after you cast them, because anything under 45 minutes counted as fading. They now
+  wait until less than 2 minutes are left. You can set that between 1 and 9 minutes in the options,
+  or on the line under the panel title.
+- That line also decides who gets them. "For everyone:" shows a box with the icon of each of your
+  10-minute buffs, unticked by default, so they go to you and your group only, and Thorns to tanks
+  only (whoever has the Tank role in your group, or your raid's main tank). Tick a box to offer that
+  buff to everyone around who lacks it.
+- If you play a priest, note that Shadow Protection isn't offered to players around you anymore
+  unless you tick its box.
+- The addon no longer says "loaded" every time you log in. You get one line after installing or
+  updating, and that's it. /sbuff pvp and /sbuff around typed alone now tell you the current
+  setting instead of flipping it; add on or off to change it. When your group leader sets your
+  Group / raid row, you get a toast instead of a chat line.
+- A character too low to know any of their class buffs no longer gets "None of your buffs was
+  recognized" at every login.
+
 ## v0.4.1 - 2026-10-11
 
 Two layout fixes.
