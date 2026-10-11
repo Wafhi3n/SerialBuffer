@@ -248,7 +248,7 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   durent 1 h sur Forever. L'addon n'en dépend pas : il lit sur l'aura **le temps qui reste**, et ne
   code aucune durée.
 - **D5 : les joueurs marqués PvP sont cachés par défaut**, et une option les affiche (marqués). Les
-  buffer te met PvP.
+  buffer te met PvP. Sauf quand tu es déjà marqué toi-même : D50.
 - **D6 : l'addon propose d'activer les plaques amies** (en mode « noms seuls ») à la première
   ouverture. Si tu refuses, la question ne revient pas, et une liste vide dit pourquoi.
 - **D7 : une ligne par joueur**, qui propose le prochain buff qui lui manque.
@@ -628,6 +628,26 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   colonne réglée à la main reste telle quelle ; la migration des réglages d'avant la grille fait
   suivre le défaut du jour à une Puissance jamais touchée. Code : `Buffs.DEFAULT_OFF_FOR`,
   `Buffs:OffFor` (lu par `DefaultOrder`, `Fill`, `FillGroup` et la migration).
+- **D50 : marqué PvP toi-même, les joueurs marqués ne sont plus cachés** (user, 2026-10-11 : « j'adore
+  le pvp donc en champ de bataille (on y va pour la castagne) l'addon devrait fonctionner
+  normalement »). En champ de bataille tout le monde est marqué, toi compris : D5 cachait tout ton
+  raid, et le tableau ne montrait que toi sans `/sbuff pvp on`. D5 sert à ne pas te faire marquer en
+  buffant ; déjà marqué, ça ne change rien. Question posée le même jour, le user a choisi **« quand tu
+  es marqué toi-même »** (plutôt que « en champ de bataille seulement » ou « toujours pour ton
+  groupe ») : ça couvre le champ de bataille et les zones contestées d'un royaume PvP. Non marqué, D5
+  tient comme avant. Ton marquage se lit sur ton propre instantané (`UnitIsPVP("player")`), illisible =
+  non marqué ; `/sbuff pvp off` le dit. Code : `Queue` (`selfFlagged`, `admissible`).
+  - **À mesurer en champ de bataille, avant de décider du reste** (user, même jour : « on attend la
+    mesure » ; il monte Rédemption au niveau 30 à partir du 2026-10-12 pour le seul champ de bataille
+    de la bêta). D'après la doc du jeu, pendant un match PvP « actif et pas terminé » la lecture des
+    auras peut ne rien rendre, même hors combat (voir « Auras sous restriction »). Les sondes, à la
+    PORTE (la préparation, où tout le monde se buffe) puis PENDANT le match, hors combat :
+    `C_RestrictedActions.GetAddOnRestrictionState(3)` (restriction « match PvP »),
+    `C_Secrets.ShouldAurasBeSecret()`, `C_Secrets.ShouldSpellAuraBeSecret(19740)`, et la lecture de
+    ta Bénédiction de puissance sur toi (`GetAuraDataBySpellName`). Fiche de l'appli du banc :
+    `mesure--auras-secretes`. Si les auras y sont cachées, la piste notée (pas construite : le user
+    attend la mesure) est un mode « à l'aveugle » qui repropose d'après tes propres sorts (fin du
+    buff, mort du joueur), sans voir les buffs posés par les autres.
 
 ## Questions ouvertes (au user)
 

@@ -10,6 +10,7 @@
 --   D28 hors paladin : un buff qui a plus que le seuil des options (45 min par défaut) : servi
 --   D30 le groupe passe devant (remplace « ni ton groupe » de D8)
 --   D37 le choix unique du groupe, puis la colonne en repli        D38 refus « trop bas » APPRIS (db.tooLow)
+--   D50 marqué PvP toi-même, D5 ne joue plus (champ de bataille, zone contestée d'un royaume PvP)
 -- AFFICHAGE, trois parties, FIFO dans chacune (D30, D25) : « group » (ton groupe ou ton raid, à
 -- portée), « around » (les autres, à portée), « far » (le groupe hors de portée), tout en bas : la
 -- première ligne est toujours quelqu'un qu'on peut buffer, et un clic répété dessus vide la file.
@@ -186,7 +187,7 @@ local function admissible(snap, opts)
     if not snap.name then return false, "unread" end
     if snap.self then return true end
     if snap.combat and not snap.group then return false end    -- D16, les inconnus seulement (D39)
-    if snap.pvp and not opts.showPvP then return false end     -- D5
+    if snap.pvp and not opts.showPvP and not opts.selfPvP then return false end   -- D5, sauf D50
     if snap.group and not snap.visible then return false end   -- D18
     return true
 end
@@ -220,6 +221,16 @@ end
 Q.SECTIONS = { "group", "around", "far" }   -- l'ordre des parties du tableau (D30, D25)
 local RANK = { group = 1, around = 2, far = 3 }
 
+-- D50 (user, 2026-10-11 : « j'adore le pvp, en champ de bataille l'addon devrait fonctionner
+-- normalement ») : D5 cache les joueurs marqués PvP pour ne pas te faire marquer en les buffant. Déjà
+-- marqué toi-même, ça ne change rien : ton instantané le dit, et D5 ne joue plus.
+local function selfFlagged(snaps)
+    for _, s in ipairs(snaps) do
+        if s.self then return s.pvp == true end
+    end
+    return false
+end
+
 -- Construit les lignes, triées par partie puis FIFO. Un joueur qui sort de la file (buffé, parti, en
 -- combat…) perd sa place : s'il revient, il entre en fin de file (D8, D11). Rend rows, around (joueurs
 -- admis autour, toi non compris : il distingue « personne autour » de « tournée finie ») et unread
@@ -227,6 +238,7 @@ local RANK = { group = 1, around = 2, far = 3 }
 function Q:Build(snaps, wantedFor, probe, opts)
     opts = opts or {}
     self.now = opts.now or self.now
+    if opts.selfPvP == nil then opts.selfPvP = selfFlagged(snaps) end   -- D50 (Run en donne un neuf à chaque rendu)
     local rows, seen, around, unread = {}, {}, 0, 0
     for _, snap in ipairs(snaps) do
         if snap.guid and not seen[snap.guid] then
