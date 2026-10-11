@@ -483,7 +483,9 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   instance (D31) : aucune plaque n'est lue. Réglage gardé (`groupOnly`, décochée par défaut : l'addon
   reste une tournée d'extérieur, D3). *Conséquences dérivées, non décidées par le user :*
   - la case est dans l'en-tête du tableau, juste après le titre (là où le user a tracé son trait),
-    et aussi dans les options ; `/sbuff autour` la bascule ;
+    et aussi dans les options ; `/sbuff autour off` la coche, `/sbuff autour on` la décoche, et
+    `/sbuff autour` seul dit l'état sans y toucher (il basculait jusqu'à la v0.4.1, règle
+    `chat-output` du 2026-10-11) ;
   - seul et case cochée, tu ne vois que toi ; liste vide, le pied dit « Personne à buffer dans ton
     groupe. » ; le message des plaques coupées (« noplates ») ne s'affiche plus, il n'a plus d'objet ;
   - en combat, la case change le réglage mais le tableau reste figé (D36) : il le prend à la sortie.
@@ -659,7 +661,8 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     Cocher la case de l'en-tête en combat ne laisse ni erreur ni `ADDON_ACTION_BLOCKED`. Témoin
     connu-bon : le même tableau, case décochée, juste avant.
 32. [humain] (D40) Seul, case cochée, rien à te poser : le pied dit « Personne à buffer dans ton
-    groupe. » ; `/sbuff autour` bascule la case et le dit dans le chat.
+    groupe. » ; `/sbuff autour on|off` change la case et le dit dans le chat (`/sbuff autour` seul :
+    l'état, sans y toucher).
 33. [humain] (D41) Une touche assignée à « Buff suivant » s'affiche dans l'en-tête (« [F] ») ;
     sans touche, « touche ? » en gris. Un clic, hors combat, ouvre Options > Raccourcis sur la
     section « Serial Buffer » ; y changer la touche met l'en-tête à jour sans `/reload`. En combat,

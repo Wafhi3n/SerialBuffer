@@ -1,0 +1,53 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<!-- SerialBuffer_Toast.xml : le gabarit des toasts de l'addon (SerialBuffer_Toast.lua). Recopié de LeyLines_Toast.xml, vu en jeu le 2026-10-11.
+	     Celui que TaintLab a mesuré le 2026-10-11 (outillage, TaintLab_Toast.xml), lui-même recopié de
+	     NewRecipeLearnedAlertFrameTemplate (Blizzard_FrameXML/Mainline/AlertFrameSystems.xml, build
+	     70338). Il hérite d'AlertFrameTemplate (clic droit = fermer, survol = pause) et porte les deux
+	     groupes d'animation que le système des alertes LIT : animIn, et waitAndAnimOut avec son enfant
+	     animOut. Fond uni : un atlas de Retail n'est pas garanti sur ce client. -->
+	<ContainedAlertFrame name="SerialBufferToastTemplate" hidden="true" inherits="AlertFrameTemplate" virtual="true">
+		<Size x="320" y="72"/>
+		<Animations>
+			<AnimationGroup parentKey="animIn">
+				<Alpha fromAlpha="1" toAlpha="0" duration="0" order="1"/>
+				<Alpha fromAlpha="0" toAlpha="1" duration="0.2" order="2"/>
+			</AnimationGroup>
+			<AnimationGroup parentKey="waitAndAnimOut">
+				<Alpha startDelay="4.05" fromAlpha="1" toAlpha="0" duration="1.5" parentKey="animOut">
+					<Scripts>
+						<OnFinished>
+							self:GetRegionParent():Hide();
+						</OnFinished>
+					</Scripts>
+				</Alpha>
+			</AnimationGroup>
+		</Animations>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="Bg" setAllPoints="true">
+					<Color r="0.05" g="0.05" b="0.08" a="0.85"/>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<Texture parentKey="Icon" file="Interface\AddOns\SerialBuffer\Textures\icon">
+					<Size x="40" y="40"/>
+					<Anchors>
+						<Anchor point="LEFT" x="12" y="0"/>
+					</Anchors>
+				</Texture>
+				<FontString parentKey="Title" inherits="GameFontNormal" justifyH="LEFT">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.Icon" relativePoint="TOPRIGHT" x="10" y="2"/>
+						<Anchor point="RIGHT" x="-12" y="0"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="Text" inherits="GameFontHighlightSmall" justifyH="LEFT" justifyV="TOP">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.Title" relativePoint="BOTTOMLEFT" x="0" y="-3"/>
+						<Anchor point="BOTTOMRIGHT" x="-12" y="6"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+	</ContainedAlertFrame>
+</Ui>

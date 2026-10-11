@@ -7,7 +7,7 @@ if not NS or not NS.L then return end
 if (GetLocale and GetLocale() or "enUS") ~= "deDE" then return end
 
 local T = {
-    ["chargé. Tape /%s aide pour l'aide."]                                          = "geladen. Gib /%s hilfe für die Hilfe ein.",
+    ["version %s. Tape /%s aide pour l'aide."]                                      = "Version %s. Gib /%s hilfe für die Hilfe ein.",
     ["version %s"]                                                                  = "Version %s",
     ["Commandes :"]                                                                 = "Befehle:",
     ["affiche la version"]                                                          = "zeigt die Version",
@@ -111,5 +111,7 @@ local T = {
     -- Afficher le tableau depuis les options (2026-10-09)
     ["Afficher le tableau (/sbuff)"] = "Tabelle anzeigen (/sbuff)",
     ["Tableau caché. /sbuff, ou la case « Afficher le tableau » des options, le réaffiche."] = "Tabelle verborgen. /sbuff oder das Kästchen „Tabelle anzeigen“ in den Optionen zeigt sie wieder an.",
+    -- Chat sobre (2026-10-11) : une commande à deux états tapée seule dit l'état et le mot qui le change
+    ["(/sbuff %s %s pour changer)"] = "(/sbuff %s %s zum Ändern)",
 }
 for k, v in pairs(T) do NS.L[k] = v end
