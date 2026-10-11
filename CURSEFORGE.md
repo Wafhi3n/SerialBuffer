@@ -27,7 +27,7 @@ its own, so Serial Buffer lines them up and you press the button.
 What it offers depends on your class:
 
 - Mages, priests, druids and warlocks cast all their buffs on each player who doesn't have them, one
-  after another, with nothing to set. Two mages in a group each see who's still missing Arcane
+  after another, with no grid to set up. Two mages in a group each see who's still missing Arcane
   Intellect, and a player drops off both lists once either of them buffs him. A buff with more than
   45 minutes left counts as done, and a 10-minute buff like Thorns, Shadow Protection or Unending
   Breath with more than 2 (you can change both in the options).
