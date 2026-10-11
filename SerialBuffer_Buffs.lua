@@ -172,6 +172,16 @@ function B:Resolve(class)
     return n
 end
 
+-- Au moins un id de la classe a-t-il un nom sur ce client ? Non : ce sont des ids faux, à signaler
+-- (Run). Oui : rien d'appris, c'est un personnage trop bas (démoniste avant Respiration, D46).
+function B:AnyNamed(class)
+    for _, id in ipairs(self:Ids(class)) do
+        local n = self.client.name(id)
+        if type(n) == "string" and n ~= "" then return true end
+    end
+    return false
+end
+
 -- D23 : un buff jamais proposé à cette classe de cible.
 function B:Locked(id, targetClass)
     return (self.MANA_BUFFS[id] and self.NO_MANA[targetClass]) and true or false

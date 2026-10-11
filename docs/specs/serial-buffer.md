@@ -565,6 +565,10 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
     l'aura du rang 3 passerait inaperçue. D'où `Buffs.RANK_IDS` : on lance le nom du plus haut rang
     connu, et la file tient pour servi un joueur qui porte l'aura de n'importe quel rang. Sans
     écart de nom, rien ne change.
+  - **Pas de fausse alerte pour un personnage trop bas** : un démoniste qui n'a encore aucun des
+    deux sorts ne reconnaît rien. Le message « aucun de tes buffs n'est reconnu, préviens l'auteur »
+    serait parti à chaque connexion ; il ne part plus que si aucun id de la classe n'a de nom sur le
+    client (des ids faux). Vaut aussi pour un mage avant Intelligence des Arcanes.
   *À mesurer :* les noms et les ids sur le client français (`C_Spell.GetSpellName` de 132, 2970,
   11743, 5697) et le rang lancé par un démoniste qui connaît les trois. *Hors D46 :* les autres
   classes (Respiration aquatique du chaman, etc.), le user fait le tour des classes lui-même.
@@ -712,7 +716,8 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
 34. [test] (D46) Le démoniste a un catalogue sans grille, le réglage court, pas de ligne de tank ;
     il propose Respiration puis Détection à toute classe ; le rang 3 appris, il lance le nom du
     rang 3 (clé D38 : son rang) ; l'aura d'un autre rang, sous un autre nom, vaut « servi » au-dessus
-    du seuil court et « à refaire » au-dessous ; une aura illisible ne vaut ni l'un ni l'autre
+    du seuil court et « à refaire » au-dessous ; une aura illisible ne vaut ni l'un ni l'autre ; un
+    démoniste qui n'a rien appris n'écrit rien dans le chat, des ids sans nom le disent une fois
     (`test_serialbuffer_warlock.lua`).
 35. [humain] (D46) Sur un démoniste du banc (client français), `/run for _,id in
     ipairs({5697,132,2970,11743}) do local n=C_Spell.GetSpellName(id) print(id,n,n and #n) end` :

@@ -14,14 +14,17 @@ NS.Run = R
 
 local TICK = 0.5
 
--- Ce que la classe sait poser. Une classe à buffs dont AUCUN id n'est reconnu le dit une fois : les
--- ids non paladin sont ceux de vanilla, pas encore vus sur Forever (SerialBuffer_Buffs.lua).
+-- Ce que la classe sait poser. Une classe à buffs dont AUCUN id n'a de nom sur ce client le dit une
+-- fois : les ids non paladin sont ceux de vanilla, pas encore vus sur Forever (SerialBuffer_Buffs.lua).
+-- Des ids nommés mais pas appris, c'est un personnage trop bas (un démoniste qui n'a pas encore
+-- Respiration, un mage avant Intelligence) : rien dans le chat, c'était une fausse alerte à chaque
+-- connexion.
 function R:ResolveBuffs()
     local _, class = UnitClass("player")
     if not NS.Buffs:HasCatalog(class) then self.noBuffs = true return end
     local n = NS.Buffs:Resolve(class)
     self.noBuffs = (n == 0)
-    if n == 0 and not self.warned then
+    if n == 0 and not self.warned and not NS.Buffs:AnyNamed(class) then
         self.warned = true
         local ids = {}
         for _, id in ipairs(NS.Buffs.CATALOG[class] or {}) do ids[#ids + 1] = tostring(id) end
