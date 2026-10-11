@@ -609,10 +609,15 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   de mage / démoniste et prêtre »). Leur colonne par défaut devient Rois, Sagesse, vide : un paladin
   dont les autres ont déjà posé Rois et Sagesse ne leur propose plus rien. C'est un **défaut**, pas
   un interdit comme D23 : la case vide propose toujours Puissance, et la colonne « Toutes » la garde.
+  - **Le bouton » ne leur recopie pas Puissance** (user, même soir, vu GO au banc puis demandé :
+    « » saute ») : il recopie la case « Toutes », qui garde Puissance, et la remettait chez eux.
+    Remplir saute ces trois classes pour Puissance, sur une ligne de choix comme sur la ligne
+    « Groupe / raid » (*cette dernière, dérivée* : la même règle pour les deux »). Une classe sautée
+    garde sa case telle qu'elle était, Puissance réglée à la main comprise.
   *Dérivé :* une colonne jamais réglée suit le nouveau défaut (seuls les écarts sont sauvés) ; une
   colonne réglée à la main reste telle quelle ; la migration des réglages d'avant la grille fait
   suivre le défaut du jour à une Puissance jamais touchée. Code : `Buffs.DEFAULT_OFF_FOR`,
-  `Buffs:DefaultOff`.
+  `Buffs:OffFor` (lu par `DefaultOrder`, `Fill`, `FillGroup` et la migration).
 
 ## Questions ouvertes (au user)
 
