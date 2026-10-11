@@ -32,6 +32,8 @@ What it offers depends on your class:
   45 minutes left counts as done, and a 10-minute buff like Thorns, Shadow Protection or Unending
   Breath with more than 2 (you can change both in the options).
 - Warlocks hand out Unending Breath and Detect Invisibility, the highest rank you know.
+- Shamans hand out Water Walking and Water Breathing. Both need a reagent (Fish Oil, Shiny Fish
+  Scales): when you run out, that buff stops showing up and its icon turns red until you restock.
 - 10-minute buffs stay in your group unless you say otherwise. Shadow Protection, Unending Breath
   and Detect Invisibility go to you and your group, and druids put Thorns on tanks only (whoever has
   the Tank role in your group, or your raid's main tank). Under the panel title, "For everyone:"

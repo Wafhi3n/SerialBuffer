@@ -103,7 +103,13 @@ local function allCheck(panel, id)
     cb.icon:SetTexture(NS.Buffs.client.icon(id))
     cb:SetHitRectInsets(0, -(T.ICON + 2), 0, 0)
     cb:SetScript("OnClick", function(self) T:SetAll(id, self:GetChecked()); T:RefreshLine(); refresh() end)
-    cb:SetScript("OnEnter", function(self) tooltip(self, string.format(L["%s à tous"], spell), allTip(id, spell)) end)
+    cb:SetScript("OnEnter", function(self)
+        tooltip(self, string.format(L["%s à tous"], spell), allTip(id, spell))
+        if (NS.Buffs.unstocked or {})[id] then   -- D48
+            GameTooltip:AddLine(L["Composant manquant : ce buff n'est pas proposé tant que tu n'en as pas."], 1, 0.3, 0.3, true)
+            GameTooltip:Show()
+        end
+    end)
     cb:SetScript("OnLeave", function() GameTooltip:Hide() end)
     return cb
 end
@@ -149,12 +155,14 @@ function T:BuildLine(panel, y)
 end
 
 -- Les coches et le seuil, relus de la base (à chaque rendu et après un geste). Une icône décochée est
--- grisée : en couleur, le buff va à tous.
+-- grisée : en couleur, le buff va à tous. Rouge : son composant manque (D48, Buffs.unstocked).
 function T:RefreshLine()
+    local missing = NS.Buffs.unstocked or {}
     for _, cb in ipairs(self.checks or {}) do
         local on = self:IsAll(cb.id)
         cb:SetChecked(on)
         cb.icon:SetDesaturated(not on)
+        if missing[cb.id] then cb.icon:SetVertexColor(1, 0.3, 0.3) else cb.icon:SetVertexColor(1, 1, 1) end
     end
     if self.short then self.short.text:SetText(string.format(L["courts : sous %d min"], NS.db.refreshShort or 2)) end
 end

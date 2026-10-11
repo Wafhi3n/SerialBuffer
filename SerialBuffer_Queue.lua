@@ -123,8 +123,10 @@ end
 
 -- D44 : un buff réservé aux tanks saute les autres joueurs, sauf « à tous » (opts.tankAll).
 -- D47 : un autre buff court (w.short) ne va qu'à toi et à ton groupe, sauf sa case « à tous »
--- (opts.shortAll[id]).
+-- (opts.shortAll[id]). D48 : un buff dont tu n'as plus le composant (opts.unstocked[id]) saute tout
+-- le monde : il échouerait à chaque clic.
 local function skipLimited(snap, w, opts)
+    if opts.unstocked and opts.unstocked[w.id] then return true end
     if w.tankOnly then return not snap.tank and not opts.tankAll end
     if w.short then
         return not (snap.group or snap.self) and not (opts.shortAll and opts.shortAll[w.id])

@@ -75,8 +75,8 @@ même s'il lui manque plusieurs buffs : elle propose le prochain qui manque.
   `coordination.md` (brouillon).*
 - **Aucun message aux joueurs buffés** (chuchotement, /dire) : c'est du spam.
 - **Rien du voisinage n'est sauvegardé** : ni nom, ni GUID. La liste vit le temps de la session.
-- **Classes sans buff long à poser sur un inconnu** (chaman, chasseur, guerrier, voleur) : rien en
-  v1. Le démoniste y était jusqu'à D46 (2026-10-11).
+- **Classes sans buff à poser sur un autre** (chasseur, guerrier, voleur) : rien. Le démoniste et
+  le chaman y étaient jusqu'à D46 et D48 (2026-10-11).
 
 ## Ce qui n'est pas encore prouvé
 
@@ -569,6 +569,10 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
     deux sorts ne reconnaît rien. Le message « aucun de tes buffs n'est reconnu, préviens l'auteur »
     serait parti à chaque connexion ; il ne part plus que si aucun id de la classe n'a de nom sur le
     client (des ids faux). Vaut aussi pour un mage avant Intelligence des Arcanes.
+
+  *À mesurer :* les noms et les ids sur le client français (`C_Spell.GetSpellName` de 132, 2970,
+  11743, 5697) et le rang lancé par un démoniste qui connaît les trois. Le chaman est venu ensuite
+  (D48), quand le user a fait le tour des classes.
 - **D47 : chaque buff court a sa case « à tous », décochée par défaut** (user, 2026-10-11, après
   D46 : « comme pour Épines, sur les buffs à durée mineure, il faut que les gens puissent cocher pour
   opt-in, opt-out »). Questions posées le même jour, le user a choisi :
@@ -583,12 +587,23 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   « pour le design, c'est pas mieux de mettre une icône au lieu de XX for everyone ? ») : « À tous : »
   une fois, puis pour chaque buff court sa case et son icône, grisée tant que la case est décochée ;
   le nom du sort et la règle sont dans l'infobulle ; le seuil de D45 à droite. Deux noms de sort
-  côte à côte ne tenaient pas dans 300 px. Épines garde `db.tankAll`, les autres `db.shortAll[id]`. « Toi » compte dans ton groupe même
-  seul, comme pour « Groupe seul » (D40) ; *dérivé.* Les options du prêtre, du druide et du démoniste
-  le disent en une phrase. Code : `Tank:LineIds`, `Tank:IsAll` / `SetAll`, `Queue` (`skipLimited`).
-  *À mesurer :* les noms et les ids sur le client français (`C_Spell.GetSpellName` de 132, 2970,
-  11743, 5697) et le rang lancé par un démoniste qui connaît les trois. *Hors D46 :* les autres
-  classes (Respiration aquatique du chaman, etc.), le user fait le tour des classes lui-même.
+  côte à côte ne tenaient pas dans 300 px. Épines garde `db.tankAll`, les autres `db.shortAll[id]`.
+  « Toi » compte dans ton groupe même seul, comme pour « Groupe seul » (D40) ; *dérivé.* Les options
+  des classes à buff court le disent en une phrase. Code : `Tank:LineIds`, `Tank:IsAll` / `SetAll`,
+  `Queue` (`skipLimited`).
+- **D48 : le chaman pose Marche sur l'eau et Respiration aquatique** (user, 2026-10-11, en faisant
+  le tour des classes : « tu peux rajouter Water Walking et Water Breathing pour le chaman en buff
+  mineur ? »). Ids `546` et `131`, un seul rang chacun, 10 min (Wowhead Forever, même jour). Buffs
+  courts : pas de grille (D43), seuil court (D45), case « à tous » décochée par défaut (D47).
+  - **Chacun coûte un composant** : Huile de poisson (`17058`) pour Marche sur l'eau, Écailles de
+    poisson brillantes (`17057`) pour Respiration aquatique. Sans lui, le sort échoue à chaque clic,
+    et comme l'erreur « composant manquant » ne fait pas avancer la file, la ligne du haut resterait
+    sur ce joueur. D'où `Buffs.REAGENTS` et `Buffs:Unstocked` (`C_Item.GetItemCount`, sacs seuls) :
+    un buff dont tu n'as plus le composant n'est proposé à personne ; son icône de la ligne « À
+    tous » passe au rouge, et l'infobulle dit pourquoi. Un compte illisible ne cache rien. *Dérivé.*
+
+  *À mesurer :* les deux ids et les composants sur le client ; le compte qui retombe à 0 après le
+  dernier composant lancé.
 
 ## Questions ouvertes (au user)
 
@@ -755,6 +770,16 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     Un `/reload` garde la case. Sur le prêtre : une ligne pour Protection contre l'Ombre. Témoin
     connu-bon : la case « Groupe seul » de l'en-tête (publiée, vue en jeu), qui retire les mêmes
     inconnus de la liste.
+38. [test] (D48) Le chaman a deux buffs courts sans grille et deux cases (Marche sur l'eau,
+    Respiration aquatique) ; composants dans les sacs, rien n'est sauté ; sans Huile de poisson,
+    Marche sur l'eau n'est proposée à personne et Respiration aquatique l'est ; sans aucun
+    composant, rien ; un compte illisible ne cache rien (`test_serialbuffer_shaman.lua`).
+39. [humain] (D48) Sur un chaman du banc, groupé avec B : « À tous : » suivi des icônes de Marche sur
+    l'eau et de Respiration aquatique ; avec les composants, un clic sur la ligne de B pose l'un puis
+    l'autre. Sans Huile de poisson (la mettre en banque) : l'icône de Marche sur l'eau est rouge, son
+    infobulle dit « Composant manquant », et le tableau ne la propose plus ; la reprendre la fait
+    revenir. Aucune erreur Lua. Témoin connu-bon : le compteur de composants du sort dans le livre
+    de sorts du jeu.
 
 ## Contrat
 

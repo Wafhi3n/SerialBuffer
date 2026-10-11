@@ -28,7 +28,13 @@ B.CATALOG = {
     PRIEST = { 1243, 14752, 976 },   -- Robustesse, Esprit divin, Protection contre l'Ombre
     DRUID  = { 1126, 467 },          -- Marque du fauve, Épines
     WARLOCK = { 5697, 132 },         -- D46 : Respiration interminable, Détection de l'invisibilité
+    SHAMAN = { 546, 131 },           -- D48 : Marche sur l'eau, Respiration aquatique
 }
+
+-- D48 : les buffs qui coûtent un composant (id du sort -> id de l'objet ; Wowhead Forever,
+-- 2026-10-11). Sans lui, le sort échoue à chaque clic et la ligne du haut ne bougerait plus : la file
+-- le saute (Buffs:Unstocked).
+B.REAGENTS = { [546] = 17058, [131] = 17057 }   -- Huile de poisson, Écailles de poisson brillantes
 
 -- D46 : les rangs d'un sort dont les noms ne sont pas tous identiques, rang 1 en tête. Sur Wowhead
 -- Forever en français (2026-10-11), le rang 3 de Détection de l'invisibilité s'écrit avec une
@@ -63,9 +69,10 @@ B.NO_MANA = { WARRIOR = true, ROGUE = true }
 B.TANK_ONLY = { [467] = true }
 
 -- D45 : les buffs connus pour être COURTS (10 min en vanilla : Épines, Protection contre l'Ombre ; et
--- les deux du démoniste, D46). Montre leur seuil aux bonnes classes (la file, elle, lit la vraie durée
--- sur l'aura) et, depuis D47, les réserve à toi et à ton groupe sauf leur case « à tous » (Tank.lua).
-B.SHORT_BUFFS = { [467] = true, [976] = true, [5697] = true, [132] = true }
+-- ceux du démoniste, D46, et du chaman, D48). Montre leur seuil aux bonnes classes (la file, elle, lit
+-- la vraie durée sur l'aura) et, depuis D47, les réserve à toi et à ton groupe sauf leur case « à
+-- tous » (Tank.lua).
+B.SHORT_BUFFS = { [467] = true, [976] = true, [5697] = true, [132] = true, [546] = true, [131] = true }
 
 function B:HasShort(class)
     for _, id in ipairs(self:Ids(class)) do
@@ -96,6 +103,13 @@ B.client = {
         local ok, info = pcall(C_Spell.GetSpellInfo, name)
         if ok and type(info) == "table" and type(info.spellID) == "number" then return info.spellID end
         return nil
+    end,
+    -- D48 : combien tu portes de cet objet (sacs seulement) ; nil si illisible.
+    count = function(itemID)
+        if not (C_Item and C_Item.GetItemCount) then return nil end
+        local ok, n = pcall(C_Item.GetItemCount, itemID, false)
+        if not ok or (issecretvalue and issecretvalue(n)) or type(n) ~= "number" then return nil end
+        return n
     end,
 }
 
@@ -170,6 +184,18 @@ function B:Resolve(class)
         if e then self.known[id] = e; n = n + 1 end
     end
     return n
+end
+
+-- D48 : les buffs connus dont le composant manque (id -> true), gardés dans self.unstocked pour la
+-- ligne « À tous » ; un compte illisible ne cache rien.
+function B:Unstocked()
+    local out, count = {}, self.client.count
+    for id in pairs(self.known or {}) do
+        local item = self.REAGENTS[id]
+        if item and count and count(item) == 0 then out[id] = true end
+    end
+    self.unstocked = out
+    return out
 end
 
 -- Au moins un id de la classe a-t-il un nom sur ce client ? Non : ce sont des ids faux, à signaler

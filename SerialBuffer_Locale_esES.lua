@@ -60,6 +60,8 @@ local T = {
     ["Buffs courts (10 min) : rafraîchir s'il leur reste moins de %d min"] = "Beneficios cortos (10 min): renovar si les quedan menos de %d min",
     -- D47 (2026-10-11) : une case « à tous » par buff court
     ["À tous :"] = "Para todos:",
+    ["Composant manquant : ce buff n'est pas proposé tant que tu n'en as pas."] =
+        "Falta el componente: este beneficio no se ofrece hasta que tengas alguno.",
     ["Coché : %s va à tous ceux qui ne l'ont pas. Décoché : à toi et à ton groupe seulement."] =
         "Marcada: %s va a todos los que no lo tienen. Sin marcar: solo a ti y a tu grupo.",
     ["Un buff court (10 min) ne va qu'à toi et à ton groupe (un buff de tank : aux tanks), sauf si tu coches « à tous » sous le titre du tableau."] =
