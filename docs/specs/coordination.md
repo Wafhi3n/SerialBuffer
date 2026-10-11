@@ -191,8 +191,9 @@ uniques) ; les prêtres, mages et druides posent tout, comme avant.
   seule.
 - **Chez lui** : la modification ne s'applique que si l'expéditeur est de son groupe et que son
   option le permet à ce moment-là ; sinon elle est ignorée (et comptée). Appliquée, sa grille change
-  comme s'il avait cliqué lui-même (même contrôle des ids, D23 compris), il voit dans son chat
-  « <Nom> a réglé ta ligne Groupe / raid », et il se réannonce : tout le groupe voit le nouveau
+  comme s'il avait cliqué lui-même (même contrôle des ids, D23 compris), il voit un toast
+  « <Nom> a réglé ta ligne Groupe / raid » (une ligne de chat jusqu'à la v0.4.1 ; règle `chat-output`
+  du 2026-10-11 : un message du réseau ne va pas dans le chat), et il se réannonce : tout le groupe voit le nouveau
   réglage, répartition du palier 2 comprise.
 - Ça vaut pour toutes les classes qui ont des buffs : un chef peut ainsi assigner un buff unique à
   un prêtre pour une classe (C2). Par défaut, personne n'a de choix unique : chacun pose tout.

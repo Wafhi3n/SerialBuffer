@@ -44,17 +44,30 @@ function NS:Printf(fmt, ...)
     self:Print(string.format(fmt, ...))
 end
 
+-- Une commande à deux états ne change qu'avec on / off. Tapée seule (ou avec un autre mot), elle DIT
+-- l'état et le mot qui le change, sans y toucher (règle du user du 2026-10-11, skill publique
+-- `chat-output` : sur LeyLines, `/ley signal` tapé pour voir l'état le rallumait). `isOn` = l'état,
+-- `set(bool)` le change, `on` / `off` = la ligne de chaque état.
+local ON_OFF = { on = true, off = false }
+function NS:TwoState(name, arg, isOn, set, on, off)
+    local want = ON_OFF[arg]
+    if want ~= nil and want ~= isOn then set(want); isOn = want end
+    local line = isOn and on or off
+    if want == nil then line = line .. " " .. string.format(L["(/sbuff %s %s pour changer)"], name, isOn and "off" or "on") end
+    self:Print(line)
+end
+
 function NS:Slash(msg)
-    local cmd = ((msg or ""):match("^%s*(%S*)") or ""):lower()
+    local cmd, arg = (msg or ""):match("^%s*(%S*)%s*(%S*)")
+    cmd, arg = (cmd or ""):lower(), (arg or ""):lower()
     if cmd == "" then
         if self.UI then self.UI:Toggle() end
     elseif cmd == "pvp" then
-        self.db.showPvP = not self.db.showPvP
-        self:Print(self.db.showPvP and L["Joueurs PvP affichés."] or L["Joueurs PvP cachés."])
-    elseif cmd == "autour" or cmd == "around" then   -- D40
-        self.Header:SetGroupOnly(not self.db.groupOnly)
-        self:Print(self.db.groupOnly and L["Joueurs autour ignorés : seuls toi et ton groupe sont listés."]
-            or L["Joueurs autour listés."])
+        self:TwoState("pvp", arg, self.db.showPvP == true, function(v) self.db.showPvP = v end,
+            L["Joueurs PvP affichés."], L["Joueurs PvP cachés."])
+    elseif cmd == "autour" or cmd == "around" then   -- D40 : « on » = les joueurs autour sont listés
+        self:TwoState(cmd, arg, not self.db.groupOnly, function(v) self.Header:SetGroupOnly(not v) end,
+            L["Joueurs autour listés."], L["Joueurs autour ignorés : seuls toi et ton groupe sont listés."])
     elseif cmd == "touche" or cmd == "key" then       -- D41
         local key = self.Header.KeyText()
         self:Print(key and string.format(L["Touche « buff suivant » : %s"], key) or L["Aucune touche pour « buff suivant »."])
@@ -72,8 +85,8 @@ function NS:Slash(msg)
     else
         self:Print(L["Commandes :"])
         self:Print("/sbuff - " .. L["affiche ou cache le tableau"])
-        self:Print("/sbuff pvp - " .. L["montre ou cache les joueurs PvP"])
-        self:Print("/sbuff autour - " .. L["montre ou ignore les joueurs autour de toi (groupe seul)"])
+        self:Print("/sbuff pvp [on|off] - " .. L["montre ou cache les joueurs PvP"])
+        self:Print("/sbuff autour [on|off] - " .. L["montre ou ignore les joueurs autour de toi (groupe seul)"])
         self:Print("/sbuff touche - " .. L["ta touche « buff suivant », et la page des raccourcis pour la changer"])
         self:Print("/sbuff options - " .. L["ouvre les options"])
         self:Print("/sbuff groupe - " .. L["liste les Serial Buffer de ton groupe"])
@@ -95,7 +108,14 @@ f:SetScript("OnEvent", function(_, event, arg1)
         NS.Buffs:Migrate(SerialBufferDB)
         NS.db = SerialBufferDB
     elseif event == "PLAYER_LOGIN" then
-        NS:Printf(L["chargé. Tape /%s aide pour l'aide."], "sbuff")
+        -- Muet à la connexion, sauf la première après une installation ou une mise à jour (règle
+        -- `chat-output` du 2026-10-11 ; jusqu'à la v0.4.1, « chargé » à chaque connexion). seenVersion
+        -- vit dans la base du COMPTE : une ligne par compte, pas par perso.
+        if NS.db.seenVersion ~= NS.VERSION then
+            NS.db.seenVersion = NS.VERSION
+            NS:Printf(L["version %s. Tape /%s aide pour l'aide."], NS.VERSION, "sbuff")
+        end
+        if NS.Toast then NS.Toast:Init() end
         NS.Run:Start()
     end
 end)

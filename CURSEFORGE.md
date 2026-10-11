@@ -40,7 +40,7 @@ a buff icon you change with a click or the mouse wheel.
 Players who can't take a buff don't stay stuck at the top. If the game answers "Target is too low
 level" or "A more powerful spell is already active", you're offered their next buff instead. Too
 low is remembered for good, per spell rank: a level 2 player won't be offered Kings again. Players
-flagged for PvP are hidden by default, since buffing them flags you too (/sbuff pvp shows them).
+flagged for PvP are hidden by default, since buffing them flags you too (/sbuff pvp on shows them).
 
 You'll need friendly player nameplates turned on (Options, Nameplates): that's how the addon sees
 the people around you. In dungeons and raids the game blocks friendly nameplates, so only your
@@ -56,8 +56,9 @@ the others move to their next choice for that class instead of casting the same 
 Clicking a stranger's line targets them, and they stay targeted afterwards. Clicking someone in
 your group leaves your target alone.
 
-Commands: /sbuff shows or hides the panel, /sbuff options opens the settings, /sbuff pvp toggles
-PvP-flagged players, /sbuff group lists the other Serial Buffers in your group.
+Commands: /sbuff shows or hides the panel, /sbuff options opens the settings, /sbuff pvp on (or off)
+shows or hides PvP-flagged players, /sbuff group lists the other Serial Buffers in your group.
+Typed alone, /sbuff pvp tells you the current setting and changes nothing.
 
 The only thing that goes over the network is what you cast on each class, sent to your own party
 or raid as addon messages. Nobody gets a whisper or a chat line. Built for WoW: Forever (Camelot).

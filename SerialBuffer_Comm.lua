@@ -296,7 +296,8 @@ function C:OnSet(m, sender, unit)
     if C.Allowed(C.WHO_LETTER[NS.db.coordWho] or "N", isChief(unit)) then
         NS.Buffs:SetGroupPick(NS.Buffs.class, m.class, m.id, NS.db)
         self.stats.applied = self.stats.applied + 1
-        NS:Printf(NS.L["%s a réglé ta ligne Groupe / raid."], sender)
+        -- Un toast (2026-10-11, règle `chat-output`) : le réglage vient du réseau, pas d'un geste du joueur.
+        if NS.Toast then NS.Toast:Show(string.format(NS.L["%s a réglé ta ligne Groupe / raid."], sender)) end
         if NS.Grid then NS.Grid:Refresh() end
     else
         self.stats.denied = self.stats.denied + 1
