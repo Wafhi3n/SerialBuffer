@@ -281,7 +281,7 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   remplacée par D36 le 2026-10-05 (en combat, seules les lignes du groupe sont cliquables).
 - **D22 : le paladin suit un ordre de PRIORITÉ, Rois > Sagesse > Puissance par défaut**
   (*depuis D34, le 2026-10-05 : un ordre par classe de la cible, dans la grille ; le défaut reste
-  celui-ci*), réglable dans
+  celui-ci, sauf pour le prêtre, le mage et le démoniste depuis D49*), réglable dans
   les options du jeu (Options > AddOns > Serial Buffer). Chaque cible reçoit la première bénédiction
   de la liste que le paladin connaît, qui est cochée et qui lui sert (D23). Une bénédiction que tu ne
   connais pas encore (Rois est un talent) cède simplement sa place à la suivante. Salut n'est pas dans
@@ -604,6 +604,20 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
 
   *À mesurer :* les deux ids et les composants sur le client ; le compte qui retombe à 0 après le
   dernier composant lancé.
+- **D49 : pas de Puissance par défaut au prêtre, au mage ni au démoniste** (user, 2026-10-11, sur
+  une capture de la grille où Puissance occupait leur 3e choix : « il faut retirer la PA par défaut
+  de mage / démoniste et prêtre »). Leur colonne par défaut devient Rois, Sagesse, vide : un paladin
+  dont les autres ont déjà posé Rois et Sagesse ne leur propose plus rien. C'est un **défaut**, pas
+  un interdit comme D23 : la case vide propose toujours Puissance, et la colonne « Toutes » la garde.
+  - **Le bouton » ne leur recopie pas Puissance** (user, même soir, vu GO au banc puis demandé :
+    « » saute ») : il recopie la case « Toutes », qui garde Puissance, et la remettait chez eux.
+    Remplir saute ces trois classes pour Puissance, sur une ligne de choix comme sur la ligne
+    « Groupe / raid » (*cette dernière, dérivée* : la même règle pour les deux »). Une classe sautée
+    garde sa case telle qu'elle était, Puissance réglée à la main comprise.
+  *Dérivé :* une colonne jamais réglée suit le nouveau défaut (seuls les écarts sont sauvés) ; une
+  colonne réglée à la main reste telle quelle ; la migration des réglages d'avant la grille fait
+  suivre le défaut du jour à une Puissance jamais touchée. Code : `Buffs.DEFAULT_OFF_FOR`,
+  `Buffs:OffFor` (lu par `DefaultOrder`, `Fill`, `FillGroup` et la migration).
 
 ## Questions ouvertes (au user)
 
