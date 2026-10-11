@@ -84,13 +84,17 @@ end
 
 -- D43 (user, 2026-10-11) : un mage, un prêtre, un druide ou un démoniste (D46) n'a ni grille ni ligne
 -- « Groupe / raid » : chacun de ses buffs va à qui ne l'a pas. Une phrase le dit à la place. Rend le y
--- libre suivant.
-function O:FreeNote(panel, y)
+-- libre suivant. D47 : une classe à buffs courts lit aussi où se règle leur « à tous ».
+function O:FreeNote(panel, y, class)
     local note = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     note:SetPoint("TOPLEFT", PAD, y)
     note:SetWidth(600)
     note:SetJustifyH("LEFT")
-    note:SetText(L["Tes buffs vont à tous ceux qui ne les ont pas : rien à régler. Un buff de mana n'est jamais proposé aux guerriers ni aux voleurs."])
+    local text = L["Tes buffs vont à tous ceux qui ne les ont pas : rien à régler. Un buff de mana n'est jamais proposé aux guerriers ni aux voleurs."]
+    if NS.Buffs:HasShort(class) then
+        text = text .. " " .. L["Un buff court (10 min) ne va qu'à toi et à ton groupe (un buff de tank : aux tanks), sauf si tu coches « à tous » sous le titre du tableau."]
+    end
+    note:SetText(text)
     return y - 12 - math.ceil(math.max(note:GetStringHeight(), 24))
 end
 
@@ -161,7 +165,7 @@ function O:Build(panel)
     title:SetText("Serial Buffer")
     local y = -PAD - 30
     if NS.Buffs:Free(class) then
-        y = self:FreeNote(page, y)
+        y = self:FreeNote(page, y, class)
         y = NS.Grid:BuildWatch(page, y)   -- « qui pose quoi » reste à voir ; rien à y régler
         self.refreshRow = refreshRow(page, y); y = y - LINE - 4
         -- D45 : le seuil des buffs courts (le même que sur la ligne du druide, sous l'en-tête), pour une

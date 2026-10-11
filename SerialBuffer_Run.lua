@@ -53,7 +53,7 @@ function R:Refresh()
     local rows, around, unread = NS.Queue:Build(NS.Units:Collect(withPlates), wantedFor,
         NS.Units.probe, { showPvP = NS.db.showPvP, now = GetTime(), refreshBelow = (NS.db.refreshMin or 45) * 60,
                           refreshShort = (NS.db.refreshShort or 2) * 60, tankAll = NS.db.tankAll,   -- D45, D44
-                          tooLow = NS.db.tooLow })
+                          shortAll = NS.db.shortAll, tooLow = NS.db.tooLow })                      -- D47
     NS.UI:Render(rows, { state = state, around = around, unread = unread, group = NS.Units:GroupKind() })
 end
 

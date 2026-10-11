@@ -58,6 +58,11 @@ local T = {
         "A 10-minute buff is offered again once it has less than %d min left. Click, right-click or mouse wheel: change.",
     ["courts : sous %d min"] = "short: under %d min",
     ["Buffs courts (10 min) : rafraîchir s'il leur reste moins de %d min"] = "Short buffs (10 min): refresh when less than %d min left",
+    -- D47 (2026-10-11) : une case « à tous » par buff court
+    ["Coché : %s va à tous ceux qui ne l'ont pas. Décoché : à toi et à ton groupe seulement."] =
+        "Ticked: %s goes to everyone who doesn't have it. Unticked: only you and your group.",
+    ["Un buff court (10 min) ne va qu'à toi et à ton groupe (un buff de tank : aux tanks), sauf si tu coches « à tous » sous le titre du tableau."] =
+        "A short buff (10 min) only goes to you and your group (a tank buff: to the tanks), unless you tick \"for everyone\" under the panel title.",
     -- D43 (2026-10-11) : mage, prêtre, druide n'ont rien à régler
     ["Buffs sans restriction : il les pose à qui ne les a pas."] = "Unrestricted buffs: they cast them on whoever lacks them.",
     ["Tes buffs vont à tous ceux qui ne les ont pas : rien à régler. Un buff de mana n'est jamais proposé aux guerriers ni aux voleurs."] =

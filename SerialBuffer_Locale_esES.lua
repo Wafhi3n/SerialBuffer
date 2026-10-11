@@ -58,6 +58,11 @@ local T = {
         "Un beneficio de 10 min se vuelve a ofrecer cuando le quedan menos de %d min. Clic, clic derecho o rueda: cambiar.",
     ["courts : sous %d min"] = "cortos: menos de %d min",
     ["Buffs courts (10 min) : rafraîchir s'il leur reste moins de %d min"] = "Beneficios cortos (10 min): renovar si les quedan menos de %d min",
+    -- D47 (2026-10-11) : une case « à tous » par buff court
+    ["Coché : %s va à tous ceux qui ne l'ont pas. Décoché : à toi et à ton groupe seulement."] =
+        "Marcada: %s va a todos los que no lo tienen. Sin marcar: solo a ti y a tu grupo.",
+    ["Un buff court (10 min) ne va qu'à toi et à ton groupe (un buff de tank : aux tanks), sauf si tu coches « à tous » sous le titre du tableau."] =
+        "Un beneficio corto (10 min) solo va a ti y a tu grupo (uno de tanque: a los tanques), salvo si marcas «para todos» bajo el título del panel.",
     -- D43 (2026-10-11) : mage, prêtre, druide n'ont rien à régler
     ["Buffs sans restriction : il les pose à qui ne les a pas."] = "Beneficios sin restricción: los lanza a quien no los tenga.",
     ["Tes buffs vont à tous ceux qui ne les ont pas : rien à régler. Un buff de mana n'est jamais proposé aux guerriers ni aux voleurs."] =

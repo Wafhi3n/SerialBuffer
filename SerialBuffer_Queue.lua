@@ -122,8 +122,14 @@ local function auraOf(probe, unit, w)
 end
 
 -- D44 : un buff réservé aux tanks saute les autres joueurs, sauf « à tous » (opts.tankAll).
-local function skipTank(snap, w, opts)
-    return w.tankOnly and not snap.tank and not opts.tankAll
+-- D47 : un autre buff court (w.short) ne va qu'à toi et à ton groupe, sauf sa case « à tous »
+-- (opts.shortAll[id]).
+local function skipLimited(snap, w, opts)
+    if w.tankOnly then return not snap.tank and not opts.tankAll end
+    if w.short then
+        return not (snap.group or snap.self) and not (opts.shortAll and opts.shortAll[w.id])
+    end
+    return false
 end
 
 -- opts.tooLow : les refus « trop bas » appris (db.tooLow). wanted.single (D37) : le 1er est le choix
@@ -132,7 +138,7 @@ end
 local function nextMissing(snap, wanted, probe, opts)
     local low = opts.tooLow
     for i, w in ipairs(wanted) do
-        if not isBlocked(snap, w.name) and not learnedLow(snap, w, low) and not skipTank(snap, w, opts) then
+        if not isBlocked(snap, w.name) and not learnedLow(snap, w, low) and not skipLimited(snap, w, opts) then
             local left, mine, dur = auraOf(probe, snap.unit, w)
             if left == nil then return nil, "unread" end
             if mine ~= true and left ~= "absent" and castByMe(snap, w.name) then mine = true end

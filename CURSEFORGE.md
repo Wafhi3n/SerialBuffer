@@ -32,9 +32,12 @@ What it offers depends on your class:
   45 minutes left counts as done, and a 10-minute buff like Thorns, Shadow Protection or Unending
   Breath with more than 2 (you can change both in the options).
 - Warlocks hand out Unending Breath and Detect Invisibility, the highest rank you know.
-- Druids put Thorns on tanks only: whoever has the Tank role in your group, or your raid's main
-  tank. Tick "Thorns for everyone" under the panel title to give it to anyone who lacks it,
-  low-level players passing by included. The same line sets the 10-minute threshold.
+- 10-minute buffs stay in your group unless you say otherwise. Shadow Protection, Unending Breath
+  and Detect Invisibility go to you and your group; each one has a "for everyone" box under the
+  panel title that opens it to players around you. Druids put Thorns on tanks only (whoever has the
+  Tank role in your group, or your raid's main tank), and "Thorns for everyone" gives it to anyone
+  who lacks it, low-level players passing by included. The first of those lines also sets the
+  10-minute threshold.
 - Paladins put one blessing per player. For each class you pick a first, second and third choice
   (Kings, then Wisdom, then Might by default). If another paladin already gave that player the
   same blessing with more than half an hour left, you're offered the next one. You can also set a

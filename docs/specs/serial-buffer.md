@@ -555,9 +555,9 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   2026-10-11, après un commentaire CurseForge : « Will it work on locks? I'd like to buff everyone
   with under water breathing and detect lesser invisibility » ; le user : « comme pour l'épine du
   druide en fait, car ça dure 10 min »). Les deux durent 10 min : D45 leur donne le seuil court, et
-  le réglage est dans les options du démoniste. Comme le mage, le prêtre et le druide, il n'a rien à
-  régler (D43) : chacun des deux va à tout joueur qui ne l'a pas, sans restriction de classe (aucun
-  n'est un buff de mana). Ids `5697` et `132` (rang 1), lus sur Wowhead Forever le 2026-10-11.
+  le réglage est dans les options du démoniste. Comme le mage, le prêtre et le druide, il n'a pas de
+  grille (D43), et aucun des deux n'est un buff de mana ; à qui ils vont, c'est D47. Ids `5697` et
+  `132` (rang 1), lus sur Wowhead Forever le 2026-10-11.
   - **Les rangs aux noms différents** : Détection de l'invisibilité a trois rangs (`132`, `2970`,
     `11743`). Wowhead Forever les nomme tous « Detect Invisibility » en anglais, mais en français le
     rang 3 s'écrit avec une apostrophe typographique (« l’invisibilité ») et les deux autres avec une
@@ -569,6 +569,21 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
     deux sorts ne reconnaît rien. Le message « aucun de tes buffs n'est reconnu, préviens l'auteur »
     serait parti à chaque connexion ; il ne part plus que si aucun id de la classe n'a de nom sur le
     client (des ids faux). Vaut aussi pour un mage avant Intelligence des Arcanes.
+- **D47 : chaque buff court a sa case « à tous », décochée par défaut** (user, 2026-10-11, après
+  D46 : « comme pour Épines, sur les buffs à durée mineure, il faut que les gens puissent cocher pour
+  opt-in, opt-out »). Questions posées le même jour, le user a choisi :
+  - **décochée, un buff court ne va qu'à toi et à ton groupe ou raid** (Épines, elle, reste aux tanks
+    de D44) ; cochée, à tous ceux qui ne l'ont pas, joueurs autour compris ;
+  - **décochée par défaut** (opt-in), comme « Épines à tous » ;
+  - **tous les buffs courts** (`Buffs.SHORT_BUFFS`) : Épines, Protection contre l'Ombre du prêtre,
+    Respiration interminable et Détection de l'invisibilité du démoniste. *Conséquence acceptée :* un
+    prêtre ne pose plus Protection contre l'Ombre aux inconnus tant qu'il ne coche pas sa case.
+
+  Une ligne par buff court sous le titre du tableau (deux noms de sort ne tiennent pas côte à côte
+  dans 300 px), le seuil de D45 à droite de la première ; un nom trop long y est coupé avant le
+  seuil. Épines garde `db.tankAll`, les autres `db.shortAll[id]`. « Toi » compte dans ton groupe même
+  seul, comme pour « Groupe seul » (D40) ; *dérivé.* Les options du prêtre, du druide et du démoniste
+  le disent en une phrase. Code : `Tank:LineIds`, `Tank:IsAll` / `SetAll`, `Queue` (`skipLimited`).
   *À mesurer :* les noms et les ids sur le client français (`C_Spell.GetSpellName` de 132, 2970,
   11743, 5697) et le rang lancé par un démoniste qui connaît les trois. *Hors D46 :* les autres
   classes (Respiration aquatique du chaman, etc.), le user fait le tour des classes lui-même.
@@ -725,6 +740,17 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     Le tableau propose les deux buffs à un joueur qui ne les a pas ; un clic les pose, le joueur sort
     de la liste ; l'icône de la ligne est la bonne. Aucune erreur Lua (BugGrabber). Témoin connu-bon :
     la barre de buffs du joueur ciblé.
+36. [test] (D47) Le démoniste a deux lignes (Respiration, Détection), le prêtre une, le druide celle
+    d'Épines, ni le mage ni le paladin ; cases décochées par défaut ; décochées, un inconnu n'a aucun
+    des deux, toi seul oui ; une case cochée ouvre ce buff seul aux inconnus ; décocher efface
+    l'entrée sans toucher `tankAll` ; Protection contre l'Ombre décochée ne va pas à un inconnu.
+37. [humain] (D47) Sur le démoniste du banc, en ville : sous le titre du tableau, deux lignes
+    « Respiration interminable à tous » (le seuil « courts : sous 2 min » à droite, sans
+    chevauchement) et « Détection de l'invisibilité à tous », décochées ; aucun inconnu n'est proposé
+    pour ces buffs. Cocher Respiration : les inconnus qui ne l'ont pas apparaissent, pour elle seule.
+    Un `/reload` garde la case. Sur le prêtre : une ligne pour Protection contre l'Ombre. Témoin
+    connu-bon : la case « Groupe seul » de l'en-tête (publiée, vue en jeu), qui retire les mêmes
+    inconnus de la liste.
 
 ## Contrat
 

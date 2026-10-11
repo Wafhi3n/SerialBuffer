@@ -1,4 +1,4 @@
--- SerialBuffer_Tank.lua — LES TANKS (D44) et la ligne du druide sous l'en-tête (D44, D45).
+-- SerialBuffer_Tank.lua — LES TANKS (D44) et les lignes des buffs courts sous l'en-tête (D44, D45, D47).
 --
 -- D44 (user, 2026-10-11, après un joueur sur Reddit : « I play a druid. It constantly wants to renew
 -- my 10 minute thorns ») : Épines (Buffs.TANK_ONLY) ne va qu'aux TANKS. Un tank, c'est un membre du
@@ -7,8 +7,13 @@
 -- première version faisait désigner au clic droit ou par `/sbuff tank`, retirée avant d'être vue).
 -- Le même joueur a répondu qu'Épines aux petits niveaux de passage aide beaucoup : la case « Épines à
 -- tous » (db.tankAll), sur une ligne sous l'en-tête, la rouvre à tout le monde. La même ligne règle le
--- seuil des buffs courts (D45, db.refreshShort : SerialBuffer_Queue.lua). Elle n'existe que pour une
--- classe qui a un buff réservé aux tanks (aujourd'hui le druide).
+-- seuil des buffs courts (D45, db.refreshShort : SerialBuffer_Queue.lua).
+-- D47 (user, 2026-10-11, avec le démoniste de D46 : « comme pour Épines, sur les buffs à durée
+-- mineure, il faut que les gens puissent cocher pour opt-in, opt-out ») : CHAQUE buff court
+-- (Buffs.SHORT_BUFFS) a sa ligne et sa case « à tous », décochée par défaut. Décochée, Épines va aux
+-- tanks, les autres à toi et à ton groupe ; cochée (db.shortAll[id]), à tous ceux qui ne l'ont pas.
+-- Une ligne par buff : deux noms de sort ne tiennent pas côte à côte dans 300 px. Le seuil est à
+-- droite de la première.
 -- Le rôle et la marque main tank n'ont jamais été lus sur Forever : pcall, et une valeur secrète ou
 -- illisible vaut « pas tank ».
 local _, NS = ...
@@ -36,12 +41,30 @@ end
 -- ---------------------------------------------------------------- la ligne sous l'en-tête
 
 T.SHORT_MIN, T.SHORT_MAX = 1, 9   -- minutes (un buff court dure 10 min)
+T.LINE_H = 18
 
-function T:HasLine(class)
+-- D47 : les buffs courts de la classe, dans l'ordre du catalogue ; une ligne chacun.
+function T:LineIds(class)
+    local out = {}
     for _, id in ipairs(NS.Buffs:Ids(class)) do
-        if NS.Buffs.TANK_ONLY[id] then return id end
+        if NS.Buffs.SHORT_BUFFS[id] then out[#out + 1] = id end
     end
-    return nil
+    return out
+end
+
+-- Le premier buff court de la classe (celui de la ligne du seuil), ou nil : pas de ligne.
+function T:HasLine(class) return self:LineIds(class)[1] end
+
+-- La case « à tous » de ce buff : Épines garde db.tankAll (D44), les autres db.shortAll[id] (D47).
+function T:IsAll(id)
+    if NS.Buffs.TANK_ONLY[id] then return NS.db.tankAll == true end
+    return type(NS.db.shortAll) == "table" and NS.db.shortAll[id] == true
+end
+
+function T:SetAll(id, on)
+    if NS.Buffs.TANK_ONLY[id] then NS.db.tankAll = on and true or false return end
+    if type(NS.db.shortAll) ~= "table" then NS.db.shortAll = {} end
+    NS.db.shortAll[id] = on and true or nil
 end
 
 local function tooltip(owner, title, line)
@@ -59,20 +82,39 @@ function T:StepShort(delta)
     refresh()
 end
 
-local function allCheck(panel, y, spell)
+local function allTip(id, spell)
+    if NS.Buffs.TANK_ONLY[id] then
+        return string.format(L["Coché : %s va à tous ceux qui ne l'ont pas. Décoché : aux tanks de ton groupe seulement (rôle Tank, ou main tank du raid)."], spell)
+    end
+    return string.format(L["Coché : %s va à tous ceux qui ne l'ont pas. Décoché : à toi et à ton groupe seulement."], spell)
+end
+
+local function allCheck(panel, y, id)
+    local spell = NS.Buffs.client.name(id) or "?"
     local cb = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
     cb:SetSize(18, 18)
     cb:SetPoint("TOPLEFT", 6, -y)
+    cb.id = id
     cb.label = cb:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     cb.label:SetPoint("LEFT", cb, "RIGHT", 1, 0)
     cb.label:SetText(string.format(L["%s à tous"], spell))
     cb:SetHitRectInsets(0, -(cb.label:GetStringWidth() + 2), 0, 0)
-    cb:SetScript("OnClick", function(self) NS.db.tankAll = self:GetChecked() and true or false; refresh() end)
-    cb:SetScript("OnEnter", function(self)
-        tooltip(self, string.format(L["%s à tous"], spell), string.format(L["Coché : %s va à tous ceux qui ne l'ont pas. Décoché : aux tanks de ton groupe seulement (rôle Tank, ou main tank du raid)."], spell))
-    end)
+    cb:SetScript("OnClick", function(self) T:SetAll(id, self:GetChecked()); refresh() end)
+    cb:SetScript("OnEnter", function(self) tooltip(self, string.format(L["%s à tous"], spell), allTip(id, spell)) end)
     cb:SetScript("OnLeave", function() GameTooltip:Hide() end)
     return cb
+end
+
+-- La case de la 1re ligne partage sa ligne avec le seuil : un nom de sort trop long est coupé (« … »)
+-- avant le texte du seuil, au lieu de passer dessous ; l'infobulle garde le nom entier. Calculé sur
+-- la géométrie posée ici (case à 6 px du bord, libellé 1 px après ses 18 px, seuil à 8 px du bord
+-- droit) : le panneau n'est pas encore placé quand on le construit, GetLeft y rendrait nil.
+local function fit(panel, cb, short)
+    local room = panel:GetWidth() - 8 - short.text:GetStringWidth() - 6 - (6 + 18 + 1)
+    if room <= 0 or cb.label:GetStringWidth() <= room then return end
+    cb.label:SetWidth(room)
+    cb.label:SetWordWrap(false)
+    cb:SetHitRectInsets(0, -(room + 2), 0, 0)
 end
 
 local function shortButton(panel, y)
@@ -95,18 +137,20 @@ local function shortButton(panel, y)
     return b
 end
 
--- Appelé par UI:Build sous le titre (y = haut de la ligne). Rend la hauteur prise (0 : pas de ligne).
+-- Appelé par UI:Build sous le titre (y = haut de la 1re ligne). Rend la hauteur prise (0 : aucune).
 function T:BuildLine(panel, y)
-    local id = self:HasLine(NS.Buffs.class)
-    if not id then return 0 end
-    local spell = NS.Buffs.client.name(id) or "?"
-    self.check, self.short = allCheck(panel, y, spell), shortButton(panel, y)
+    local ids = self:LineIds(NS.Buffs.class)
+    if not ids[1] then return 0 end
+    self.checks = {}
+    for i, id in ipairs(ids) do self.checks[i] = allCheck(panel, y + (i - 1) * self.LINE_H, id) end
+    self.short = shortButton(panel, y)
     self:RefreshLine()
-    return 18
+    fit(panel, self.checks[1], self.short)
+    return self.LINE_H * #ids
 end
 
--- La coche et le seuil, relus de la base (à chaque rendu et après un geste).
+-- Les coches et le seuil, relus de la base (à chaque rendu et après un geste).
 function T:RefreshLine()
-    if self.check then self.check:SetChecked(NS.db.tankAll and true or false) end
+    for _, cb in ipairs(self.checks or {}) do cb:SetChecked(self:IsAll(cb.id)) end
     if self.short then self.short.text:SetText(string.format(L["courts : sous %d min"], NS.db.refreshShort or 2)) end
 end

@@ -168,7 +168,7 @@ function UI:Build()
     panel.count = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     panel.count:SetPoint("RIGHT", panel.gear, "LEFT", -4, 0)
     NS.Header:Build(panel)   -- D40, D41 : la case « Groupe seul » et la touche « buff suivant »
-    -- D44, D45 : la ligne du druide (« Épines à tous », seuil des buffs courts), sous le titre.
+    -- D44, D45, D47 : une ligne par buff court (sa case « à tous », le seuil sur la 1re), sous le titre.
     self.topExtra = NS.Tank and NS.Tank:BuildLine(panel, PAD + TOP - 2) or 0
     panel.msg =panel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     panel.msg:SetWidth(WIDTH - 2 * PAD)

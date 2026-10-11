@@ -63,8 +63,8 @@ B.NO_MANA = { WARRIOR = true, ROGUE = true }
 B.TANK_ONLY = { [467] = true }
 
 -- D45 : les buffs connus pour être COURTS (10 min en vanilla : Épines, Protection contre l'Ombre ; et
--- les deux du démoniste, D46). Ne sert qu'à montrer leur réglage aux bonnes classes ; la file, elle,
--- lit la vraie durée sur l'aura.
+-- les deux du démoniste, D46). Montre leur seuil aux bonnes classes (la file, elle, lit la vraie durée
+-- sur l'aura) et, depuis D47, les réserve à toi et à ton groupe sauf leur case « à tous » (Tank.lua).
 B.SHORT_BUFFS = { [467] = true, [976] = true, [5697] = true, [132] = true }
 
 function B:HasShort(class)
@@ -150,7 +150,7 @@ local function entry(id)
     local name = c.name(top)
     if type(name) ~= "string" or name == "" then return nil end
     return { id = id, name = name, icon = c.icon(top), rank = (c.rank and c.rank(name)) or top,
-             tankOnly = B.TANK_ONLY[id] or nil, alias = aliases(id, name) }
+             tankOnly = B.TANK_ONLY[id] or nil, short = B.SHORT_BUFFS[id] or nil, alias = aliases(id, name) }
 end
 
 -- Le buff connu de ce nom, ou nil (Run : relier un clic à son rang).
