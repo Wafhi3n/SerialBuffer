@@ -14,7 +14,8 @@ _G.SerialBuffer = NS
 -- Que des RÉGLAGES (spec, Contrat) : jamais un nom de joueur ni un GUID, un secret sauvegardé
 -- empoisonnerait la base.
 NS.DEFAULTS = {
-    schemaVer = 3,          -- 3 : la grille D34 remplace off, priority et classBuffs (Buffs:Migrate)
+    schemaVer = 4,          -- 3 : la grille D34 remplace off, priority et classBuffs (Buffs:Migrate) ;
+                            -- 4 : les refus « trop bas » appris repartent de zéro (ForgetLearned)
     shown = true,           -- le tableau (/sbuff)
     showPvP = false,        -- D5 : joueurs PvP cachés par défaut
     groupOnly = false,      -- D40 : coché, les joueurs autour sont ignorés (toi et ton groupe ou raid seuls)
@@ -37,6 +38,14 @@ local function CopyDefaults(dst, src)
             dst[k] = v
         end
     end
+end
+
+-- schemaVer 4 (revue de code du 2026-10-11) : jusqu'à la v0.5.0, un refus « trop bas » venu d'un autre
+-- sort pouvait être imputé à notre clic et appris pour de bon (D38, Cast:NoteClick). Les refus appris
+-- repartent de zéro, une fois : un vrai refus se réapprend au premier clic.
+local function ForgetLearned(db)
+    if (db.schemaVer or 1) >= 4 then return end
+    db.tooLow, db.schemaVer = {}, 4
 end
 
 function NS:Print(msg)
@@ -107,8 +116,9 @@ f:RegisterEvent("PLAYER_LOGIN")
 f:SetScript("OnEvent", function(_, event, arg1)
     if event == "ADDON_LOADED" and arg1 == ADDON then
         SerialBufferDB = SerialBufferDB or {}
-        CopyDefaults(SerialBufferDB, NS.DEFAULTS)   -- une base neuve naît en schemaVer 3 : rien à migrer
+        CopyDefaults(SerialBufferDB, NS.DEFAULTS)   -- une base neuve naît en schemaVer 4 : rien à migrer
         NS.Buffs:Migrate(SerialBufferDB)
+        ForgetLearned(SerialBufferDB)
         NS.db = SerialBufferDB
     elseif event == "PLAYER_LOGIN" then
         -- Muet à la connexion, sauf la première après une installation ou une mise à jour (règle

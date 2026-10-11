@@ -112,6 +112,7 @@ function R:OnCast(spellID)
     if not click or not click.buff or (issecretvalue and issecretvalue(spellID)) then return end
     local name = C_Spell.GetSpellName and C_Spell.GetSpellName(spellID)
     if name == click.buff then
+        NS.Cast:Done()   -- une erreur qui suit ne vient plus de ce clic (D38, revue du 2026-10-11)
         NS.Queue:Cast(click.guid, click.buff, GetTime())
         local e = NS.Buffs:ByName(click.buff)
         NS.Queue.LearnOk(NS.db, e and e.rank, click.level)            -- D38 : un seuil faux se corrige

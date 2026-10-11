@@ -59,7 +59,7 @@ local function secureMacroButton(name, parent)
     local b = CreateFrame("Button", name, parent, "SecureActionButtonTemplate")
     b:RegisterForClicks("AnyUp", "AnyDown")
     b:SetAttribute("type", "macro")
-    b:HookScript("OnClick", function(self) NS.Cast:NoteClick(self, GetTime()) end)
+    b:HookScript("OnClick", function(self) NS.Cast:NoteClick(self, GetTime(), InCombatLockdown()) end)
     return b
 end
 
@@ -73,6 +73,7 @@ local function setMacro(b, text, r)
     b.guid = r and r.guid
     b.buffName = r and r.buff and r.buff.name
     b.level = r and r.level
+    b.combatOk = NS.Cast.CombatClickable(r)   -- en combat, ce clic lance-t-il encore ? (Cast:NoteClick)
 end
 
 local function buildRow(panel)
@@ -191,6 +192,7 @@ end
 function UI:BuildNext()
     local b = secureMacroButton(NS.Cast.NEXT_BUTTON, UIParent)
     b:Hide()
+    b.nextKey = true   -- en combat, son clic ne lance rien : Cast:NoteClick ne le note pas
     RegisterAttributeDriver(b, "type", "[combat] nil; macro")
     self.next = b
 end
