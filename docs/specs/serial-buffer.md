@@ -204,6 +204,14 @@ est celle du build 70205, lue le 2026-10-04.
   dont le nom ou les buffs sont illisibles (verrou `Map` : les noms deviennent secrets en donjon)
   n'entre pas, et le pied du tableau compte ces joueurs illisibles, pour qu'une liste vide ne passe
   pas pour une tournée finie.
+- **Auras sous restriction** (revue de code du 2026-10-11, `fix/sb-auras-secretes`) : pendant une
+  rencontre de boss ou un match PvP, même hors combat, la lecture d'une aura ne rend RIEN, sans erreur
+  (doc du jeu : `RequiresNonSecretAura`, `SecretWhenUnitAuraRestricted`). Jusqu'à la v0.5.0 ce rien
+  valait « absente » : tout le monde aurait paru non buffé, et une ligne buffée ne sortait plus. Il
+  vaut maintenant « illisible » quand `C_Secrets.ShouldAurasBeSecret()` le dit, et le pied du
+  tableau compte ces joueurs. **Mesuré le 2026-10-11 23:14** (1.60.1.70338, appli du banc) : elle
+  rend `false` en ville et en donjon hors combat, où l'aura se lit ; le tableau ne change donc pas
+  là. *Pas mesuré :* un champ de bataille (aucun sur la bêta), un boss qu'on regarde mort, hors combat.
 - **Toi, dans un groupe** : tu es dans la partie du groupe (D30). Seul, tu restes dans la liste à ta
   place d'arrivée, comme avant (D8).
 - **Joueur déjà buffé par quelqu'un d'autre**, ou avec un rang plus fort : il a le buff, il n'entre
