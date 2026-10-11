@@ -109,6 +109,18 @@ local function threshold(dur, opts)
     return opts.refreshBelow
 end
 
+-- D46 : un sort dont les rangs n'ont pas tous le même nom (w.alias, Buffs.RANK_IDS) : l'aura d'un autre
+-- rang compte. Une aura illisible (nil) arrête la recherche, comme pour le nom lancé.
+local function auraOf(probe, unit, w)
+    local left, mine, dur = probe.aura(unit, w.name)
+    if left ~= "absent" or not w.alias then return left, mine, dur end
+    for _, n in ipairs(w.alias) do
+        left, mine, dur = probe.aura(unit, n)
+        if left ~= "absent" then break end
+    end
+    return left, mine, dur
+end
+
 -- D44 : un buff réservé aux tanks saute les autres joueurs, sauf « à tous » (opts.tankAll).
 local function skipTank(snap, w, opts)
     return w.tankOnly and not snap.tank and not opts.tankAll
@@ -121,7 +133,7 @@ local function nextMissing(snap, wanted, probe, opts)
     local low = opts.tooLow
     for i, w in ipairs(wanted) do
         if not isBlocked(snap, w.name) and not learnedLow(snap, w, low) and not skipTank(snap, w, opts) then
-            local left, mine, dur = probe.aura(snap.unit, w.name)
+            local left, mine, dur = auraOf(probe, snap.unit, w)
             if left == nil then return nil, "unread" end
             if mine ~= true and left ~= "absent" and castByMe(snap, w.name) then mine = true end
             if wanted.exclusive then

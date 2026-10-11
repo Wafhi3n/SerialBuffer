@@ -75,8 +75,8 @@ même s'il lui manque plusieurs buffs : elle propose le prochain qui manque.
   `coordination.md` (brouillon).*
 - **Aucun message aux joueurs buffés** (chuchotement, /dire) : c'est du spam.
 - **Rien du voisinage n'est sauvegardé** : ni nom, ni GUID. La liste vit le temps de la session.
-- **Classes sans buff long à poser sur un inconnu** (chaman, chasseur, démoniste, guerrier,
-  voleur) : rien en v1.
+- **Classes sans buff long à poser sur un inconnu** (chaman, chasseur, guerrier, voleur) : rien en
+  v1. Le démoniste y était jusqu'à D46 (2026-10-11).
 
 ## Ce qui n'est pas encore prouvé
 
@@ -551,6 +551,23 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   (45 min). La durée se lit sur l'aura posée ; illisible, le seuil long s'applique comme avant. Le
   réglage est sur la ligne du druide (clic, clic droit, molette) et dans les options du druide et
   du prêtre. *Dérivé :* deux paliers (court, long) plutôt qu'un seuil par buff ; 15 min comme limite.
+- **D46 : le démoniste pose Respiration interminable et Détection de l'invisibilité** (user,
+  2026-10-11, après un commentaire CurseForge : « Will it work on locks? I'd like to buff everyone
+  with under water breathing and detect lesser invisibility » ; le user : « comme pour l'épine du
+  druide en fait, car ça dure 10 min »). Les deux durent 10 min : D45 leur donne le seuil court, et
+  le réglage est dans les options du démoniste. Comme le mage, le prêtre et le druide, il n'a rien à
+  régler (D43) : chacun des deux va à tout joueur qui ne l'a pas, sans restriction de classe (aucun
+  n'est un buff de mana). Ids `5697` et `132` (rang 1), lus sur Wowhead Forever le 2026-10-11.
+  - **Les rangs aux noms différents** : Détection de l'invisibilité a trois rangs (`132`, `2970`,
+    `11743`). Wowhead Forever les nomme tous « Detect Invisibility » en anglais, mais en français le
+    rang 3 s'écrit avec une apostrophe typographique (« l’invisibilité ») et les deux autres avec une
+    droite. Pour le jeu, ce seraient deux noms : lancer le nom du rang 1 lancerait le rang 2, et
+    l'aura du rang 3 passerait inaperçue. D'où `Buffs.RANK_IDS` : on lance le nom du plus haut rang
+    connu, et la file tient pour servi un joueur qui porte l'aura de n'importe quel rang. Sans
+    écart de nom, rien ne change.
+  *À mesurer :* les noms et les ids sur le client français (`C_Spell.GetSpellName` de 132, 2970,
+  11743, 5697) et le rang lancé par un démoniste qui connaît les trois. *Hors D46 :* les autres
+  classes (Respiration aquatique du chaman, etc.), le user fait le tour des classes lui-même.
 
 ## Questions ouvertes (au user)
 
@@ -692,6 +709,17 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     section « Serial Buffer » ; y changer la touche met l'en-tête à jour sans `/reload`. En combat,
     « pas pendant un combat ». Aucune erreur Lua ni `ADDON_ACTION_BLOCKED` (BugGrabber, `taint.log`).
     Témoin connu-bon : la même touche lue dans la page Raccourcis ouverte à la main.
+34. [test] (D46) Le démoniste a un catalogue sans grille, le réglage court, pas de ligne de tank ;
+    il propose Respiration puis Détection à toute classe ; le rang 3 appris, il lance le nom du
+    rang 3 (clé D38 : son rang) ; l'aura d'un autre rang, sous un autre nom, vaut « servi » au-dessus
+    du seuil court et « à refaire » au-dessous ; une aura illisible ne vaut ni l'un ni l'autre
+    (`test_serialbuffer_warlock.lua`).
+35. [humain] (D46) Sur un démoniste du banc (client français), `/run for _,id in
+    ipairs({5697,132,2970,11743}) do local n=C_Spell.GetSpellName(id) print(id,n,n and #n) end` :
+    les quatre ont un nom (la longueur en octets dit l'apostrophe : la typographique en compte 3).
+    Le tableau propose les deux buffs à un joueur qui ne les a pas ; un clic les pose, le joueur sort
+    de la liste ; l'icône de la ligne est la bonne. Aucune erreur Lua (BugGrabber). Témoin connu-bon :
+    la barre de buffs du joueur ciblé.
 
 ## Contrat
 

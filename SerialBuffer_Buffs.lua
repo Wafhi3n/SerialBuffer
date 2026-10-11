@@ -15,7 +15,8 @@
 -- Seuls 19740 et 19742 (paladin) ont été vus sur Forever. Les autres ids sont ceux de vanilla : si
 -- aucun n'est reconnu pour ta classe, Buffs:Resolve le dit une fois dans le chat (un id faux se voit
 -- au lieu de se taire). 20911 (Sanctuaire) n'a pas de nom sur Forever (relevé du 2026-10-05 09:55) :
--- la grille le laisse de côté.
+-- la grille le laisse de côté. Ceux du démoniste (D46) sont lus sur Wowhead Forever (2026-10-11), pas
+-- encore en jeu.
 local _, NS = ...
 NS = NS or _G.SerialBuffer
 
@@ -26,7 +27,14 @@ B.CATALOG = {
     MAGE   = { 1459 },               -- Intelligence des Arcanes
     PRIEST = { 1243, 14752, 976 },   -- Robustesse, Esprit divin, Protection contre l'Ombre
     DRUID  = { 1126, 467 },          -- Marque du fauve, Épines
+    WARLOCK = { 5697, 132 },         -- D46 : Respiration interminable, Détection de l'invisibilité
 }
+
+-- D46 : les rangs d'un sort dont les noms ne sont pas tous identiques, rang 1 en tête. Sur Wowhead
+-- Forever en français (2026-10-11), le rang 3 de Détection de l'invisibilité s'écrit avec une
+-- apostrophe typographique (’) et les deux autres avec une droite : pour le jeu, deux noms. On lance
+-- le nom du plus haut rang connu, et l'aura de n'importe quel rang compte (Queue, w.alias).
+B.RANK_IDS = { [132] = { 132, 2970, 11743 } }
 
 -- Les bénédictions du paladin, par clé stable.
 B.BLESSINGS = {
@@ -54,9 +62,10 @@ B.NO_MANA = { WARRIOR = true, ROGUE = true }
 -- reproposée sans fin sur lui (Reddit, 2026-10-11).
 B.TANK_ONLY = { [467] = true }
 
--- D45 : les buffs connus pour être COURTS (10 min en vanilla : Épines, Protection contre l'Ombre). Ne
--- sert qu'à montrer leur réglage aux bonnes classes ; la file, elle, lit la vraie durée sur l'aura.
-B.SHORT_BUFFS = { [467] = true, [976] = true }
+-- D45 : les buffs connus pour être COURTS (10 min en vanilla : Épines, Protection contre l'Ombre ; et
+-- les deux du démoniste, D46). Ne sert qu'à montrer leur réglage aux bonnes classes ; la file, elle,
+-- lit la vraie durée sur l'aura.
+B.SHORT_BUFFS = { [467] = true, [976] = true, [5697] = true, [132] = true }
 
 function B:HasShort(class)
     for _, id in ipairs(self:Ids(class)) do
@@ -104,11 +113,11 @@ function B:HasCatalog(class)
     return class == "PALADIN" or self.CATALOG[class] ~= nil
 end
 
--- D43 (user, 2026-10-11) : un buff « sans restriction » (mage, prêtre, druide : n'importe qui peut le
--- poser à n'importe qui, plusieurs lanceurs ne se gênent pas) ne se RÈGLE pas. Pas de grille, pas de
--- choix unique, personne ne règle leur ligne : chacun de leurs buffs va à tout joueur qui ne l'a pas,
--- et D23 (pas de buff de mana aux guerriers ni aux voleurs) tient toujours. Seul le paladin, dont les
--- bénédictions s'excluent, garde sa grille et sa répartition (C4).
+-- D43 (user, 2026-10-11) : un buff « sans restriction » (mage, prêtre, druide, démoniste depuis D46 :
+-- n'importe qui peut le poser à n'importe qui, plusieurs lanceurs ne se gênent pas) ne se RÈGLE pas.
+-- Pas de grille, pas de choix unique, personne ne règle leur ligne : chacun de leurs buffs va à tout
+-- joueur qui ne l'a pas, et D23 (pas de buff de mana aux guerriers ni aux voleurs) tient toujours.
+-- Seul le paladin, dont les bénédictions s'excluent, garde sa grille et sa répartition (C4).
 function B:Free(caster)
     return caster ~= "PALADIN" and self.CATALOG[caster] ~= nil
 end
@@ -121,14 +130,27 @@ function B:Casters()
     return out
 end
 
--- rank : la clé des refus « trop bas » appris (D38), le rang lancé, sinon l'id de rang 1.
+-- D46 : les noms des AUTRES rangs (B.RANK_IDS) qui diffèrent de celui qu'on lance ; nil s'il n'y en a pas.
+local function aliases(id, name)
+    local out, seen = {}, { [name] = true }
+    for _, r in ipairs(B.RANK_IDS[id] or {}) do
+        local n = B.client.name(r)
+        if type(n) == "string" and n ~= "" and not seen[n] then out[#out + 1] = n; seen[n] = true end
+    end
+    return out[1] and out or nil
+end
+
+-- rank : la clé des refus « trop bas » appris (D38), le rang lancé, sinon l'id de rang 1. top : le plus
+-- haut rang connu de B.RANK_IDS (D46), celui dont on lance le nom ; sans liste, l'id lui-même.
 local function entry(id)
     local c = B.client
     if not c.known(id) then return nil end
-    local name = c.name(id)
+    local top = id
+    for _, r in ipairs(B.RANK_IDS[id] or {}) do if c.known(r) then top = r end end
+    local name = c.name(top)
     if type(name) ~= "string" or name == "" then return nil end
-    return { id = id, name = name, icon = c.icon(id), rank = (c.rank and c.rank(name)) or id,
-             tankOnly = B.TANK_ONLY[id] or nil }
+    return { id = id, name = name, icon = c.icon(top), rank = (c.rank and c.rank(name)) or top,
+             tankOnly = B.TANK_ONLY[id] or nil, alias = aliases(id, name) }
 end
 
 -- Le buff connu de ce nom, ou nil (Run : relier un clic à son rang).

@@ -62,8 +62,9 @@ for _, cl in ipairs(C.WIRE_CLASSES) do WIRE_SET[cl] = true end
 -- La politique locale (db.coordWho) en lettre du message, et inversement.
 C.WHO_LETTER = { none = "N", leader = "L", anyone = "A" }
 
--- D43 : un mage, un prêtre ou un druide n'a rien à régler (Buffs:Free) : il annonce « personne »,
--- quelle que soit l'option gardée dans sa base (elle sert encore à son paladin du même compte).
+-- D43 : un mage, un prêtre, un druide ou un démoniste (D46) n'a rien à régler (Buffs:Free) : il
+-- annonce « personne », quelle que soit l'option gardée dans sa base (elle sert encore à son paladin
+-- du même compte).
 function C.MyWho()
     if NS.Buffs:Free(NS.Buffs.class) then return "N" end
     return C.WHO_LETTER[NS.db.coordWho] or "N"

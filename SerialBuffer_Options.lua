@@ -82,8 +82,9 @@ function O:WhoRow(panel, y)
     return y - 54
 end
 
--- D43 (user, 2026-10-11) : un mage, un prêtre ou un druide n'a ni grille ni ligne « Groupe / raid » :
--- chacun de ses buffs va à qui ne l'a pas. Une phrase le dit à la place. Rend le y libre suivant.
+-- D43 (user, 2026-10-11) : un mage, un prêtre, un druide ou un démoniste (D46) n'a ni grille ni ligne
+-- « Groupe / raid » : chacun de ses buffs va à qui ne l'a pas. Une phrase le dit à la place. Rend le y
+-- libre suivant.
 function O:FreeNote(panel, y)
     local note = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     note:SetPoint("TOPLEFT", PAD, y)

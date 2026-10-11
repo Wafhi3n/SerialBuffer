@@ -249,7 +249,7 @@ local function peerTooltip(self)
     -- Palier 4 : un choix unique (le sien ou réglé par le chef), ou sa grille par défaut.
     if self.picked then
         GameTooltip:AddLine(L["Choix unique pour cette classe."], 1, 0.82, 0)
-    elseif has and NS.Buffs:Free(self.caster) then   -- D43 : mage, prêtre, druide
+    elseif has and NS.Buffs:Free(self.caster) then   -- D43 : mage, prêtre, druide, démoniste
         GameTooltip:AddLine(L["Buffs sans restriction : il les pose à qui ne les a pas."], 0.8, 0.8, 0.8)
     elseif has then
         GameTooltip:AddLine(L["Pas de choix unique : sa grille s'applique."], 0.8, 0.8, 0.8)

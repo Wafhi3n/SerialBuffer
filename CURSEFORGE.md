@@ -26,11 +26,12 @@ its own, so Serial Buffer lines them up and you press the button.
 
 What it offers depends on your class:
 
-- Mages, priests and druids cast all their buffs on each player who doesn't have them, one after
-  another, with nothing to set. Two mages in a group each see who's still missing Arcane Intellect,
-  and a player drops off both lists once either of them buffs him. A buff with more than 45 minutes
-  left counts as done, and a 10-minute buff like Thorns or Shadow Protection with more than 2 (you
-  can change both in the options).
+- Mages, priests, druids and warlocks cast all their buffs on each player who doesn't have them, one
+  after another, with nothing to set. Two mages in a group each see who's still missing Arcane
+  Intellect, and a player drops off both lists once either of them buffs him. A buff with more than
+  45 minutes left counts as done, and a 10-minute buff like Thorns, Shadow Protection or Unending
+  Breath with more than 2 (you can change both in the options).
+- Warlocks hand out Unending Breath and Detect Invisibility, the highest rank you know.
 - Druids put Thorns on tanks only: whoever has the Tank role in your group, or your raid's main
   tank. Tick "Thorns for everyone" under the panel title to give it to anyone who lacks it,
   low-level players passing by included. The same line sets the 10-minute threshold.
