@@ -132,14 +132,16 @@ local function scrollPage(panel)
     sf:SetScript("OnSizeChanged", function(_, w) page:SetWidth(w) end)
     bar:SetHideIfUnscrollable(true)
     ScrollUtil.InitScrollFrameWithScrollBar(sf, bar)
+    bar:Update()
     sf:EnableMouseWheel(false)   -- après Init, qui pose son OnMouseWheel
-    return page
+    return page, sf
 end
 
 -- Construit le contenu une fois, à la première ouverture.
 function O:Build(panel)
     local _, class = UnitClass("player")
-    local page = scrollPage(panel)
+    local page, scroll = scrollPage(panel)
+    self.scroll = scroll   -- la sonde du banc lit son débordement (GetVerticalScrollRange)
     local title = page:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("TOPLEFT", PAD, -PAD)
     title:SetText("Serial Buffer")

@@ -148,16 +148,22 @@ end
 
 -- La coche et la touche, relues de la base et du client : à chaque rendu (hors combat, APRÈS le
 -- compteur, dont la largeur compte), sur UPDATE_BINDINGS et après une bascule. Trop large pour sa
--- place, la touche est coupée ; l'infobulle la donne en entier.
+-- place, la touche perd ses crochets (« s-WU »), puis elle est coupée ; l'infobulle la donne entière.
+local function fit(b, text)
+    b.text:SetWidth(0)   -- 0 : la largeur suit le texte, pour le mesurer
+    b.text:SetText(text)
+    return b.text:GetStringWidth() + 6
+end
+
 function H:Refresh()
     if self.check then self.check:SetChecked(NS.db.groupOnly and true or false) end
     local b = self.key
     if not b then return end
     local key = rawKey()
-    b.text:SetWidth(0)   -- 0 : la largeur suit le texte, pour le mesurer
-    b.text:SetText(key and ("[" .. H.ShortKey(key) .. "]") or L["touche ?"])
+    local short, room = key and H.ShortKey(key), self:Room()
+    local w = fit(b, short and ("[" .. short .. "]") or L["touche ?"])
+    if short and w > room then w = fit(b, short) end
     if key then b.text:SetTextColor(1, 0.82, 0) else b.text:SetTextColor(0.5, 0.5, 0.5) end
-    local w, room = b.text:GetStringWidth() + 6, self:Room()
     if w > room then
         w = math.max(room, 12)
         b.text:SetWidth(w - 6)
