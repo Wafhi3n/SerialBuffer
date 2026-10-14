@@ -1,5 +1,37 @@
 # Changelog - Serial Buffer
 
+## v0.6.0 - 2026-10-14
+
+Serial Buffer should now behave in battlegrounds, and you can cap how tall the panel gets.
+
+- In a battleground the game hides buffs from addons, so Serial Buffer thought nobody had any and
+  kept offering the same buff over and over. When the game hides buffs now, the list follows your
+  own casts instead. Someone you buffed stays off the list until that buff should run out, then
+  comes back. If they die, they're back on the list as soon as they're alive again. The bottom of
+  the panel says "Buffs hidden by the game" while this is on.
+- To know when a buff runs out, it uses the length it last saw on that buff outside the
+  battleground. If it never saw one, it assumes an hour (10 minutes for Thorns and the other short
+  buffs).
+- What it can't see: buffs cast by other players, and enemy dispels. A /reload also makes it forget
+  what you cast, so everyone is offered again once.
+- /sbuff blind on turns this mode on by hand until your next /reload, in case the game hides buffs
+  somewhere it doesn't tell the addon about. /sbuff blind off goes back to automatic.
+- PvP-flagged players are still hidden by default, but once you're flagged yourself (every
+  battleground, or a contested zone on a PvP realm) they're listed like everyone else. Before, a
+  battleground panel showed nobody but you.
+- New slider in the options, "Max rows in the panel", from 1 to 16. 16 is the old behaviour. Anyone
+  past the limit is counted at the bottom ("+3 more"), and the top line still works the same way.
+- Priests, mages and warlocks no longer get Might from a paladin by default: their third choice is
+  empty, so a paladin whose partners already cast Kings and Wisdom on them moves on. The » button
+  doesn't copy Might back to them either. You can still put it there by hand.
+- "Target is too low level" refusals are learned from scratch once. A bug could blame your click for
+  an error that came from another spell you cast right after, and remember it for good. A real
+  refusal is learned again on the first try.
+- Smaller fixes. The toast you get when your leader sets your Group / raid row now also works after a
+  /reload in the middle of a fight. Your raid's main tank is recognized for Thorns in every case. And
+  when the game turns down a message to your group for being sent too fast, it's sent again a moment
+  later instead of being lost.
+
 ## v0.5.0 - 2026-10-11
 
 Warlocks and shamans can use Serial Buffer now, and 10-minute buffs stop coming back the moment you

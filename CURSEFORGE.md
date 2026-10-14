@@ -53,12 +53,21 @@ Players who can't take a buff don't stay stuck at the top. If the game answers "
 level" or "A more powerful spell is already active", you're offered their next buff instead. Too
 low is remembered for good, per spell rank: a level 2 player won't be offered Kings again. Players
 flagged for PvP are hidden by default, since buffing them flags you too (/sbuff pvp on shows them).
+Once you're flagged yourself, in a battleground for instance, they're listed like everyone else.
 
 You'll need friendly player nameplates turned on (Options, Nameplates): that's how the addon sees
 the people around you. In dungeons and raids the game blocks friendly nameplates, so only your
 group is listed there. In combat the panel stays up but freezes: you can still click your group's
 lines to rebuff them, and it refreshes when the fight ends. Each line shows how long its buff has
 left ("8 min"), and that keeps counting down during a fight until it says "expired".
+
+In battlegrounds the game hides buffs from addons. When that happens, the list follows your own
+casts: someone you buffed stays off it until the buff should run out, and comes back after dying.
+The panel says "Buffs hidden by the game" at the bottom while it works that way. It can't see buffs
+from other players or enemy dispels, and a /reload makes it forget what you cast.
+
+If the panel takes up too much room in a busy city, the "Max rows in the panel" slider in the
+options caps it (1 to 16); anyone past the limit is counted at the bottom ("+3 more").
 
 If other people in your group run Serial Buffer too, you'll see what they cast on each class, under
 the grid in the options ("Group / raid: who casts what"), and /sbuff group lists them in the chat.
@@ -69,8 +78,9 @@ Clicking a stranger's line targets them, and they stay targeted afterwards. Clic
 your group leaves your target alone.
 
 Commands: /sbuff shows or hides the panel, /sbuff options opens the settings, /sbuff pvp on (or off)
-shows or hides PvP-flagged players, /sbuff group lists the other Serial Buffers in your group.
-Typed alone, /sbuff pvp tells you the current setting and changes nothing.
+shows or hides PvP-flagged players, /sbuff group lists the other Serial Buffers in your group, and
+/sbuff blind on makes the list follow your own casts until your next /reload. Typed alone, /sbuff
+pvp or /sbuff blind tells you the current setting and changes nothing.
 
 The only thing that goes over the network is what you cast on each class, sent to your own party
 or raid as addon messages. Nobody gets a whisper or a chat line. Built for WoW: Forever (Camelot).
