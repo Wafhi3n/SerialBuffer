@@ -207,11 +207,16 @@ est celle du build 70205, lue le 2026-10-04.
 - **Auras sous restriction** (revue de code du 2026-10-11, `fix/sb-auras-secretes`) : pendant une
   rencontre de boss ou un match PvP, même hors combat, la lecture d'une aura ne rend RIEN, sans erreur
   (doc du jeu : `RequiresNonSecretAura`, `SecretWhenUnitAuraRestricted`). Jusqu'à la v0.5.0 ce rien
-  valait « absente » : tout le monde aurait paru non buffé, et une ligne buffée ne sortait plus. Il
-  vaut maintenant « illisible » quand `C_Secrets.ShouldAurasBeSecret()` le dit, et le pied du
-  tableau compte ces joueurs. **Mesuré le 2026-10-11 23:14** (1.60.1.70338, appli du banc) : elle
-  rend `false` en ville et en donjon hors combat, où l'aura se lit ; le tableau ne change donc pas
-  là. *Pas mesuré :* un champ de bataille (aucun sur la bêta), un boss qu'on regarde mort, hors combat.
+  valait « absente » : tout le monde aurait paru non buffé, et une ligne buffée ne sortait plus. Un
+  joueur l'a vécu en champ de bataille (CurseForge, 2026-10-14 : « it doesn't register the buff on
+  yourself or allys, so never removes it from the list/keeps buffing same buff » ; sa parole, pas
+  notre mesure). Ce rien vaut maintenant « caché », et la file passe en **mode à l'aveugle (D52)**
+  quand un signe le dit : `C_Secrets.ShouldAurasBeSecret()`, la restriction « match PvP » active,
+  ou un champ de bataille / une arène. (`fix/sb-auras-secretes` le comptait d'abord « illisible » :
+  le tableau se vidait, et pour le user un addon muet en champ de bataille reste un bug.) **Mesuré
+  le 2026-10-11 23:14** (1.60.1.70338, appli du banc) : `ShouldAurasBeSecret` rend `false` en ville
+  et en donjon hors combat, où l'aura se lit ; le tableau ne change donc pas là. *Pas mesuré :* un
+  champ de bataille, un boss qu'on regarde mort, hors combat.
 - **Toi, dans un groupe** : tu es dans la partie du groupe (D30). Seul, tu restes dans la liste à ta
   place d'arrivée, comme avant (D8).
 - **Joueur déjà buffé par quelqu'un d'autre**, ou avec un rang plus fort : il a le buff, il n'entre
@@ -653,9 +658,8 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
     `C_RestrictedActions.GetAddOnRestrictionState(3)` (restriction « match PvP »),
     `C_Secrets.ShouldAurasBeSecret()`, `C_Secrets.ShouldSpellAuraBeSecret(19740)`, et la lecture de
     ta Bénédiction de puissance sur toi (`GetAuraDataBySpellName`). Fiche de l'appli du banc :
-    `mesure--auras-secretes`. Si les auras y sont cachées, la piste notée (pas construite : le user
-    attend la mesure) est un mode « à l'aveugle » qui repropose d'après tes propres sorts (fin du
-    buff, mort du joueur), sans voir les buffs posés par les autres.
+    `mesure--auras-secretes`. Le mode « à l'aveugle » qui était la piste notée est construit sans
+    attendre la mesure, sur le rapport d'un joueur : D52.
 - **D51 : un curseur des options limite les lignes du tableau** (un joueur, CurseForge, 2026-10-14 :
   « Can we have a setting to limit the window height to say 3 names? i like to tuck it away but when
   i run into city it expands too much » ; le user lui a répondu le jour même « will add a slider in
@@ -670,6 +674,39 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   rendu suivant, qui attend la fin d'un combat (D36). Les 16 boutons sécurisés existent toujours ; la
   touche « buff suivant » vise toujours la première ligne à portée, qui reste affichée. Code :
   `UI.Limit`, `UI.Footer`, `UI:Layout`, `Options:RowsSlider`, `db.maxRows`.
+- **D52 : quand le jeu cache les auras, la liste suit tes propres sorts (« mode à l'aveugle »)** (un
+  joueur, CurseForge, 2026-10-14 : en champ de bataille, « it doesn't register the buff on yourself
+  or allys, so never removes it from the list/keeps buffing same buff » ; le user a choisi le même
+  jour le mode à l'aveugle plutôt qu'attendre sa mesure, en acceptant qu'il assouplisse D4, puis :
+  « quand bg les joueurs alliés meurent très souvent »). Une lecture qui ne rend rien sous l'un de
+  trois signes est **cachée** (voir « Auras sous restriction ») ; la file se fie alors à tes sorts
+  **réussis** (ceux de nos clics, `Queue.cast`, déjà tenu pour D27) :
+  - posé par toi sur ce joueur, et pas mort depuis : il lui reste « heure du sort + durée −
+    maintenant », que la ligne décompte (D39) ; sous le seuil (D11, D28, D45), il est reproposé ;
+  - jamais posé par toi, ou expiré : il manque, il est proposé ;
+  - **un mort perd ce que tu lui avais posé** : à chaque tic (0,5 s), combat compris, tableau caché
+    compris, toi et ton groupe ou raid passent par `UnitIsDeadOrGhost` (aucune étiquette « secret »
+    dans la doc du client) ; revenu à la vie, il est reproposé. Le tableau restant figé en combat
+    (D36), il réapparaît à la sortie du combat. Il rentre **en fin de file** : D8 tient (user, même
+    soir : « peu importe en fin ou au début du moment que ça les remet c'est bien ») ;
+  - la **durée** est celle qu'une aura du même nom a montrée en clair (n'importe où avant, sur
+    n'importe qui), retenue par nom de sort (`db.auraDur`) ; jamais lue : **1 h, 10 min pour un buff
+    court** (`Buffs.SHORT_BUFFS`), au-dessus du seuil du paladin, sinon une bénédiction reviendrait
+    sitôt posée ;
+  - une aura cachée ne compte plus parmi les illisibles ; le pied dit « Buffs cachés par le jeu : la
+    liste suit tes propres sorts. ».
+  - **`/sbuff aveugle on`** force ce mode pour la séance (jamais sauvegardé ; tapée seule, la commande
+    dit l'état) : il se teste en ville, et un joueur dont le jeu cache les auras sans aucun signe peut
+    s'en servir.
+  *Limites connues, à dire aux joueurs :* les buffs posés par les autres ne se voient pas (un buff
+  déjà posé par un autre peut t'être proposé) ; une dissipation ennemie non plus (le buff reste
+  « posé » jusqu'à sa fin) ; un `/reload` oublie tes sorts (tout le monde est reproposé une fois) ;
+  la coordination en champ de bataille n'est pas mesurée (un groupe d'instance peut refuser les
+  messages `RAID`). *Le signe « champ de bataille ou arène » est un filet* : il tient tant qu'on ne
+  sait pas lequel des deux autres le jeu y lève ; les relevés SB1 / SB3 demandés au joueur, ou la
+  mesure du user (`mesure--auras-secretes`), diront s'il faut le garder. *Pas mesuré :* rien de D52
+  en champ de bataille. Code : `Units:AurasHidden`, `Units.probe.aura` ("hidden"), `Units:Deaths`,
+  `Queue` (`readAura`, `blind`, `Forget`), `Run` (tic), `UI.Footer`, `/sbuff aveugle`.
 
 ## Questions ouvertes (au user)
 
@@ -857,6 +894,24 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     tableau restent à 3. La page des options défile si elle dépasse (barre à droite) et le curseur
     reste atteignable. Le remettre à 16 : la liste entière revient. Aucune erreur Lua. Témoin
     connu-bon : la case « Groupe seul » de la même page, qui change le tableau de la même façon.
+42. [test] (D52) Une lecture vide est « cachée » sous chacun des trois signes, « absente » sans eux,
+    et `/sbuff aveugle` la rend cachée sans rien lire ; cachée et jamais posée par moi : proposée ;
+    posée par moi : servie, puis reproposée sous le seuil avec son temps restant ; durée jamais lue :
+    une bénédiction n'est pas reproposée sitôt posée, un buff court l'est sous 2 min ; un mort (ou
+    `Forget`) est reproposé ; une aura lue en clair apprend sa durée ; une aura cachée n'est pas
+    illisible ; `Units:Deaths` nomme les morts du groupe ou raid, jamais un GUID secret ; la commande
+    dit l'état seule et ne sauve rien (`test_serialbuffer_blind.lua`, `_units.lua`, `_chat.lua`).
+43. [humain] (D52) Sur le paladin du banc (A), groupé avec B, en ville, hors combat : `/sbuff aveugle
+    on` (une ligne dans le chat) ; le pied dit « Buffs hidden by the game… » ; B et toi êtes proposés
+    même déjà buffés (on ne lit plus). Buffer B : sa ligne sort. Attendre : elle ne revient pas.
+    `/reload` puis `/sbuff aveugle on` : B est reproposé (sorts oubliés). Le rebuffer, puis B meurt
+    (un mob, une chute) et revient : B est reproposé. `/sbuff aveugle off` : le pied redevient normal
+    et la liste suit les buffs lus. Aucune erreur Lua. Témoin connu-bon : les mêmes gestes avec
+    `/sbuff aveugle off`, où B buffé ne revient qu'à la fin de son buff.
+44. [humain] (D52) En champ de bataille, quand le user y va : à la porte puis pendant le match, hors
+    combat, le pied dit « Buffs hidden by the game… » si le jeu cache les auras ; un allié buffé sort
+    de la liste et y revient après sa mort. Les sondes SB1 / SB3 (commentaire CurseForge) disent
+    lequel des signes s'est levé.
 
 ## Contrat
 
@@ -866,14 +921,16 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
   `off`, `priority` et `classBuffs`, migrés par `schemaVer` 3), la ligne « Groupe / raid »
   (`groupPick`, classe du lanceur → classe de la cible → id ; D35), les refus « trop bas » appris
   (`tooLow`, rang de sort → niveau ; D38), l'option PvP, la case « Groupe seul » (`groupOnly` ; D40),
-  les lignes du tableau au plus (`maxRows` ; D51), la réponse à la
+  les lignes du tableau au plus (`maxRows` ; D51), la durée des buffs lue en clair (`auraDur`, nom
+  de sort → secondes, une donnée du sort et pas du joueur ; D52), la réponse à la
   proposition des plaques et la position du tableau (son coin haut gauche). Pour le diagnostic, `seenErrors` : le
   nom et le texte des erreurs du jeu vues juste après un de nos clics. **Aucun nom de joueur, aucun
   GUID** : un secret sauvegardé empoisonne la base. Le refus « trop bas » (D24) vit en mémoire de
-  session, jamais sauvegardé.
+  session, jamais sauvegardé ; de même les sorts que tu as posés (D27, D52) et `/sbuff aveugle`.
 - **Raccourci clavier** « Serial Buffer : buff suivant », dans le menu des raccourcis du jeu ; la
   touche assignée se lit dans l'en-tête du tableau, qui ouvre ce menu (D41).
-- **Commande** : `/sbuff` (D17) ; `/sbuff autour` (D40), `/sbuff touche` (D41).
+- **Commande** : `/sbuff` (D17) ; `/sbuff autour` (D40), `/sbuff touche` (D41), `/sbuff aveugle`
+  (D52).
 
 ## Renvois
 

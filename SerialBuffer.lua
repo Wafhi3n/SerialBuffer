@@ -28,6 +28,7 @@ NS.DEFAULTS = {
     tankAll = false,        -- D44 : coché, Épines (buff réservé aux tanks) va à tous ceux qui ne l'ont pas
     shortAll = {},          -- D47 : buff court coché « à tous » (id -> true) ; absent : toi et ton groupe
     maxRows = 16,           -- D51 : lignes du tableau au plus (1 à 16) ; le reste se compte au pied
+    auraDur = {},           -- D52 : nom de buff -> durée totale lue en clair (s), pour le mode à l'aveugle
 }
 
 local function CopyDefaults(dst, src)
@@ -85,6 +86,10 @@ function NS:Slash(msg)
         local key = self.Header.KeyText()
         self:Print(key and string.format(L["Touche « buff suivant » : %s"], key) or L["Aucune touche pour « buff suivant »."])
         self.Header:OpenBindings()
+    elseif cmd == "aveugle" or cmd == "blind" then     -- D52 : pour la séance, jamais sauvegardé
+        self:TwoState(cmd, arg, self.Units.forceHidden == true, function(v) self.Units.forceHidden = v end,
+            L["Mode à l'aveugle forcé : la liste suit tes propres sorts (cette séance)."],
+            L["Mode à l'aveugle automatique : seulement quand le jeu cache les buffs."])
     elseif cmd == "options" then
         if self.Options then self.Options:Open() end
     elseif cmd == "version" then
@@ -101,6 +106,7 @@ function NS:Slash(msg)
         self:Print("/sbuff pvp [on|off] - " .. L["montre ou cache les joueurs PvP"])
         self:Print("/sbuff autour [on|off] - " .. L["montre ou ignore les joueurs autour de toi (groupe seul)"])
         self:Print("/sbuff touche - " .. L["ta touche « buff suivant », et la page des raccourcis pour la changer"])
+        self:Print("/sbuff aveugle [on|off] - " .. L["suit tes propres sorts au lieu des buffs lus (cette séance)"])
         self:Print("/sbuff options - " .. L["ouvre les options"])
         self:Print("/sbuff groupe - " .. L["liste les Serial Buffer de ton groupe"])
         self:Print("/sbuff version - " .. L["affiche la version"])

@@ -87,6 +87,11 @@ local T = {
     ["Groupe / raid : un choix unique pour les membres de ton groupe ou raid ; vide, la grille du dessus s'applique. Un buff de mana n'est jamais proposé aux guerriers ni aux voleurs."] = "Gruppe / Schlachtzug: eine einzige Wahl für die Mitglieder deiner Gruppe oder deines Schlachtzugs; leer gilt das Raster darüber. Ein Mana-Buff wird Kriegern und Schurken nie angeboten.",
     ["Options : quels buffs sur quelles classes"] = "Optionen: welche Buffs auf welche Klassen",
     ["%d illisible(s) : le jeu cache leur nom ou leurs buffs."] = "%d unlesbar: das Spiel verbirgt ihren Namen oder ihre Buffs.",
+    -- D52 : mode à l'aveugle (2026-10-14)
+    ["Buffs cachés par le jeu : la liste suit tes propres sorts."] = "Buffs vom Spiel verborgen: Die Liste folgt deinen eigenen Zaubern.",
+    ["Mode à l'aveugle forcé : la liste suit tes propres sorts (cette séance)."] = "Blindmodus erzwungen: Die Liste folgt deinen eigenen Zaubern (diese Sitzung).",
+    ["Mode à l'aveugle automatique : seulement quand le jeu cache les buffs."] = "Blindmodus automatisch: nur wenn das Spiel die Buffs verbirgt.",
+    ["suit tes propres sorts au lieu des buffs lus (cette séance)"] = "folgt deinen eigenen Zaubern statt gelesener Buffs (diese Sitzung)",
     ["Raid"] = "Schlachtzug",
     ["Groupe"] = "Gruppe",
     ["Autour de toi"] = "Um dich herum",
