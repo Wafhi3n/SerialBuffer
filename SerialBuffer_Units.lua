@@ -109,13 +109,28 @@ local function duration(a)
     return d
 end
 
+-- Sous restriction (rencontre de boss, match PvP, même hors combat), la lecture d'une aura ne rend
+-- RIEN, sans erreur (doc du jeu : RequiresNonSecretAura) : ce rien est « illisible », jamais
+-- « absente » (règle de sûreté, SerialBuffer_Queue.lua ; revue de code du 2026-10-11). Mesuré le
+-- 2026-10-11 (1.60.1.70338) : ShouldAurasBeSecret rend false en ville et en donjon hors combat.
+-- Sans C_Secrets (autre client), ou si l'appel lève : comme avant.
+local function aurasSecret()
+    local f = C_Secrets and C_Secrets.ShouldAurasBeSecret
+    if not f then return false end
+    local ok, v = pcall(f)
+    return ok and v == true
+end
+
 -- "absent", ou les secondes restantes (math.huge : sans fin), « est-ce la mienne » et la durée
 -- totale ; nil = illisible.
 function U.probe.aura(unit, buffName)
     local ok, a = pcall(C_UnitAuras.GetAuraDataBySpellName, unit, buffName, "HELPFUL")
     if not ok or sec(a) then return nil end
     if issecrettable and issecrettable(a) then return nil end
-    if a == nil then return "absent" end
+    if a == nil then
+        if aurasSecret() then return nil end
+        return "absent"
+    end
     local e = a.expirationTime
     if sec(e) then return nil end
     local mine = fromMe(a)
