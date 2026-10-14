@@ -348,13 +348,15 @@ function UI.Limit(db)
     return math.max(1, math.min(MAX_ROWS, math.floor(n)))
 end
 
--- Le message du pied : l'état, le reste de la liste (au-delà de la limite, D51), les illisibles (D31),
--- sinon pourquoi la liste est vide (spec, « Liste vide »). Une ligne par message.
+-- Le message du pied : l'état, le mode à l'aveugle (D52), le reste de la liste (au-delà de la limite,
+-- D51), les illisibles (D31), sinon pourquoi la liste est vide (spec, « Liste vide »). Une ligne par
+-- message.
 function UI.Footer(rows, info, limit)
     local lines = {}
     local m = stateMessage(info.state)
     if m then lines[#lines + 1] = m end
     if info.state ~= "nobuffs" then
+        if info.blind then lines[#lines + 1] = L["Buffs cachés par le jeu : la liste suit tes propres sorts."] end
         if #rows > limit then lines[#lines + 1] = string.format(L["+%d autres"], #rows - limit) end
         local unread = info.unread or 0
         if unread > 0 then

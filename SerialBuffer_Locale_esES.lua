@@ -88,6 +88,11 @@ local T = {
     ["Groupe / raid : un choix unique pour les membres de ton groupe ou raid ; vide, la grille du dessus s'applique. Un buff de mana n'est jamais proposé aux guerriers ni aux voleurs."] = "Grupo / banda: una única opción para los miembros de tu grupo o banda; vacía, se aplica la tabla de arriba. Un beneficio de maná nunca se ofrece a guerreros ni pícaros.",
     ["Options : quels buffs sur quelles classes"] = "Opciones: qué beneficios en qué clases",
     ["%d illisible(s) : le jeu cache leur nom ou leurs buffs."] = "%d ilegible(s): el juego oculta su nombre o sus beneficios.",
+    -- D52 : mode à l'aveugle (2026-10-14)
+    ["Buffs cachés par le jeu : la liste suit tes propres sorts."] = "Beneficios ocultos por el juego: la lista sigue tus propios hechizos.",
+    ["Mode à l'aveugle forcé : la liste suit tes propres sorts (cette séance)."] = "Modo a ciegas forzado: la lista sigue tus propios hechizos (esta sesión).",
+    ["Mode à l'aveugle automatique : seulement quand le jeu cache les buffs."] = "Modo a ciegas automático: solo cuando el juego oculta los beneficios.",
+    ["suit tes propres sorts au lieu des buffs lus (cette séance)"] = "sigue tus propios hechizos en vez de los beneficios leídos (esta sesión)",
     ["Raid"] = "Banda",
     ["Groupe"] = "Grupo",
     ["Autour de toi"] = "A tu alrededor",

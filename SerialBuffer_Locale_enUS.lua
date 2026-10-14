@@ -88,6 +88,11 @@ local T = {
     ["Groupe / raid : un choix unique pour les membres de ton groupe ou raid ; vide, la grille du dessus s'applique. Un buff de mana n'est jamais proposé aux guerriers ni aux voleurs."] = "Group / raid: a single choice for the members of your group or raid; empty, the grid above applies. A mana buff is never offered to warriors or rogues.",
     ["Options : quels buffs sur quelles classes"] = "Options: which buffs on which classes",
     ["%d illisible(s) : le jeu cache leur nom ou leurs buffs."] = "%d unreadable: the game hides their name or their buffs.",
+    -- D52 : mode à l'aveugle (2026-10-14)
+    ["Buffs cachés par le jeu : la liste suit tes propres sorts."] = "Buffs hidden by the game: the list follows your own casts.",
+    ["Mode à l'aveugle forcé : la liste suit tes propres sorts (cette séance)."] = "Blind mode forced: the list follows your own casts (this session).",
+    ["Mode à l'aveugle automatique : seulement quand le jeu cache les buffs."] = "Blind mode automatic: only when the game hides buffs.",
+    ["suit tes propres sorts au lieu des buffs lus (cette séance)"] = "follow your own casts instead of reading buffs (this session)",
     ["Raid"] = "Raid",
     ["Groupe"] = "Group",
     ["Autour de toi"] = "Around you",

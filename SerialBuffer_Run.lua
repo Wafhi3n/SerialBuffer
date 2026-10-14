@@ -54,8 +54,9 @@ function R:Refresh()
         NS.Units.probe, { showPvP = NS.db.showPvP, now = GetTime(), refreshBelow = (NS.db.refreshMin or 45) * 60,
                           refreshShort = (NS.db.refreshShort or 2) * 60, tankAll = NS.db.tankAll,   -- D45, D44
                           shortAll = NS.db.shortAll, tooLow = NS.db.tooLow,                        -- D47
-                          unstocked = NS.Buffs:Unstocked() })                                      -- D48
-    NS.UI:Render(rows, { state = state, around = around, unread = unread, group = NS.Units:GroupKind() })
+                          unstocked = NS.Buffs:Unstocked(), durations = NS.db.auraDur })           -- D48, D52
+    NS.UI:Render(rows, { state = state, around = around, unread = unread, group = NS.Units:GroupKind(),
+                         blind = NS.Units:AurasHidden() })                                         -- D52
 end
 
 -- Après un sort ou une erreur : recalcule tout de suite, pour que la touche « buff suivant » vise
@@ -147,7 +148,10 @@ function R:Start()
     self.frame = f
     NS.Comm:Start()   -- coordination, palier 1 : annoncer et recevoir dans le groupe
     -- Hors combat : recalcul. En combat (D36, tableau figé) : seul le temps restant descend (D39).
+    -- D52 : à chaque tic, combat ou pas, tableau caché ou pas, un mort du groupe perd ce que je lui
+    -- avais posé (un allié meurt et revient pendant qu'on se bat ; le rendu ne le verrait jamais mort).
     self.ticker = C_Timer.NewTicker(TICK, function()
+        if next(NS.Queue.cast) then NS.Units:Deaths(function(guid) NS.Queue:Forget(guid) end) end
         if not NS.UI:IsVisible() then return end
         if InCombatLockdown() then NS.UI:CombatTick(GetTime()) else R:Refresh() end
     end)

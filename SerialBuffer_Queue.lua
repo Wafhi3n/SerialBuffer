@@ -24,7 +24,8 @@ local _, NS = ...
 NS = NS or _G.SerialBuffer
 
 -- stats : compteurs de diagnostic (SerialBuffer_Run.lua les range dans db.diag), aucun nom de joueur.
-local Q = { seq = 0, order = {}, blocked = {}, cast = {}, now = 0, stats = { next = 0, stopMine = 0, stopUnknown = 0 } }
+local Q = { seq = 0, order = {}, blocked = {}, cast = {}, now = 0,
+            stats = { next = 0, stopMine = 0, stopUnknown = 0, blind = 0 } }
 NS.Queue = Q
 
 Q.REFRESH_BELOW = 600     -- D11 : 10 minutes (bénédictions du paladin ; les autres buffs : D28, opts.refreshBelow)
@@ -33,7 +34,7 @@ Q.STRONGER_WAIT = 1200    -- D26 : « un sort plus puissant est actif » : on r�
 
 function Q:Reset()
     self.seq, self.order, self.blocked, self.cast, self.now = 0, {}, {}, {}, 0
-    self.stats = { next = 0, stopMine = 0, stopUnknown = 0 }
+    self.stats = { next = 0, stopMine = 0, stopUnknown = 0, blind = 0 }
 end
 
 -- Le jeu a refusé ce buff sur ce joueur. On ne le lui propose plus, jusqu'à ce qu'il gagne un niveau
@@ -63,6 +64,11 @@ function Q:Cast(guid, buffName, now)
     self.cast[guid][buffName] = now or self.now
 end
 
+-- D52 : ce joueur est mort, ses buffs sont tombés ; ce que je lui avais posé ne compte plus.
+function Q:Forget(guid)
+    if guid then self.cast[guid] = nil end
+end
+
 local function castByMe(snap, buffName)
     local t = Q.cast[snap.guid] and Q.cast[snap.guid][buffName]
     return t ~= nil and (Q.now - t) < Q.MINE_FOR
@@ -90,9 +96,9 @@ local function blessingVerdict(left, mine)
     return "stop"   -- la mienne, ou lanceur illisible : ne jamais écraser sa propre bénédiction par une autre
 end
 
--- Le buff à proposer, ou nil (plus "unread" si une aura est illisible). probe.aura rend "absent" ou
--- les secondes restantes (math.huge = sans fin), plus « est-ce la mienne » ; nil = illisible. Prêtre,
--- mage, druide : le premier qui manque (D7).
+-- Le buff à proposer, ou nil (plus "unread" si une aura est illisible). probe.aura rend "absent",
+-- "hidden" (D52, converti par readAura) ou les secondes restantes (math.huge = sans fin), plus « est-ce
+-- la mienne » ; nil = illisible. Prêtre, mage, druide : le premier qui manque (D7).
 -- D38 : le jeu a déjà refusé ce rang « trop bas » jusqu'à un niveau ≥ celui du joueur.
 local function learnedLow(snap, w, low)
     local max = low and low[w.rank or w.id]
@@ -122,6 +128,33 @@ local function auraOf(probe, unit, w)
     return left, mine, dur
 end
 
+-- D52 : le jeu CACHE les auras (probe.aura rend "hidden" : match PvP, rencontre de boss, ou
+-- /sbuff aveugle). La file se fie à NOS sorts réussis (Q.cast) : posé par moi sur ce joueur, et pas
+-- mort depuis (Q:Forget), il lui reste l'heure du sort + la durée - maintenant ; sinon il manque. La
+-- durée est celle lue sur une aura en clair (opts.durations : db.auraDur, apprise par nextMissing) ;
+-- jamais lue, 10 min pour un buff court (w.short), 1 h sinon : au-dessus du seuil du paladin (D11),
+-- sans quoi une bénédiction serait reproposée sitôt posée. Les buffs des autres ne se voient pas.
+Q.BLIND_SHORT, Q.BLIND_LONG = 600, 3600
+
+local function blind(snap, w, opts)
+    Q.stats.blind = Q.stats.blind + 1
+    local d = opts.durations and opts.durations[w.name]
+    if type(d) ~= "number" or d <= 0 then d = w.short and Q.BLIND_SHORT or Q.BLIND_LONG end
+    local t = Q.cast[snap.guid] and Q.cast[snap.guid][w.name]
+    local left = t and (t + d - Q.now)
+    if not left or left <= 0 then return "absent", nil, d end
+    return left, true, d
+end
+
+-- La lecture, convertie AVANT tout le reste : un "hidden" brut passerait pour présent (needs le dit
+-- non manquant). Une aura lue en clair apprend sa durée totale (D52).
+local function readAura(probe, snap, w, opts)
+    local left, mine, dur = auraOf(probe, snap.unit, w)
+    if left == "hidden" then return blind(snap, w, opts) end
+    if type(left) == "number" and type(dur) == "number" and opts.durations then opts.durations[w.name] = dur end
+    return left, mine, dur
+end
+
 -- D44 : un buff réservé aux tanks saute les autres joueurs, sauf « à tous » (opts.tankAll).
 -- D47 : un autre buff court (w.short) ne va qu'à toi et à ton groupe, sauf sa case « à tous »
 -- (opts.shortAll[id]). D48 : un buff dont tu n'as plus le composant (opts.unstocked[id]) saute tout
@@ -142,7 +175,7 @@ local function nextMissing(snap, wanted, probe, opts)
     local low = opts.tooLow
     for i, w in ipairs(wanted) do
         if not isBlocked(snap, w.name) and not learnedLow(snap, w, low) and not skipLimited(snap, w, opts) then
-            local left, mine, dur = auraOf(probe, snap.unit, w)
+            local left, mine, dur = readAura(probe, snap, w, opts)
             if left == nil then return nil, "unread" end
             if mine ~= true and left ~= "absent" and castByMe(snap, w.name) then mine = true end
             if wanted.exclusive then
@@ -243,6 +276,7 @@ function Q:Build(snaps, wantedFor, probe, opts)
     for _, snap in ipairs(snaps) do
         if snap.guid and not seen[snap.guid] then
             seen[snap.guid] = true
+            if snap.dead then self:Forget(snap.guid) end   -- D52 : ses buffs sont tombés
             if admissible(snap, opts) and not snap.self then around = around + 1 end
             local row, why = self:Eligible(snap, wantedFor, probe, opts)
             if why == "unread" then unread = unread + 1 end

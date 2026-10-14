@@ -6,13 +6,16 @@
 --   - on ne LANCE jamais un sort sur ce jeton : le jeu l'ignore en silence (palier b : macro au nom) ;
 --   - le nom complet est « Prénom Nom » avec une espace (GetUnitName(u, true)) ;
 --   - les rangs existent : une aura se lit PAR NOM, sinon un autre rang passe inaperçu.
--- Toute valeur secrète est traitée comme ABSENTE, au plus près de l'appel ; un appel qui lève une
--- erreur aussi. Rien de ce qui est lu ici n'est sauvegardé (spec, Contrat).
+-- Toute valeur secrète est écartée au plus près de l'appel, comme un appel qui lève une erreur : une
+-- unité illisible n'entre pas, une aura illisible n'est jamais « absente ». Une aura que le JEU cache
+-- (match PvP, rencontre de boss) est « hidden » : la file se fie alors à nos propres sorts (D52).
+-- Rien de ce qui est lu ici n'est sauvegardé (spec, Contrat).
 local _, NS = ...
 NS = NS or _G.SerialBuffer
 
--- stats : qui a posé les buffs lus (moi / un autre / illisible), pour db.diag ; aucun nom de joueur.
-local U = { plates = {}, stats = { me = 0, other = 0, unknown = 0 } }
+-- stats : qui a posé les buffs lus (moi / un autre / illisible), et les lectures cachées par le jeu
+-- (D52), pour db.diag ; aucun nom de joueur. forceHidden : /sbuff aveugle, pour la séance seulement.
+local U = { plates = {}, stats = { me = 0, other = 0, unknown = 0, hidden = 0 }, forceHidden = false }
 NS.Units = U
 
 local function sec(v) return issecretvalue ~= nil and issecretvalue(v) end
@@ -84,6 +87,25 @@ function U:Collect(withPlates)
     return out
 end
 
+-- D52 : un mort perd ses buffs. fn(guid) pour toi et chaque membre du groupe ou du raid mort ou
+-- fantôme. Appelé à chaque tic du combat (SerialBuffer_Run.lua) : le tableau y est figé, mais un allié
+-- meurt et revient pendant qu'on se bat. Un GUID ou un état secret : on ne sait pas, rien n'est dit.
+local function deadGuid(unit)
+    if not UnitExists(unit) or not plain(UnitIsDeadOrGhost(unit)) then return nil end
+    return plain(UnitGUID(unit))
+end
+
+function U:Deaths(fn)
+    local units = { "player" }
+    local raid = IsInRaid()
+    local n = raid and GetNumGroupMembers() or GetNumSubgroupMembers()
+    for i = 1, n do units[#units + 1] = (raid and "raid" or "party") .. i end
+    for _, unit in ipairs(units) do
+        local ok, guid = pcall(deadGuid, unit)
+        if ok and guid then fn(guid) end
+    end
+end
+
 -- Les deux sondes de la file (SerialBuffer_Queue.lua).
 U.probe = {}
 
@@ -109,27 +131,44 @@ local function duration(a)
     return d
 end
 
--- Sous restriction (rencontre de boss, match PvP, même hors combat), la lecture d'une aura ne rend
--- RIEN, sans erreur (doc du jeu : RequiresNonSecretAura) : ce rien est « illisible », jamais
--- « absente » (règle de sûreté, SerialBuffer_Queue.lua ; revue de code du 2026-10-11). Mesuré le
--- 2026-10-11 (1.60.1.70338) : ShouldAurasBeSecret rend false en ville et en donjon hors combat.
--- Sans C_Secrets (autre client), ou si l'appel lève : comme avant.
-local function aurasSecret()
-    local f = C_Secrets and C_Secrets.ShouldAurasBeSecret
-    if not f then return false end
-    local ok, v = pcall(f)
-    return ok and v == true
+local function plainCall(f, ...)
+    if not f then return nil end
+    local ok, v, w = pcall(f, ...)
+    if not ok then return nil end
+    return plain(v), plain(w)
 end
 
--- "absent", ou les secondes restantes (math.huge : sans fin), « est-ce la mienne » et la durée
--- totale ; nil = illisible.
+-- Sous restriction, même hors combat, la lecture d'une aura ne rend RIEN, sans erreur (doc du jeu :
+-- RequiresNonSecretAura ; SecretWhenUnitAuraRestricted : combat, rencontre, mythique+, match PvP).
+-- Ce rien n'est pas « absente » (règle de sûreté, SerialBuffer_Queue.lua) : D52 le dit « caché ».
+-- Trois signes, un seul suffit : ShouldAurasBeSecret ; la restriction « match PvP » active ; un champ
+-- de bataille ou une arène. Le dernier est un filet : un joueur l'a vu en champ de bataille
+-- (CurseForge, 2026-10-14, « it doesn't register the buff on yourself or allys ») sans qu'on sache
+-- lequel des deux premiers le dit (ses relevés SB1 / SB3 sont attendus). Mesuré le 2026-10-11
+-- (1.60.1.70338) : ShouldAurasBeSecret rend false en ville et en donjon hors combat.
+local PVP_MATCH = (Enum and Enum.AddOnRestrictionType and Enum.AddOnRestrictionType.PvPMatch) or 3
+
+function U:AurasHidden()
+    if self.forceHidden then return true end
+    if plainCall(C_Secrets and C_Secrets.ShouldAurasBeSecret) == true then return true end
+    local state = plainCall(C_RestrictedActions and C_RestrictedActions.GetAddOnRestrictionState, PVP_MATCH)
+    if type(state) == "number" and state > 0 then return true end
+    local _, kind = plainCall(IsInInstance)
+    return kind == "pvp" or kind == "arena"
+end
+
+-- "absent", "hidden" (le jeu cache les auras, D52), ou les secondes restantes (math.huge : sans fin),
+-- « est-ce la mienne » et la durée totale ; nil = illisible. /sbuff aveugle (U.forceHidden) rend
+-- "hidden" sans rien lire : tout passe par nos propres sorts, comme en champ de bataille.
 function U.probe.aura(unit, buffName)
+    if U.forceHidden then U.stats.hidden = U.stats.hidden + 1; return "hidden" end
     local ok, a = pcall(C_UnitAuras.GetAuraDataBySpellName, unit, buffName, "HELPFUL")
     if not ok or sec(a) then return nil end
     if issecrettable and issecrettable(a) then return nil end
     if a == nil then
-        if aurasSecret() then return nil end
-        return "absent"
+        if not U:AurasHidden() then return "absent" end
+        U.stats.hidden = U.stats.hidden + 1
+        return "hidden"
     end
     local e = a.expirationTime
     if sec(e) then return nil end
