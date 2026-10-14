@@ -687,7 +687,8 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   - **un mort perd ce que tu lui avais posé** : à chaque tic (0,5 s), combat compris, tableau caché
     compris, toi et ton groupe ou raid passent par `UnitIsDeadOrGhost` (aucune étiquette « secret »
     dans la doc du client) ; revenu à la vie, il est reproposé. Le tableau restant figé en combat
-    (D36), il réapparaît à la sortie du combat ;
+    (D36), il réapparaît à la sortie du combat. Il rentre **en fin de file** : D8 tient (user, même
+    soir : « peu importe en fin ou au début du moment que ça les remet c'est bien ») ;
   - la **durée** est celle qu'une aura du même nom a montrée en clair (n'importe où avant, sur
     n'importe qui), retenue par nom de sort (`db.auraDur`) ; jamais lue : **1 h, 10 min pour un buff
     court** (`Buffs.SHORT_BUFFS`), au-dessus du seuil du paladin, sinon une bénédiction reviendrait
