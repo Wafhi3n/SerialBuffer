@@ -2,7 +2,7 @@
 --
 -- Spec docs/specs/serial-buffer.md : D34 et D35 (la grille par classe et sa ligne « Groupe / raid »,
 -- SerialBuffer_Grid.lua), D28 (seuil de rafraîchissement hors paladin), D5 (joueurs PvP), D40 (groupe
--- seul), D32 (le rouage du tableau ouvre ce panneau : O:Open).
+-- seul), D32 (le rouage du tableau ouvre ce panneau : O:Open), D51 (lignes du tableau au plus).
 -- Prudences, toutes deux liées au client Forever (skill public wow-forever-api) :
 --   - AUCUN menu déroulant : ouvrir un menu du système Menu depuis un addon fait planter le client
 --     (taint-and-protected-frames.md, « Menus »). L'ordre se règle avec les flèches de la grille ;
@@ -112,7 +112,37 @@ function O:GeneralChecks(page, y)
     -- D40 : la même case que dans l'en-tête du tableau (SerialBuffer_Header.lua).
     self.checks[#self.checks + 1] = checkbox(page, PAD, y, L["Groupe seul : ignorer les joueurs autour de toi"],
         function() return NS.db.groupOnly end, function(v) NS.Header:SetGroupOnly(v) end)
+    -- D51 : sur la 3e colonne, à côté de « Groupe seul » : la page du paladin déborde déjà presque.
+    if self:RowsSlider(page, PAD + 330, y) then return y - 44 end
     return y - 24
+end
+
+-- D51 : les lignes du tableau au plus (un joueur, CurseForge, 2026-10-14 : « limit the window height to
+-- say 3 names, i like to tuck it away but when i run into city it expands too much »). Le curseur à
+-- flèches du jeu (MinimalSliderWithSteppersTemplate), celui des options de LeyLines, vu en jeu sur
+-- Forever. Il n'écrit que la base : le tableau suit au rendu suivant, qui attend la fin d'un combat
+-- (UI:Render). Sans le gabarit (autre client) : pas de curseur, rend false.
+function O:RowsSlider(page, x, y)
+    local M = MinimalSliderWithSteppersMixin
+    if not (M and M.Event and M.Label) then return false end
+    local ok, s = pcall(CreateFrame, "Frame", nil, page, "MinimalSliderWithSteppersTemplate")
+    if not ok or not s then return false end
+    local label = page:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    label:SetPoint("TOPLEFT", x + 4, y - 2)
+    label:SetText(L["Lignes du tableau, au plus"])
+    s:SetPoint("TOPLEFT", x, y - 18)
+    s:SetWidth(230)
+    local max = NS.UI.MAX_ROWS
+    s:Init(NS.UI.Limit(NS.db), 1, max, max - 1,
+        { [M.Label.Right] = function(v) return tostring(math.floor(v + 0.5)) end })
+    s:RegisterCallback(M.Event.OnValueChanged, function(_, v)
+        local n = math.floor(v + 0.5)
+        if n == NS.UI.Limit(NS.db) then return end   -- O:Refresh qui remet la valeur : rien à faire
+        NS.db.maxRows = n
+        if NS.UI:IsVisible() then NS.Run:Refresh() end   -- en combat, Refresh ne fait rien
+    end, s)
+    self.rowsSlider = s
+    return true
 end
 
 -- Signaler un bug ou une idée (SerialBuffer_Report.lua) : sa fenêtre passe devant ce panneau.
@@ -194,6 +224,7 @@ end
 -- Remet chaque contrôle à l'état de la base (à chaque ouverture, et après un clic).
 function O:Refresh()
     for _, cb in ipairs(self.checks) do cb:SetChecked(cb.get() and true or false) end
+    if self.rowsSlider then self.rowsSlider:SetValue(NS.UI.Limit(NS.db)) end
     if self.refreshRow then
         local v = NS.db.refreshMin or 45
         self.refreshRow.label:SetText(string.format(L["Rafraîchir un buff s'il lui reste moins de %d min"], v))

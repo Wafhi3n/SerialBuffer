@@ -131,5 +131,7 @@ local T = {
     ["Tableau caché. /sbuff, ou la case « Afficher le tableau » des options, le réaffiche."] = "Panel hidden. /sbuff, or the \"Show the panel\" box in the options, brings it back.",
     -- Chat sobre (2026-10-11) : une commande à deux états tapée seule dit l'état et le mot qui le change
     ["(/sbuff %s %s pour changer)"] = "(/sbuff %s %s to change it)",
+    -- D51 : lignes du tableau au plus (2026-10-14)
+    ["Lignes du tableau, au plus"] = "Max rows in the panel",
 }
 for k, v in pairs(T) do NS.L[k] = v end

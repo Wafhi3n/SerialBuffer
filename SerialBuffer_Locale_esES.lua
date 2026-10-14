@@ -131,5 +131,7 @@ local T = {
     ["Tableau caché. /sbuff, ou la case « Afficher le tableau » des options, le réaffiche."] = "Tabla oculta. /sbuff, o la casilla «Mostrar la tabla» de las opciones, la vuelve a mostrar.",
     -- Chat sobre (2026-10-11) : une commande à deux états tapée seule dit l'état et le mot qui le change
     ["(/sbuff %s %s pour changer)"] = "(/sbuff %s %s para cambiarlo)",
+    -- D51 : lignes du tableau au plus (2026-10-14)
+    ["Lignes du tableau, au plus"] = "Filas de la tabla, como máximo",
 }
 for k, v in pairs(T) do NS.L[k] = v end
