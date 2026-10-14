@@ -76,7 +76,7 @@ function NS:Slash(msg)
         if self.UI then self.UI:Toggle() end
     elseif cmd == "pvp" then
         self:TwoState("pvp", arg, self.db.showPvP == true, function(v) self.db.showPvP = v end,
-            L["Joueurs PvP affichés."], L["Joueurs PvP cachés."])
+            L["Joueurs PvP affichés."], L["Joueurs PvP cachés, sauf quand tu es marqué toi-même."])   -- D5, D50
     elseif cmd == "autour" or cmd == "around" then   -- D40 : « on » = les joueurs autour sont listés
         self:TwoState(cmd, arg, not self.db.groupOnly, function(v) self.Header:SetGroupOnly(not v) end,
             L["Joueurs autour listés."], L["Joueurs autour ignorés : seuls toi et ton groupe sont listés."])
