@@ -628,6 +628,20 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   colonne réglée à la main reste telle quelle ; la migration des réglages d'avant la grille fait
   suivre le défaut du jour à une Puissance jamais touchée. Code : `Buffs.DEFAULT_OFF_FOR`,
   `Buffs:OffFor` (lu par `DefaultOrder`, `Fill`, `FillGroup` et la migration).
+- **D51 : un curseur des options limite les lignes du tableau** (un joueur, CurseForge, 2026-10-14 :
+  « Can we have a setting to limit the window height to say 3 names? i like to tuck it away but when
+  i run into city it expands too much » ; le user lui a répondu le jour même « will add a slider in
+  the option to limit the number of row », puis l'a confirmé : « une option dans le menu d'options
+  avec un slider pour définir la limite »). De 1 à 16, par pas de 1, **16 par défaut** : le plafond
+  d'avant, rien ne change pour qui ne le touche pas. Au-delà de la limite, les lignes se cachent et
+  le pied les compte (« +N autres », comme au-delà de 16 jusque-là) ; le titre d'une partie (D30)
+  garde le compte entier de la partie.
+  *Dérivé :* le curseur est celui du jeu à flèches (`MinimalSliderWithSteppersTemplate`), le même
+  que les options de LeyLines, vu en jeu sur Forever ; il se range à côté de « Groupe seul », sur la
+  3e colonne, la page du paladin débordant déjà presque. Il n'écrit que la base : le tableau suit au
+  rendu suivant, qui attend la fin d'un combat (D36). Les 16 boutons sécurisés existent toujours ; la
+  touche « buff suivant » vise toujours la première ligne à portée, qui reste affichée. Code :
+  `UI.Limit`, `UI.Footer`, `UI:Layout`, `Options:RowsSlider`, `db.maxRows`.
 
 ## Questions ouvertes (au user)
 
@@ -804,6 +818,17 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     infobulle dit « Composant manquant », et le tableau ne la propose plus ; la reprendre la fait
     revenir. Aucune erreur Lua. Témoin connu-bon : le compteur de composants du sort dans le livre
     de sorts du jeu.
+40. [test] (D51) La limite se ramène entre 1 et 16, 16 sans réglage ; 5 lignes sous une limite de 3 :
+    3 affichées, la 4e cachée, « +2 autres » au pied, le titre de la partie dit 5 ; le curseur va de
+    1 à 16, écrit la base et recalcule le tableau, rien si la valeur arrondie ne change pas ; sans le
+    gabarit du jeu, pas de curseur (`test_serialbuffer_rows.lua`).
+41. [humain] (D51) Sur le paladin du banc, en ville avec au moins 4 joueurs à buffer : Options >
+    AddOns > Serial Buffer, le curseur « Lignes du tableau, au plus » est à droite de « Groupe seul »,
+    sur 16, sans chevauchement. Le passer à 3 : le tableau n'a plus que 3 lignes, et son pied dit
+    « +N autres ». Un clic sur la 1re ligne buffe, la suivante remonte. `/reload` : le curseur et le
+    tableau restent à 3. La page des options défile si elle dépasse (barre à droite) et le curseur
+    reste atteignable. Le remettre à 16 : la liste entière revient. Aucune erreur Lua. Témoin
+    connu-bon : la case « Groupe seul » de la même page, qui change le tableau de la même façon.
 
 ## Contrat
 
@@ -813,7 +838,7 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
   `off`, `priority` et `classBuffs`, migrés par `schemaVer` 3), la ligne « Groupe / raid »
   (`groupPick`, classe du lanceur → classe de la cible → id ; D35), les refus « trop bas » appris
   (`tooLow`, rang de sort → niveau ; D38), l'option PvP, la case « Groupe seul » (`groupOnly` ; D40),
-  la réponse à la
+  les lignes du tableau au plus (`maxRows` ; D51), la réponse à la
   proposition des plaques et la position du tableau (son coin haut gauche). Pour le diagnostic, `seenErrors` : le
   nom et le texte des erreurs du jeu vues juste après un de nos clics. **Aucun nom de joueur, aucun
   GUID** : un secret sauvegardé empoisonne la base. Le refus « trop bas » (D24) vit en mémoire de

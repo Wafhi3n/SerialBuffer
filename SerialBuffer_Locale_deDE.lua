@@ -130,5 +130,7 @@ local T = {
     ["Tableau caché. /sbuff, ou la case « Afficher le tableau » des options, le réaffiche."] = "Tabelle verborgen. /sbuff oder das Kästchen „Tabelle anzeigen“ in den Optionen zeigt sie wieder an.",
     -- Chat sobre (2026-10-11) : une commande à deux états tapée seule dit l'état et le mot qui le change
     ["(/sbuff %s %s pour changer)"] = "(/sbuff %s %s zum Ändern)",
+    -- D51 : lignes du tableau au plus (2026-10-14)
+    ["Lignes du tableau, au plus"] = "Max. Zeilen in der Tabelle",
 }
 for k, v in pairs(T) do NS.L[k] = v end

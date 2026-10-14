@@ -337,14 +337,25 @@ local function sectionTitle(section, kind)
     return L["Hors de portée"]
 end
 
--- Le message du pied : l'état, le reste de la liste, les illisibles (D31), sinon pourquoi la liste est
--- vide (spec, « Liste vide »). Une ligne par message.
-local function footer(rows, info)
+-- D51 : les lignes affichées au plus, réglées dans les options (un joueur qui range le tableau dans un
+-- coin le voyait déborder en ville). Les MAX_ROWS boutons sécurisés existent toujours (Build) : la
+-- limite n'en montre que les premiers. Absente ou hors bornes : ramenée entre 1 et MAX_ROWS.
+UI.MAX_ROWS = MAX_ROWS
+
+function UI.Limit(db)
+    local n = tonumber(db and db.maxRows)
+    if not n then return MAX_ROWS end
+    return math.max(1, math.min(MAX_ROWS, math.floor(n)))
+end
+
+-- Le message du pied : l'état, le reste de la liste (au-delà de la limite, D51), les illisibles (D31),
+-- sinon pourquoi la liste est vide (spec, « Liste vide »). Une ligne par message.
+function UI.Footer(rows, info, limit)
     local lines = {}
     local m = stateMessage(info.state)
     if m then lines[#lines + 1] = m end
     if info.state ~= "nobuffs" then
-        if #rows > MAX_ROWS then lines[#lines + 1] = string.format(L["+%d autres"], #rows - MAX_ROWS) end
+        if #rows > limit then lines[#lines + 1] = string.format(L["+%d autres"], #rows - limit) end
         local unread = info.unread or 0
         if unread > 0 then
             lines[#lines + 1] = string.format(L["%d illisible(s) : le jeu cache leur nom ou leurs buffs."], unread)
@@ -360,12 +371,13 @@ end
 
 -- Place les titres de partie (groupé seulement, D30) et les lignes ; rend le y libre sous la dernière.
 -- Une ligne n'est replacée que si sa place change (attribut sécurisé ou pas, hors combat : Render).
-function UI:Layout(rows, kind)
+-- Au-delà de la limite (D51), la ligne se cache ; le titre de sa partie garde le compte entier.
+function UI:Layout(rows, kind, limit)
     local counts = {}
     for _, r in ipairs(rows) do counts[r.section] = (counts[r.section] or 0) + 1 end
     local y, used, last = PAD + TOP + (self.topExtra or 0), 0, nil
     for i = 1, MAX_ROWS do
-        local row, r = self.rows[i], rows[i]
+        local row, r = self.rows[i], (i <= limit) and rows[i] or nil
         if r then
             if kind and r.section ~= last then
                 used, last = used + 1, r.section
@@ -398,11 +410,12 @@ function UI:Render(rows, info)
     if not self.panel.anchored then anchorTop(self.panel) end
     local nextRow = NS.Cast.NextRow(rows)
     setMacro(self.next, nextRow and NS.Cast.MacroFor(nextRow), nextRow)
-    local y = self:Layout(rows, info.group)
+    local limit = UI.Limit(NS.db)
+    local y = self:Layout(rows, info.group, limit)
     self.panel.count:SetText(string.format(L["%d à buffer"], #rows))
     NS.Header:Refresh()   -- après le compteur : la place de la touche dépend de sa largeur
     if NS.Tank then NS.Tank:RefreshLine() end
-    local msg = footer(rows, info)
+    local msg = UI.Footer(rows, info, limit)
     self.panel.msg:ClearAllPoints()
     self.panel.msg:SetPoint("TOPLEFT", PAD, -(y + 2))
     self.panel.msg:SetText(msg or "")

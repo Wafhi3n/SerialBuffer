@@ -27,6 +27,7 @@ NS.DEFAULTS = {
     refreshShort = 2,       -- D45 : pareil pour un buff court (15 min ou moins : Épines, 10 min)
     tankAll = false,        -- D44 : coché, Épines (buff réservé aux tanks) va à tous ceux qui ne l'ont pas
     shortAll = {},          -- D47 : buff court coché « à tous » (id -> true) ; absent : toi et ton groupe
+    maxRows = 16,           -- D51 : lignes du tableau au plus (1 à 16) ; le reste se compte au pied
 }
 
 local function CopyDefaults(dst, src)
