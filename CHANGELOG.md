@@ -1,5 +1,27 @@
 # Changelog - Serial Buffer
 
+## v0.8.0 - 2026-10-16
+
+Salvation got reworked on Forever, and Serial Buffer follows.
+
+- Salvation is now a one-hour buff that stacks with your other blessings, and Revoke takes it off
+  again. You want it on everyone but the tanks. So Salvation left the blessing grid (it would have
+  replaced Kings on a player) and gets its own lines instead.
+- When your group or raid has a tank (the Tank role set in the game, or your raid's main tank), a
+  Salvation icon shows next to the counter. Your group's part of the panel then ends with one line
+  per member missing Salvation, tanks left out. Click a line to cast it.
+- With Mass Salvation (level 60) and Symbols of Kings in your bags, a class with two or more
+  non-tanks gets one line instead ("Mage (3)"): one cast covers every mage in the raid. A class
+  with a single non-tank still gets plain Salvation, which costs a lot less.
+- A tank wearing Salvation, yours or another paladin's, gets a Revoke line at the very bottom.
+- Click the Salvation icon to turn these lines off (it greys out). The choice is saved.
+- When the game hides buffs (combat, battlegrounds) there are no Salvation lines at all, and the
+  "Next buff" key leaves them alone in combat so you don't burn a Symbol of Kings mid-fight.
+- A player who's too low for Salvation drops off its list, like with blessings.
+- Not tested in game yet: Mass Salvation and the per-class lines (we only had a level 30 paladin),
+  and Revoke on anyone but yourself. If something's off, the bug button in the panel files
+  a ticket.
+
 ## v0.7.0 - 2026-10-16
 
 The "Next buff" key now works in combat.

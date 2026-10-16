@@ -44,6 +44,11 @@ What it offers depends on your class:
   another paladin already gave that player the same blessing with more than half an hour left,
   you're offered the next one. You can also set a single blessing per class for your own group or
   raid.
+- Salvation isn't a blessing on Forever anymore (it stacks with Kings), so it has lines of its own.
+  When your group has a tank, a Salvation icon shows next to the counter, and your group gets a line
+  for each member missing it, tanks left out. Once you have Mass Salvation and Symbols of Kings,
+  it's one line per class instead. Tanks wearing Salvation get a Revoke line. Click the icon to turn
+  all of that off.
 - Mana buffs (Wisdom, Arcane Intellect, Divine Spirit) skip warriors and rogues.
 
 For a paladin, the gear icon on the panel opens the options: a grid with one column per class, where
