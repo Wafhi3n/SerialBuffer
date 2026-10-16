@@ -1,6 +1,8 @@
 # Serial Buffer : la touche « buff suivant » en combat
 
-> État : **codée sur `feat/sb-touche-combat` (2026-10-16), pas vue en jeu**, idée du user le
+> État : **codée sur `feat/sb-touche-combat`, vue GO en champ de bataille le 2026-10-16** (registre,
+> relevé de 20:20 : un allié différent à chaque appui, aucun ne revient après le combat ; T-H1
+> prouvé). Pas vu : le bout de liste. Idée du user le
 > 2026-10-16 au sortir de son premier champ de bataille (« est-il possible d'activer le raccourci
 > pour buffer les gens en combat en mode aveugle pendant le BG ? » puis « de toute façon on va devoir
 > tester des trucs pour le rendre confortable en BG » ; il préfère tester en champ de bataille
