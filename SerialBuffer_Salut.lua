@@ -19,7 +19,7 @@ local S = {}
 NS.Salut = S
 
 S.SALVATION, S.MASS, S.REVOKE = 1038, 25895, 1325499
-S.SYMBOL = 21177    -- Symbol of Kings, composant de Mass Salvation (id de l'Era, à confirmer en jeu)
+S.SYMBOL = 21177    -- Symbol of Kings, composant de Mass Salvation (lu en jeu par le user le 2026-10-16)
 S.REFRESH = 600     -- s : sous 10 min, reproposé, comme une bénédiction (D11)
 
 -- Les sorts que le personnage connaît (id, nom, icône), et les noms des DEUX auras : celle de Mass
@@ -119,7 +119,13 @@ function S.Build(snaps, probe, opts)
     if sp.revoke then
         for _, snap in ipairs(tanks) do out[#out + 1] = row(snap, sp.revoke, snap.guid .. "#revoke", probe) end
     end
-    return out
+    if not opts.blocked then return out end
+    -- D24 / D26 : un refus du jeu (trop bas, plus puissant actif) écarte la ligne, sous sa clé.
+    local kept = {}
+    for _, r in ipairs(out) do
+        if not opts.blocked(r.guid, r.level, r.buff.name) then kept[#kept + 1] = r end
+    end
+    return kept
 end
 
 -- Les lignes de Salut à la fin de la partie du groupe (S-Q8), celles hors de portée tout en bas.
@@ -151,7 +157,8 @@ function S:Rows(snaps, probe)
         and S.HasTank(snaps)
     if not self.active or NS.db.salutOff then return {} end
     return S.Build(snaps, probe, { spells = self.spells, names = self.names,
-                                   symbols = NS.Buffs.client.count(S.SYMBOL), className = className })
+                                   symbols = NS.Buffs.client.count(S.SYMBOL), className = className,
+                                   blocked = function(k, lvl, name) return NS.Queue:IsBlocked(k, lvl, name) end })
 end
 
 function S:SetOn(on)

@@ -83,6 +83,12 @@ local function isBlocked(snap, buffName)
     return true
 end
 
+-- Les lignes de Salut (SerialBuffer_Salut.lua) suivent la même règle sous leur propre clé : un
+-- « trop bas » ou un « plus puissant actif » les écarte comme une bénédiction (D24, D26).
+function Q:IsBlocked(key, level, buffName)
+    return isBlocked({ guid = key, level = level }, buffName)
+end
+
 local function needs(left, below)
     return left == "absent" or (type(left) == "number" and left < (below or Q.REFRESH_BELOW))
 end
