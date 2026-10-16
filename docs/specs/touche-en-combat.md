@@ -32,6 +32,10 @@ toi. Hors combat, rien ne change.
 - En mode à l'aveugle, le sort réussi compte comme un clic réussi (D52, `Queue.cast`) : l'allié ne
   revient pas dans la liste à la sortie du combat, sauf s'il meurt entre-temps.
 - Les lignes d'inconnus, éteintes en combat (D36), sont sautées.
+- **Une ligne grisée « buffé » reste cliquable en combat**, et un clic relance le buff (D36 tel quel).
+  Le user, 2026-10-16, après l'avoir vu au premier essai puis vu le cache codé pour l'empêcher
+  (`97ca141`, annulé par `c7c4884`) : « laisse le truc normal, le fait qu'on rebuff une cible peut
+  être bien au cas où elle meurt et revient en combat ». Ne pas remettre de cache sur la ligne.
 
 ## Ce qu'on ne fait pas
 
