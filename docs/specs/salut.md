@@ -127,7 +127,10 @@ Proposées, pas posées au user (retenues tant qu'il ne dit pas autre chose) :
   s'il porte l'une OU l'autre. Type Magic : un ennemi peut la purger, la ligne revient alors.
   L'aura de Salvation seule s'appelle bien **« Salvation »** (vu par le user le même jour).
 
-## Critères d'acceptation (à préciser après les mesures et S-Q1 à S-Q8)
+## Critères d'acceptation
+
+0. [test] S-Q2 : la grille des bénédictions ne propose plus le Salut (1038), et une base où il était
+   coché dans une colonne ne le lance plus comme bénédiction. → `tests/test_serialbuffer_grid.lua`
 
 1. [test] Les lignes se calculent dans l'ordre : classes (ou membres) sans Salut, tanks exceptés, puis
    les tanks porteurs d'un Salut ; aucune sans tank dans le groupe. → `tests/test_serialbuffer_salut.lua`
