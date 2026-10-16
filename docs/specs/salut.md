@@ -4,7 +4,7 @@
 > l'appui (client anglais) : « le sort Bénédiction de salut a été modifié en jeu, avec en prime un
 > nouveau sort […] crée un bouton pour buffer les groupes un par un pour mettre Salvation sur tout le
 > monde, puis révoquer les tanks pour retirer ce buff ». L'infobulle de Mass Salvation, arrivée
-> ensuite, dit que le sort couvre une **classe** dans tout le raid, pas un groupe : la tournée se fait
+> ensuite, dit que le sort couvre une **classe** dans tout le raid, pas un groupe : les lignes vont
 > classe par classe. Spec mère : `serial-buffer.md` (D22 : Salut dans la grille, décoché par défaut ;
 > D44 : qui est tank).
 
@@ -28,10 +28,9 @@ bénédictions, il ne prend plus leur place.
 Ids relevés en jeu par le user le 2026-10-16 (M1) : **Salvation = 1038**, le même id que la
 Bénédiction de salut que la grille connaît déjà (`Buffs.BLESSINGS.SALVATION`) ; **Mass Salvation =
 25895**, l'id de l'ancienne Grande bénédiction de salut de l'Era. Les deux sorts ont gardé leur id et
-changé de nom et d'effet.
+changé de nom et d'effet. **Revoke = 1325499**, un id neuf de Forever.
 
 Pas encore su :
-- l'id de Revoke (M1, pas rendu) ;
 - si Salvation et Revoke se lancent sur un joueur hors de ton groupe (« party member » laisse penser
   que non, mesure M3).
 
@@ -47,19 +46,26 @@ tank du raid) et sait viser un membre du groupe ou du raid par son jeton.
 
 ## Ce qu'on veut
 
-Un geste « Salut » : un appui = un sort, dans cet ordre.
+**Le Salut passe par le TABLEAU**, comme les bénédictions : des lignes de plus, qu'un clic lance et
+que la touche « buff suivant » descend. Proposition du user le 2026-10-16, sur une capture du
+tableau (« dans la colonne du groupe ou raid, s'il y a un tank, alors l'icône buff Salvation existe ;
+si on a Mass Salvation et des symboles, alors des lignes groupe 1, 2, 3, 4 etc. se mettent si des
+membres ne sont pas salvés (hormis les tanks) ; puis une fois fait, si des tanks sont salvés, on voit
+si un tank peut avoir son buff retiré avec Revoke »). Elle remplace le « geste à part » du premier
+brouillon.
+- **L'icône Salut dans l'en-tête** (à côté du compteur) n'existe qu'en groupe ou en raid, et
+  seulement si le groupe compte au moins un tank (D44).
+- **Les lignes de Salut**, dans la partie du groupe, pour les membres qui n'ont pas de Salut, tanks
+  exceptés :
+  - paladin de niveau 60 avec des Symbol of Kings : **une ligne par CLASSE** (« Guerriers »,
+    « Mages »…), un clic = Mass Salvation sur un membre vivant et à portée de cette classe. Le user
+    disait « groupe 1, 2, 3 » ; l'infobulle dit que Mass Salvation couvre une classe, d'où une ligne
+    par classe (S-Q7) ;
+  - sinon (sous le niveau 60, ou plus de symbole) : **une ligne par membre**, un clic = Salvation.
+- **Puis les lignes Revoke** : une par tank qui porte un Salut (le tien, ou celui d'un autre paladin,
+  ou celui qu'une Mass Salvation vient de lui donner avec sa classe), un clic = Revoke.
 
-**Paladin de niveau 60 avec des Symbol of Kings :**
-1. **Mass Salvation, classe par classe** : l'appui vise un membre vivant et à portée de la prochaine
-   classe présente qui n'est pas couverte ;
-2. **Revoke sur chaque tank** qui porte un Salut (le tien ou celui d'un autre paladin) ;
-3. puis plus rien : la tournée est finie.
-
-**Sans Mass Salvation** (paladin sous le niveau 60, ou plus de Symbol of Kings) : **Salvation un par
-un** sur chaque membre du groupe, **tanks sautés**. Il n'y a alors rien à révoquer, sauf un tank qui
-porte le Salut d'un autre paladin.
-
-Le jeu exige un geste du joueur par sort : un appui ne peut pas tout enchaîner.
+Le jeu exige un geste du joueur par sort : un clic, ou un appui, ne lance qu'un sort.
 
 ## Ce qu'on ne fait pas (proposé)
 
@@ -70,58 +76,65 @@ Le jeu exige un geste du joueur par sort : un appui ne peut pas tout enchaîner.
 
 ## Questions à trancher par le user
 
-- **S-Q1 : où vit le geste ?** (a) Un bouton dans l'en-tête du tableau (icône du Salut), cliqué à la
-  souris ; (b) une deuxième touche dans les raccourcis du jeu, à côté de « buff suivant » ; (c) les
-  deux. Proposition : (c). Le raccourci se règle sur la page Raccourcis du jeu, comme D41.
+- **S-Q1 : l'icône de l'en-tête, c'est un interrupteur ?** Proposition : oui, un clic allume ou
+  éteint les lignes de Salut (retenu d'une séance à l'autre), allumé par défaut ; grisée, elle dit
+  « éteint ». Sans tank dans le groupe, ni icône ni lignes.
+- **S-Q7 : une ligne par classe, pas par groupe** (voir « Ce qu'on veut »). Proposition : oui, puisque
+  Mass Salvation couvre une classe dans tout le raid.
+- **S-Q8 : où vont les lignes de Salut ?** Proposition : à la fin de la partie du groupe, après les
+  bénédictions ; les lignes Revoke tout en dernier.
 - **S-Q2 : le Salut quitte la grille des bénédictions ?** Il n'en est plus une : la grille fait choisir
   UNE bénédiction par joueur et par paladin (D22), elle mettrait le Salut à la place de la Rois.
-  Proposition : il sort de la grille et ne passe plus que par ce geste.
+  Proposition : il sort de la grille et ne passe plus que par ces lignes.
 - **S-Q3 : sans Mass Salvation**, Salvation un par un sur tout le groupe sauf les tanks. Proposition :
   oui.
 - **S-Q4 : une classe qui ne compte qu'un joueur** (ou dont tous les autres sont tanks) : Mass
   Salvation coûte 16 % du mana de base et un Symbol of Kings, Salvation 41 mana. Proposition : Mass
   Salvation à partir de **deux** non-tanks dans la classe ; un seul : Salvation sur lui ; aucun (que
   des tanks) : rien, la classe est sautée.
-- **S-Q5 : un tank qui reçoit le Salut d'un autre paladin** après la tournée : le geste lui propose
-  Revoke tant qu'il le porte, hors combat. Proposition : oui.
+- **S-Q5 : un tank qui reçoit le Salut d'un autre paladin** : sa ligne Revoke apparaît tant qu'il le
+  porte, hors combat. Proposition : oui.
 - **S-Q6 : le Salut sur un tank, c'est toujours une erreur ?** Un tank qui ne tanke pas (dégâts sur un
   boss) en voudrait peut-être. Proposition : on suit le rôle du jeu, sans exception.
 
 ## Cas limites
 
-- **Personne de vivant et à portée dans une classe** : la classe est sautée pour cet appui et revient
-  à la fin de la tournée.
-- **Plus de Symbol of Kings en pleine tournée** : la suite passe en Salvation un par un, tanks sautés.
-- **Le raid change** (quelqu'un arrive, un rôle change) : la tournée se recalcule hors combat à chaque
-  rendu, comme la file.
-- **Un autre paladin fait la même tournée** : une classe déjà couverte (Salut lu sur ses membres) est
-  sautée. La coordination (`coordination.md`) n'annonce pas encore le Salut.
-- **Auras cachées** (champ de bataille, combat, D52) : le geste ne sert pas là. Hors combat en donjon
-  ou en raid, les auras du groupe se lisent (mesuré, D31).
-- **Pas de tank** : la tournée s'arrête après les classes.
+- **Personne de vivant et à portée dans une classe** : sa ligne passe « Hors de portée », comme une
+  ligne de bénédiction (D9).
+- **Plus de Symbol of Kings** : les lignes de classe deviennent des lignes par membre (Salvation),
+  tanks exceptés.
+- **Le raid change** (quelqu'un arrive, un rôle change) : les lignes se recalculent hors combat à
+  chaque rendu, comme la file.
+- **Un autre paladin pose le Salut** : un membre qui le porte déjà n'a pas de ligne ; une classe dont
+  tous les non-tanks l'ont non plus. La coordination (`coordination.md`) n'annonce pas encore le Salut.
+- **Auras cachées** (champ de bataille, combat, D52) : sans lecture, pas de lignes de Salut (on ne
+  sait pas qui l'a). Hors combat en donjon ou en raid, les auras du groupe se lisent (mesuré, D31).
+- **En combat** : les lignes déjà là restent figées et cliquables (D36) ; aucune n'apparaît.
+- **Le dernier tank quitte le groupe** : l'icône et les lignes de Salut s'en vont (S-Q1).
 
 ## Mesures à faire en jeu avant de coder
 
-- **M1, les ids** : Salvation 1038 et Mass Salvation 25895, relevés par le user le 2026-10-16.
-  Reste Revoke : `/run local i=C_Spell.GetSpellInfo("Revoke") print(i and i.spellID or "inconnu")`
-  (« inconnu » si le personnage ne l'a pas appris).
+- **M1, les ids** : Salvation 1038, Mass Salvation 25895 et Revoke 1325499, relevés par le user le
+  2026-10-16.
 - ~~M2, bénédiction ou pas~~ : fait par le user le 2026-10-16, ce n'en est plus une.
 - **M3, hors du groupe** : Salvation et Revoke sur un joueur hors de ton groupe : le jeu refuse-t-il ?
 - **M4, l'aura** : le nom de l'aura que pose Mass Salvation (le même que Salvation ?), pour la lire
   sur les membres et sur les tanks. Demande un paladin de niveau 60.
 
-## Critères d'acceptation (à préciser après les mesures et S-Q1 à S-Q6)
+## Critères d'acceptation (à préciser après les mesures et S-Q1 à S-Q8)
 
-1. [test] La tournée se calcule dans l'ordre : classes non couvertes, puis tanks porteurs d'un Salut,
-   puis rien. → `tests/test_serialbuffer_salut.lua`
+1. [test] Les lignes se calculent dans l'ordre : classes (ou membres) sans Salut, tanks exceptés, puis
+   les tanks porteurs d'un Salut ; aucune sans tank dans le groupe. → `tests/test_serialbuffer_salut.lua`
 2. [test] Sans Mass Salvation, un tank (rôle du jeu ou marque main tank) n'est jamais visé par
    Salvation.
 3. [test] S-Q4 : une classe à un seul non-tank reçoit Salvation, pas Mass Salvation.
-4. [humain] Paladin de niveau 30, en groupe de cinq avec un tank (rôle donné par le jeu) : chaque
-   appui pose Salvation sur un membre de plus, le tank n'en reçoit pas, puis l'appui ne fait plus
-   rien. Témoin connu : les mêmes sorts lancés à la main. Observateur : le user, en jeu.
-5. [humain] Paladin de niveau 60, en raid : chaque appui couvre une classe de plus, puis Revoke retire
-   le Salut des tanks.
+4. [humain] Paladin de niveau 30, en groupe avec un tank (rôle donné par le jeu) : l'icône Salut est
+   dans l'en-tête ; une ligne Salvation par membre sauf le tank ; chaque clic en pose un et la ligne
+   sort ; un Salut posé à la main sur le tank fait apparaître sa ligne Revoke, qui le retire. Sans
+   rôle Tank dans le groupe : ni icône ni lignes. Témoin connu : les mêmes sorts lancés à la main.
+   Observateur : le user, en jeu.
+5. [humain] Paladin de niveau 60, en raid : une ligne par classe, chaque clic couvre une classe, puis
+   les lignes Revoke retirent le Salut des tanks.
 
 ## Contrat
 
