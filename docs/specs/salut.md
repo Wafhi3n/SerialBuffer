@@ -25,9 +25,13 @@ Vu en jeu par le user le 2026-10-16 (dit dans la conversation) : **Salvation n'e
 bénédiction**. Lancée sur un joueur qui a ta Rois, la Rois reste : le Salut s'ajoute aux
 bénédictions, il ne prend plus leur place.
 
+Ids relevés en jeu par le user le 2026-10-16 (M1) : **Salvation = 1038**, le même id que la
+Bénédiction de salut que la grille connaît déjà (`Buffs.BLESSINGS.SALVATION`) ; **Mass Salvation =
+25895**, l'id de l'ancienne Grande bénédiction de salut de l'Era. Les deux sorts ont gardé leur id et
+changé de nom et d'effet.
+
 Pas encore su :
-- les identifiants des trois sorts, et si Salvation est toujours l'id 1038 que la grille connaît
-  (mesure M1) ;
+- l'id de Revoke (M1, pas rendu) ;
 - si Salvation et Revoke se lancent sur un joueur hors de ton groupe (« party member » laisse penser
   que non, mesure M3).
 
@@ -98,9 +102,9 @@ Le jeu exige un geste du joueur par sort : un appui ne peut pas tout enchaîner.
 
 ## Mesures à faire en jeu avant de coder
 
-- **M1, les ids** : `/run for _,n in ipairs({"Salvation","Mass Salvation","Revoke","Blessing of
-  Salvation"}) do local i=C_Spell.GetSpellInfo(n) print(n, i and i.spellID or "inconnu") end`.
-  Un sort inconnu du personnage rend « inconnu » : Mass Salvation demande un paladin de niveau 60.
+- **M1, les ids** : Salvation 1038 et Mass Salvation 25895, relevés par le user le 2026-10-16.
+  Reste Revoke : `/run local i=C_Spell.GetSpellInfo("Revoke") print(i and i.spellID or "inconnu")`
+  (« inconnu » si le personnage ne l'a pas appris).
 - ~~M2, bénédiction ou pas~~ : fait par le user le 2026-10-16, ce n'en est plus une.
 - **M3, hors du groupe** : Salvation et Revoke sur un joueur hors de ton groupe : le jeu refuse-t-il ?
 - **M4, l'aura** : le nom de l'aura que pose Mass Salvation (le même que Salvation ?), pour la lire
