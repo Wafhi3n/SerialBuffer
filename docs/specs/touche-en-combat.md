@@ -32,11 +32,6 @@ toi. Hors combat, rien ne change.
 - En mode à l'aveugle, le sort réussi compte comme un clic réussi (D52, `Queue.cast`) : l'allié ne
   revient pas dans la liste à la sortie du combat, sauf s'il meurt entre-temps.
 - Les lignes d'inconnus, éteintes en combat (D36), sont sautées.
-- **Une ligne grisée « buffé » ne se reclique plus en combat** (le user, 2026-10-16, premier essai :
-  « ça a écrit buffé mais je peux quand même recliquer dessus », et le buff repartait). Le bouton
-  protégé ne se désactive pas en combat ; un cadre non protégé posé dessus, qui prend la souris,
-  s'affiche quand la ligne se grise et avale le clic. Il ne vient qu'après un sort **réussi** : une
-  ligne dont le clic a raté (portée, recharge globale) reste cliquable.
 
 ## Ce qu'on ne fait pas
 

@@ -98,13 +98,6 @@ local function buildRow(panel)
     row.name:SetJustifyH("LEFT")
     row.name:SetWordWrap(false)
     row.noteRGB = { row.note:GetTextColor() }
-    -- Un cache sur la ligne buffée en combat (MarkDone) : le bouton protégé ne se désactive pas en
-    -- combat, mais un cadre NON protégé, posé dessus et qui prend la souris, s'affiche librement et
-    -- avale le clic. Le user, 2026-10-16 : la ligne grisée « buffé » relançait le buff au clic.
-    row.shield = CreateFrame("Frame", nil, row)
-    row.shield:SetAllPoints()
-    row.shield:EnableMouse(true)
-    row.shield:Hide()
     row:Hide()
     return row
 end
@@ -253,7 +246,6 @@ local function fillRow(row, r)
     setMacro(row, NS.Cast.MacroFor(r), r)
     row.combatOK, row.isSelf = NS.Cast.CombatClickable(r), r.self
     row.expiresAt, row.done, row.stale = r.expiresAt, false, false
-    if row.shield then row.shield:Hide() end
     row.icon:SetTexture(r.buff.icon)
     row.icon:SetDesaturated(false)
     row.name:SetText(r.name)
@@ -311,15 +303,12 @@ function UI:FinishDrag()
     anchorTop(p)
 end
 
--- Notre sort sur ce joueur a réussi pendant le combat : sa ligne se grise, sans sortir du tableau,
--- et ne se reclique plus (le cache). Seulement après un sort RÉUSSI : un clic raté (portée, recharge
--- globale) laisse la ligne cliquable, on peut réessayer.
+-- Notre sort sur ce joueur a réussi pendant le combat : sa ligne se grise, sans sortir du tableau.
 function UI:MarkDone(guid)
     for _, row in ipairs(self.rows) do
         if row:IsShown() and row.guid == guid then
             row.done = true                                  -- D39 : plus de décompte
             dim(row, L["buffé"], 0.4, 0.8, 0.4)
-            if row.shield then row.shield:Show() end
         end
     end
 end
