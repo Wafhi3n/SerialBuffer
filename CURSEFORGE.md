@@ -58,7 +58,8 @@ Once you're flagged yourself, in a battleground for instance, they're listed lik
 You'll need friendly player nameplates turned on (Options, Nameplates): that's how the addon sees
 the people around you. In dungeons and raids the game blocks friendly nameplates, so only your
 group is listed there. In combat the panel stays up but freezes: you can still click your group's
-lines to rebuff them, and it refreshes when the fight ends. Each line shows how long its buff has
+lines to rebuff them, and it refreshes when the fight ends. The "Next buff" key keeps working too:
+each press buffs the next player of your group, in the order the list had when the fight started. Each line shows how long its buff has
 left ("8 min"), and that keeps counting down during a fight until it says "expired".
 
 In battlegrounds the game hides buffs from addons. When that happens, the list follows your own

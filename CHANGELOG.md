@@ -1,5 +1,23 @@
 # Changelog - Serial Buffer
 
+## v0.7.0 - 2026-10-16
+
+The "Next buff" key now works in combat.
+
+- Until now the key did nothing once a fight started, and you had to click lines with the mouse.
+  Now each press buffs the next player in the list as it stood when the fight began: you, then your
+  group or raid. Strangers are skipped (their lines already go dark in combat), and so are the dead.
+  Once it reaches the end of the list, the key stops casting until the fight is over.
+- In combat the game doesn't let an addon know whether a buff landed, so every press moves on to the
+  next player. Press too early, during the global cooldown, and that player is skipped. They're back
+  on the list after the fight. A press on a player who's out of range casts nothing: press again and
+  the key goes to the next one.
+- Someone you buff with the key gets the same treatment as a clicked line: their line greys out, and
+  in a battleground they stay off the list after the fight unless they die. Tested in a battleground,
+  where every press went to a different ally.
+- You can still click a greyed line in combat to cast the buff again, handy when someone dies and
+  gets back up mid-fight.
+
 ## v0.6.0 - 2026-10-14
 
 Serial Buffer should now behave in battlegrounds, and you can cap how tall the panel gets.
