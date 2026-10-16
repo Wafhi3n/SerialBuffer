@@ -1,6 +1,7 @@
 # Serial Buffer : le Salut de Forever, classe par classe, puis Révoquer sur les tanks
 
-> État : **approuvée le 2026-10-16** (S-Q1, S-Q2, S-Q4, S-Q7 tranchées par le user ; S-Q3, S-Q5,
+> État : **codée sur `feat/sb-salut`, vue GO au banc le 2026-10-16 pour un paladin de niveau 30** (registre,
+> relevé de 20:51 ; Mass Salvation et les lignes par classe jamais vues). Approuvée le 2026-10-16 (S-Q1, S-Q2, S-Q4, S-Q7 tranchées par le user ; S-Q3, S-Q5,
 > S-Q6, S-Q8 retenues sur proposition), **aucune ligne de code**, toutes les mesures faites.
 > Idée du user le 2026-10-16, trois infobulles du jeu à
 > l'appui (client anglais) : « le sort Bénédiction de salut a été modifié en jeu, avec en prime un
@@ -110,7 +111,10 @@ Prises au codage, le 2026-10-16 (`feat/sb-salut`), sans question au user :
 - **Chaque ligne a sa propre clé** (`guid#salut`, `guid#revoke`, `salut:CLASSE`) : un joueur peut avoir
   une ligne de bénédiction et une de Salut, et griser l'une (MarkDone) ne doit pas griser l'autre.
 - **Nombre de Symbol of Kings illisible : on garde Mass Salvation** ; zéro : Salvation un par un.
-  L'id 21177 (Symbol of Kings) vient de l'Era, à confirmer en jeu.
+  L'id 21177 est bien « Symbol of Kings » (lu en jeu par le user le 2026-10-16).
+- **Un refus du jeu écarte la ligne de Salut** comme une bénédiction (D24 « trop bas » jusqu'au
+  niveau suivant, D26 « plus puissant actif » 20 min), sous la clé de la ligne. Au banc, Gnomi était
+  trop bas pour Salvation.
 - **Les lignes par joueur sont rangées par classe**, dans l'ordre où les classes apparaissent dans le
   groupe ; un Salut sous 10 minutes est reproposé, comme une bénédiction (D11).
 - Pas vu en jeu et pas visible par le user au niveau 30 : Mass Salvation, les lignes de classe, et
