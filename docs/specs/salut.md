@@ -101,6 +101,21 @@ Proposées, pas posées au user (retenues tant qu'il ne dit pas autre chose) :
 - **S-Q8 : les lignes de Salut à la fin de la partie du groupe**, après les bénédictions ; les lignes
   Revoke tout en dernier.
 
+Prises au codage, le 2026-10-16 (`feat/sb-salut`), sans question au user :
+- **La touche « buff suivant » en combat ne prend pas les lignes de Salut** (touche-en-combat.md) :
+  un appui en pleine bagarre dépenserait une Mass Salvation et son Symbol of Kings. Hors combat, elle
+  les descend comme les autres ; en combat, un clic de souris sur elles marche toujours (D36).
+- **Une aura illisible ou cachée sur un membre : aucune ligne de Salut.** Le mode à l'aveugle (D52)
+  dirait que tout le monde en manque et le proposerait à tout le groupe.
+- **Chaque ligne a sa propre clé** (`guid#salut`, `guid#revoke`, `salut:CLASSE`) : un joueur peut avoir
+  une ligne de bénédiction et une de Salut, et griser l'une (MarkDone) ne doit pas griser l'autre.
+- **Nombre de Symbol of Kings illisible : on garde Mass Salvation** ; zéro : Salvation un par un.
+  L'id 21177 (Symbol of Kings) vient de l'Era, à confirmer en jeu.
+- **Les lignes par joueur sont rangées par classe**, dans l'ordre où les classes apparaissent dans le
+  groupe ; un Salut sous 10 minutes est reproposé, comme une bénédiction (D11).
+- Pas vu en jeu et pas visible par le user au niveau 30 : Mass Salvation, les lignes de classe, et
+  si Mass Salvation touche un membre de la classe **hors de portée** (on ne le suppose pas).
+
 ## Cas limites
 
 - **Personne de vivant et à portée dans une classe** : sa ligne passe « Hors de portée », comme une

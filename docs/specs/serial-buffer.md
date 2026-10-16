@@ -368,7 +368,9 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   2026-10-05 : « pouvoir choisir quel buff on met sur quelle classe »). Une ligne par buff, une
   colonne par classe de la cible ; une case cochée = ce buff se pose sur cette classe.
   - **Paladin** : les six bénédictions (Rois, Sagesse, Puissance, Salut, Lumière, Sanctuaire ; choix
-    du user le 2026-10-05). Salut, Lumière et Sanctuaire sont **décochées partout par défaut**
+    du user le 2026-10-05). *Depuis le 2026-10-16, cinq : le Salut n'est plus une bénédiction sur
+    Forever et quitte la grille pour ses propres lignes (`salut.md`, S-Q2).* Salut, Lumière et
+    Sanctuaire sont **décochées partout par défaut**
     (proposé par l'agent dans la question, retenu). Chaque cible reçoit la première bénédiction de
     la priorité (D22) qui est connue, cochée pour sa classe, et qu'elle peut recevoir (D23, D24,
     D27). « Une bénédiction par classe » s'obtient en ne cochant qu'elle dans la colonne. L'ordre se

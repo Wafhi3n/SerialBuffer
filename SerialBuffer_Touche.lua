@@ -45,11 +45,13 @@ return false
 
 -- La liste figée : dans l'ordre de la file, les lignes qui lancent encore en combat (D36 : toi, et
 -- ton groupe par son jeton), avec leur macro. Hors de portée compris (D9 ne vaut que hors combat) :
--- en combat tout le monde bouge, et un sort hors de portée ne part pas, on réappuie.
+-- en combat tout le monde bouge, et un sort hors de portée ne part pas, on réappuie. Pas les lignes
+-- de Salut (salut.md) : un appui en pleine bagarre dépenserait une Mass Salvation et son symbole ;
+-- un clic de souris sur elles marche toujours (D36).
 function T.List(rows)
     local list = {}
     for _, row in ipairs(rows or {}) do
-        local macro = NS.Cast.CombatClickable(row) and NS.Cast.MacroFor(row)
+        local macro = not row.salut and NS.Cast.CombatClickable(row) and NS.Cast.MacroFor(row)
         if macro then
             list[#list + 1] = { unit = row.self and "player" or row.unit, macro = macro, guid = row.guid,
                                 buff = row.buff.name, level = row.level }

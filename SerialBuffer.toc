@@ -32,6 +32,7 @@ SerialBuffer_Touche.lua
 SerialBuffer_UI.lua
 SerialBuffer_Header.lua
 SerialBuffer_Tank.lua
+SerialBuffer_Salut.lua
 SerialBuffer_Grid.lua
 SerialBuffer_Options.lua
 SerialBuffer_Share.lua

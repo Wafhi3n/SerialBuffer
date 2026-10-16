@@ -23,6 +23,7 @@ function R:ResolveBuffs()
     local _, class = UnitClass("player")
     if not NS.Buffs:HasCatalog(class) then self.noBuffs = true return end
     local n = NS.Buffs:Resolve(class)
+    NS.Salut:Resolve()   -- salut.md : Salvation, Mass Salvation, Revoke ont leurs propres lignes
     self.noBuffs = (n == 0)
     if n == 0 and not self.warned and not NS.Buffs:AnyNamed(class) then
         self.warned = true
@@ -50,12 +51,14 @@ function R:Refresh()
     local state = NS.Units:State()
     if state ~= "instance" and NS.db.groupOnly then state = "grouponly" end
     local withPlates = state ~= "instance" and state ~= "grouponly"
-    local rows, around, unread = NS.Queue:Build(NS.Units:Collect(withPlates), wantedFor,
+    local snaps = NS.Units:Collect(withPlates)
+    local rows, around, unread = NS.Queue:Build(snaps, wantedFor,
         NS.Units.probe, { showPvP = NS.db.showPvP, now = GetTime(), refreshBelow = (NS.db.refreshMin or 45) * 60,
                           refreshShort = (NS.db.refreshShort or 2) * 60, tankAll = NS.db.tankAll,   -- D45, D44
                           shortAll = NS.db.shortAll, tooLow = NS.db.tooLow,                        -- D47
                           unstocked = NS.Buffs:Unstocked(), durations = NS.db.auraDur })           -- D48, D52
-    NS.UI:Render(rows, { state = state, around = around, unread = unread, group = NS.Units:GroupKind(),
+    rows = NS.Salut.Merge(rows, NS.Salut:Rows(snaps, NS.Units.probe))                              -- salut.md
+    NS.UI:Render(rows,{ state = state, around = around, unread = unread, group = NS.Units:GroupKind(),
                          blind = NS.Units:AurasHidden() })                                         -- D52
 end
 

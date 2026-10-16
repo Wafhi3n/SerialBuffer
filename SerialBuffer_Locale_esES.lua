@@ -138,5 +138,8 @@ local T = {
     ["(/sbuff %s %s pour changer)"] = "(/sbuff %s %s para cambiarlo)",
     -- D51 : lignes du tableau au plus (2026-10-14)
     ["Lignes du tableau, au plus"] = "Filas de la tabla, como máximo",
+    -- salut.md : l'icône du Salut dans l'en-tête (2026-10-16)
+    ["Allumé : des lignes pour poser ce buff à ton groupe (sauf les tanks), puis pour le retirer aux tanks qui l'ont. Clic : éteindre."] = "Activado: líneas para lanzar este beneficio a tu grupo (salvo los tanques) y luego para quitárselo a los tanques que lo tengan. Clic: desactivar.",
+    ["Éteint : pas de lignes pour ce buff. Clic : allumer."] = "Desactivado: sin líneas para este beneficio. Clic: activar.",
 }
 for k, v in pairs(T) do NS.L[k] = v end
