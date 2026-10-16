@@ -194,7 +194,8 @@ est celle du build 70205, lue le 2026-10-04.
   - les lignes du groupe (et la tienne) restent cliquables, par le jeton de groupe, sans toucher à
     ta cible ; celles des inconnus s'éteignent et ne lancent rien ;
   - une ligne buffée en combat se grise, et ne sort du tableau qu'à la fin du combat ;
-  - la touche « buff suivant » ne fait rien en combat ;
+  - la touche « buff suivant » descend la liste figée au début du combat, une ligne par appui
+    (`touche-en-combat.md`, 2026-10-16 ; avant, elle ne faisait rien en combat) ;
   - si le groupe change pendant le combat, les lignes du groupe affichent « groupe changé » : un
     clic peut alors toucher un autre membre (exception de D36).
 

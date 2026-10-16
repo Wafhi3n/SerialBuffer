@@ -187,13 +187,13 @@ function UI:Build()
     panel:SetShown(NS.db.shown)
 end
 
--- La touche « buff suivant ». Caché : seul son raccourci le clique. En combat, le pilote d'attribut
--- lui retire son type, et la touche ne fait rien (D36 : elle viserait toujours le même joueur).
+-- La touche « buff suivant ». Caché : seul son raccourci le clique. En combat, elle descend la
+-- liste figée au début du combat (SerialBuffer_Touche.lua, spec touche-en-combat.md).
 function UI:BuildNext()
     local b = secureMacroButton(NS.Cast.NEXT_BUTTON, UIParent)
     b:Hide()
-    b.nextKey = true   -- en combat, son clic ne lance rien : Cast:NoteClick ne le note pas
-    RegisterAttributeDriver(b, "type", "[combat] nil; macro")
+    b.nextKey = true   -- en combat, Cast:NoteClick ne la note pas : Touche.OnPostClick le fait
+    NS.Touche:Build(b)
     self.next = b
 end
 
@@ -212,6 +212,7 @@ function UI:SetVisible(on)
     self.panel:SetShown(NS.db.shown)
     if not NS.db.shown then
         setMacro(self.next, nil, nil)
+        NS.Touche:Load(self.next, nil)
         NS:Print(L["Tableau caché. /sbuff, ou la case « Afficher le tableau » des options, le réaffiche."])
     end
     -- La case des options suit /sbuff ; hors combat seulement (cf. Header:SetGroupOnly).
@@ -412,6 +413,7 @@ function UI:Render(rows, info)
     if not self.panel.anchored then anchorTop(self.panel) end
     local nextRow = NS.Cast.NextRow(rows)
     setMacro(self.next, nextRow and NS.Cast.MacroFor(nextRow), nextRow)
+    NS.Touche:Load(self.next, rows)   -- la liste que la touche descendra en combat
     local limit = UI.Limit(NS.db)
     local y = self:Layout(rows, info.group, limit)
     self.panel.count:SetText(string.format(L["%d à buffer"], #rows))
