@@ -1,6 +1,8 @@
 # Serial Buffer : le Salut de Forever, classe par classe, puis Révoquer sur les tanks
 
-> État : **brouillon, aucune ligne de code**. Idée du user le 2026-10-16, trois infobulles du jeu à
+> État : **approuvée le 2026-10-16** (S-Q1, S-Q2, S-Q4, S-Q7 tranchées par le user ; S-Q3, S-Q5,
+> S-Q6, S-Q8 retenues sur proposition), **aucune ligne de code** ; reste la mesure M3 (hors
+> groupe), qui ne bloque pas. Idée du user le 2026-10-16, trois infobulles du jeu à
 > l'appui (client anglais) : « le sort Bénédiction de salut a été modifié en jeu, avec en prime un
 > nouveau sort […] crée un bouton pour buffer les groupes un par un pour mettre Salvation sur tout le
 > monde, puis révoquer les tanks pour retirer ce buff ». L'infobulle de Mass Salvation, arrivée
@@ -74,28 +76,29 @@ Le jeu exige un geste du joueur par sort : un clic, ou un appui, ne lance qu'un 
 - **Désigner les tanks dans l'addon.** C'est le rôle du jeu ou la marque main tank (D44).
 - **Retirer le Salut d'un joueur qui n'est pas tank.**
 
-## Questions à trancher par le user
+## Décisions
 
-- **S-Q1 : l'icône de l'en-tête, c'est un interrupteur ?** Proposition : oui, un clic allume ou
-  éteint les lignes de Salut (retenu d'une séance à l'autre), allumé par défaut ; grisée, elle dit
-  « éteint ». Sans tank dans le groupe, ni icône ni lignes.
-- **S-Q7 : une ligne par classe, pas par groupe** (voir « Ce qu'on veut »). Proposition : oui, puisque
-  Mass Salvation couvre une classe dans tout le raid.
-- **S-Q8 : où vont les lignes de Salut ?** Proposition : à la fin de la partie du groupe, après les
-  bénédictions ; les lignes Revoke tout en dernier.
-- **S-Q2 : le Salut quitte la grille des bénédictions ?** Il n'en est plus une : la grille fait choisir
-  UNE bénédiction par joueur et par paladin (D22), elle mettrait le Salut à la place de la Rois.
-  Proposition : il sort de la grille et ne passe plus que par ces lignes.
-- **S-Q3 : sans Mass Salvation**, Salvation un par un sur tout le groupe sauf les tanks. Proposition :
-  oui.
-- **S-Q4 : une classe qui ne compte qu'un joueur** (ou dont tous les autres sont tanks) : Mass
-  Salvation coûte 16 % du mana de base et un Symbol of Kings, Salvation 41 mana. Proposition : Mass
-  Salvation à partir de **deux** non-tanks dans la classe ; un seul : Salvation sur lui ; aucun (que
-  des tanks) : rien, la classe est sautée.
+Tranchées par le user le 2026-10-16 (questions à choix, réponses à la proposition) :
+- **S-Q7 : une ligne par CLASSE**, pas par groupe : Mass Salvation couvre une classe dans tout le
+  raid.
+- **S-Q1 : l'icône de l'en-tête est un interrupteur**, **allumé par défaut** : un clic allume ou
+  éteint les lignes de Salut, retenu d'une séance à l'autre ; grisée, elle dit « éteint ». Sans tank
+  dans le groupe, ni icône ni lignes.
+- **S-Q2 : le Salut sort de la grille des bénédictions.** Il n'en est plus une : la grille fait choisir
+  UNE bénédiction par joueur et par paladin (D22), elle le mettrait à la place de la Rois. Il ne passe
+  plus que par ces lignes.
+- **S-Q4 : une classe à un seul non-tank reçoit Salvation**, pas Mass Salvation (41 mana contre 16 %
+  du mana de base et un Symbol of Kings). Mass Salvation à partir de **deux** non-tanks dans la
+  classe ; aucun (que des tanks) : pas de ligne pour la classe.
+
+Proposées, pas posées au user (retenues tant qu'il ne dit pas autre chose) :
+- **S-Q3 : sans Mass Salvation**, Salvation un par un sur tout le groupe sauf les tanks.
 - **S-Q5 : un tank qui reçoit le Salut d'un autre paladin** : sa ligne Revoke apparaît tant qu'il le
-  porte, hors combat. Proposition : oui.
-- **S-Q6 : le Salut sur un tank, c'est toujours une erreur ?** Un tank qui ne tanke pas (dégâts sur un
-  boss) en voudrait peut-être. Proposition : on suit le rôle du jeu, sans exception.
+  porte, hors combat.
+- **S-Q6 : on suit le rôle du jeu, sans exception** : un tank qui fait des dégâts sur un boss n'aura
+  pas de Salut par l'addon.
+- **S-Q8 : les lignes de Salut à la fin de la partie du groupe**, après les bénédictions ; les lignes
+  Revoke tout en dernier.
 
 ## Cas limites
 
