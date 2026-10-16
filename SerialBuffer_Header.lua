@@ -72,6 +72,7 @@ function H:Room()
         + offsetX(cb.label) + cb.label:GetStringWidth()
     local right = p.count:GetStringWidth() - offsetX(p.count) + p.gear:GetWidth() - offsetX(p.gear)
     if p.report then right = right + p.report:GetWidth() - offsetX(p.report) end
+    if self.salut and self.salut:IsShown() then right = right + self.salut:GetWidth() + GAP end
     return p:GetWidth() - left - right - 2 * GAP
 end
 
@@ -146,6 +147,40 @@ local function keyButton(panel)
     return b
 end
 
+-- salut.md (S-Q1) : l'icône du Salut, à gauche du compteur, seulement quand il a des lignes à proposer
+-- (paladin qui connaît Salvation, en groupe avec un tank : Salut.active, posé au rendu). Un clic
+-- l'allume ou l'éteint (db.salutOff, allumé par défaut) ; éteinte, elle est grisée.
+local function salutButton(panel)
+    local b = CreateFrame("Button", nil, panel)
+    b:SetSize(14, 14)
+    b:SetPoint("RIGHT", panel.count, "LEFT", -GAP, 0)
+    b.icon = b:CreateTexture(nil, "ARTWORK")
+    b.icon:SetAllPoints()
+    b:SetScript("OnClick", function() NS.Salut:SetOn(NS.db.salutOff == true) end)
+    b:SetScript("OnEnter", function(self)
+        local sp = NS.Salut.spells and NS.Salut.spells.salv
+        tooltip(self, sp and sp.name or "", NS.db.salutOff and L["Éteint : pas de lignes pour ce buff. Clic : allumer."]
+            or L["Allumé : des lignes pour poser ce buff à ton groupe (sauf les tanks), puis pour le retirer aux tanks qui l'ont. Clic : éteindre."])
+    end)
+    b:SetScript("OnLeave", hideTooltip)
+    b:Hide()
+    return b
+end
+
+-- L'icône du Salut (montrée ou non, grisée ou non) et l'ancre de la touche, qui se range à sa gauche.
+local function refreshSalut(self)
+    local s, sp = self.salut, NS.Salut.spells and NS.Salut.spells.salv
+    if not s then return end
+    local show = (NS.Salut.active and sp) and true or false
+    if show then
+        s.icon:SetTexture(sp.icon)
+        s.icon:SetDesaturated(NS.db.salutOff == true)
+    end
+    s:SetShown(show)
+    self.key:ClearAllPoints()
+    self.key:SetPoint("RIGHT", show and s or self.panel.count, "LEFT", -GAP, 0)
+end
+
 -- La coche et la touche, relues de la base et du client : à chaque rendu (hors combat, APRÈS le
 -- compteur, dont la largeur compte), sur UPDATE_BINDINGS et après une bascule. Trop large pour sa
 -- place, la touche perd ses crochets (« s-WU »), puis elle est coupée ; l'infobulle la donne entière.
@@ -159,6 +194,7 @@ function H:Refresh()
     if self.check then self.check:SetChecked(NS.db.groupOnly and true or false) end
     local b = self.key
     if not b then return end
+    refreshSalut(self)
     local key = rawKey()
     local short, room = key and H.ShortKey(key), self:Room()
     local w = fit(b, short and ("[" .. short .. "]") or L["touche ?"])
@@ -175,6 +211,7 @@ end
 function H:Build(panel)
     self.panel = panel
     self.check = groupCheck(panel)
+    self.salut = salutButton(panel)
     self.key = keyButton(panel)
     local f = CreateFrame("Frame")
     f:RegisterEvent("UPDATE_BINDINGS")
