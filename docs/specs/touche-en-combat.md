@@ -1,11 +1,13 @@
 # Serial Buffer : la touche « buff suivant » en combat
 
-> État : **brouillon, rien de tranché**, idée du user le 2026-10-16 au sortir de son premier champ
-> de bataille (« est-il possible d'activer le raccourci pour buffer les gens en combat en mode
-> aveugle pendant le BG ? » puis « de toute façon on va devoir tester des trucs pour le rendre
-> confortable en BG »). Aucune ligne de code. Le mécanisme (T-H1) est à **prouver sur le client
-> d'abord**. Spec mère : `serial-buffer.md`, dont elle assouplit D36 (« la touche « buff suivant »
-> ne fait rien en combat »).
+> État : **codée sur `feat/sb-touche-combat` (2026-10-16), pas vue en jeu**, idée du user le
+> 2026-10-16 au sortir de son premier champ de bataille (« est-il possible d'activer le raccourci
+> pour buffer les gens en combat en mode aveugle pendant le BG ? » puis « de toute façon on va devoir
+> tester des trucs pour le rendre confortable en BG » ; il préfère tester en champ de bataille
+> qu'avec deux comptes en monde ouvert). T-Q2 est tranchée par le jeu ; T-Q1 et T-Q3 sont codées
+> selon les propositions, **à confirmer par le user**. T-H1 se prouve en jeu, au premier appui.
+> Spec mère : `serial-buffer.md`, dont elle assouplit D36 (« la touche « buff suivant » ne fait
+> rien en combat »).
 
 ## Le problème
 
@@ -58,6 +60,19 @@ C'est du savoir **Retail**, jamais mesuré sur Forever. Trois inconnues :
 - **H3** : la touche est liée en `runOnUp` (Bindings.xml) : le bouton reçoit l'appui ET le relâché.
   Le code doit avancer **une fois** par appui, quel que soit `ActionButtonUseKeyDown`.
 
+**Lu dans la source de Blizzard le 2026-10-16** (clone Gethe `forever`,
+`Blizzard_RestrictedAddOnEnvironment` et `SecureTemplates.lua`), pas mesuré :
+- H2 : **non, sur les deux points.** `GetTime` n'est pas dans la liste des fonctions de
+  l'environnement restreint (`RestrictedEnvironment.lua`) ; une poignée sur un cadre non protégé
+  lève « Invalid frame handle » en combat (`GetHandleFrame`, `RestrictedFrames.lua`). Le code
+  restreint ne peut donc pas savoir si le sort a porté.
+- H3 : le code enveloppant reçoit `self, button, down` (`Wrapped_Click`) et peut annuler le clic en
+  rendant `false`. Le bouton lance sur l'appui ou le relâché selon son attribut `useOnKeyDown`, à
+  défaut le CVar (`SecureActionButton_ShouldUseOnKeyDown`) : on pose l'attribut d'après le CVar,
+  hors combat, et le code n'avance que sur le clic qui lance.
+- H1 reste à voir en jeu : la source le permet (`HANDLE:SetAttribute` sur un cadre protégé), seul
+  le client dira si le sort part sur le nouveau jeton.
+
 ## Questions à trancher par le user
 
 - **T-Q1 : seulement en champ de bataille, ou dans tout combat en groupe ?** Le mécanisme est le
@@ -73,6 +88,10 @@ C'est du savoir **Retail**, jamais mesuré sur Forever. Trois inconnues :
 
   Proposition : (b) si H2 le permet, sinon (a). Un saut n'est pas grave : la ligne revient à la
   sortie du combat.
+
+  **Tranché par le jeu le 2026-10-16 : (a).** H2 dit non (source). Un sort hors de portée ne part
+  pas du tout et ne déclenche pas de recharge globale (à voir en jeu) : on réappuie et la touche
+  passe au suivant. Seul un appui pendant la recharge globale fait sauter quelqu'un.
 - **T-Q3 : au bout de la liste.** La touche ne fait plus rien (proposition) ou repart du début. Si
   elle repart du début, elle rebuffe des gens déjà buffés.
 
@@ -123,10 +142,10 @@ Aucun : ni message réseau, ni donnée sauvegardée.
 ## Plan (2026-10-16, meurt quand c'est fait)
 
 La bêta ferme le **2026-10-19**, et le client revient au lancement, le 2026-11-04.
-1. **Sonde T-H1 à T-H3** (une séance courte, monde ouvert, deux comptes groupés, un monstre) : un
-   bouton de test attaché à une touche, dont le code restreint alterne `player` / `party1` à chaque
-   appui en combat. Elle dit aussi si `GetTime` et la lecture d'un attribut posé en combat sont
-   permis. Pas de champ de bataille nécessaire.
-2. Le user tranche T-Q1 à T-Q3, à la lumière de la sonde.
-3. Le code et le test sur une branche `feat/sb-touche-combat`, puis le banc (critères 4 et 6).
-4. Le critère 5 au prochain champ de bataille.
+1. ~~Sonde T-H1 à T-H3 en monde ouvert~~ : remplacée le même jour par la lecture de la source (H2,
+   H3) et par le code lui-même (H1), que le user préfère éprouver directement en champ de bataille.
+2. FAIT : le code et le test (`feat/sb-touche-combat`, SB et outillage), au banc. T-Q1 = partout,
+   T-Q3 = s'arrêter, à confirmer par le user.
+3. Avant de s'inscrire : seul, un monstre en monde ouvert, en combat, la touche te buffe toi
+   (critère 4 réduit à un compte), BugSack propre.
+4. Les critères 5 et 6 au champ de bataille suivant.
