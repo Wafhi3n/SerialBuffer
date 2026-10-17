@@ -280,11 +280,20 @@ function C:Hello()
     self:Schedule(C.DEBOUNCE)
 end
 
+-- « Ce jeton est-il moi ? » Une comparaison d'unités restreinte rend un booléen SECRET (doc du jeu :
+-- SecretWhenUnitComparisonRestricted), qu'on ne teste pas : il se lit « non ». Le nom de
+-- l'émetteur, lui, a déjà été comparé au mien en clair (C.Accept). Relevé par scripts\check_api.ps1.
+local function isMe(u)
+    local ok, same = pcall(UnitIsUnit, u, "player")
+    if not ok or sec(same) then return false end
+    return same == true
+end
+
 function C:OnMessage(prefix, msg, ch, sender)
     if sec(prefix) or prefix ~= C.PREFIX then return end
     if sec(msg) or sec(ch) or sec(sender) then self.stats.secret = self.stats.secret + 1; return end
     if type(sender) == "string" and sender ~= self.me and not self.roster[sender] then self:BuildRoster() end
-    local unit, why = C.Accept(sender, self.roster, self.me, function(u) return UnitIsUnit(u, "player") end)
+    local unit, why = C.Accept(sender, self.roster, self.me, isMe)
     if not unit then self.stats[why] = self.stats[why] + 1; return end
     local m = C.Decode(msg)
     if not m then self.stats.bad = self.stats.bad + 1; return end
@@ -305,10 +314,13 @@ end
 
 -- ---------------------------------------------------------------- palier 3 : régler la ligne d'un autre
 
+-- Un rang SECRET (identité restreinte) n'est pas un rang : comparer un secret LÈVE (mesuré le
+-- 2026-09-20), et le pcall ne protège que l'appel, pas la comparaison qui suit. Relevé par
+-- scripts\check_api.ps1.
 local function isChief(unit)
     local ok1, lead = pcall(UnitIsGroupLeader, unit)
     local ok2, assist = pcall(UnitIsGroupAssistant, unit)
-    return (ok1 and lead == true) or (ok2 and assist == true)
+    return (ok1 and not sec(lead) and lead == true) or (ok2 and not sec(assist) and assist == true)
 end
 
 -- Un réglage reçu : s'applique à TA ligne seulement, si l'expéditeur en a le droit à cet instant
