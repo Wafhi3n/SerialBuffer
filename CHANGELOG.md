@@ -1,5 +1,11 @@
 # Changelog - Serial Buffer
 
+## v0.8.1 - 2026-10-17
+
+- The group leader (or an assistant) can set your Group / raid line from their own Serial Buffer.
+  Forever can hide a player's rank from addons, and when it does, Serial Buffer now turns that
+  setting down instead of risking a Lua error. The rest of the time, nothing changes.
+
 ## v0.8.0 - 2026-10-16
 
 Salvation got reworked on Forever, and Serial Buffer follows.
