@@ -718,7 +718,10 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   to minimize it into the header bar » ; le user a choisi le bouton le même jour, plutôt qu'une
   cachette automatique en capitale, la ville étant là où l'addon sert le plus). Un bouton **− / +** à
   gauche du titre : un clic replie le tableau (plus de lignes, ni de titres de partie, ni de ligne
-  « À tous : », ni de pied ; la barre de titre reste, compteur compris), un second le déplie. L'état
+  « À tous : » ; la barre de titre reste, compteur compris), un second le déplie. Du pied, le tableau
+  réduit **garde les messages d'état** (en instance, plaques amies coupées, pas de buff, buffs cachés
+  par le jeu : ils disent pourquoi le compteur est ce qu'il est ; choix du user, 2026-11-03) et cache
+  le reste (« +N autres », illisibles, « Tournée finie ! »). L'état
   est gardé (`db.collapsed`, déplié par défaut). **Réduit, la file se calcule toujours** (choix du
   user) : le compteur reste juste et la touche « buff suivant » buffe le premier de la liste, en
   combat compris (spec `touche-en-combat.md`). Rien ne change pour `/sbuff`, qui cache le tableau
@@ -936,8 +939,9 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     combat, le pied dit « Buffs hidden by the game… » si le jeu cache les auras ; un allié buffé sort
     de la liste et y revient après sa mort. Les sondes SB1 / SB3 (commentaire CurseForge) disent
     lequel des signes s'est levé.
-45. [test] (D53) Réduit : aucune ligne, aucun pied, quelle que soit la limite de D51 ; déplié : la
-    limite et le pied d'avant. Le bouton refuse en combat sans rien changer ; hors combat il bascule
+45. [test] (D53) Réduit : aucune ligne quelle que soit la limite de D51, et du pied les seuls
+    messages d'état (plaques coupées, à l'aveugle, classe sans buff) ; déplié : la limite et le pied
+    d'avant. Le bouton refuse en combat sans rien changer ; hors combat il bascule
     `db.collapsed` et recalcule le tableau. La place de la touche de l'en-tête compte le bouton
     (`test_serialbuffer_rows.lua`, `_header.lua`).
 46. [humain] (D53) Sur le paladin du banc, en ville avec au moins 3 joueurs à buffer : un − est à

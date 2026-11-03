@@ -396,15 +396,23 @@ function UI.Limit(db)
     return math.max(1, math.min(MAX_ROWS, math.floor(n)))
 end
 
--- Le message du pied : l'état, le mode à l'aveugle (D52), le reste de la liste (au-delà de la limite,
--- D51), les illisibles (D31), sinon pourquoi la liste est vide (spec, « Liste vide »). Une ligne par
--- message.
-function UI.Footer(rows, info, limit)
+-- Les messages d'ÉTAT du pied : l'état (instance, plaques coupées, pas de buff) et le mode à l'aveugle
+-- (D52). Ils disent pourquoi la liste est ce qu'elle est : le tableau réduit les garde (D53).
+local function stateLines(info)
     local lines = {}
     local m = stateMessage(info.state)
     if m then lines[#lines + 1] = m end
+    if info.state ~= "nobuffs" and info.blind then
+        lines[#lines + 1] = L["Buffs cachés par le jeu : la liste suit tes propres sorts."]
+    end
+    return lines
+end
+
+-- Le message du pied : les messages d'état, le reste de la liste (au-delà de la limite, D51), les
+-- illisibles (D31), sinon pourquoi la liste est vide (spec, « Liste vide »). Une ligne par message.
+function UI.Footer(rows, info, limit)
+    local lines = stateLines(info)
     if info.state ~= "nobuffs" then
-        if info.blind then lines[#lines + 1] = L["Buffs cachés par le jeu : la liste suit tes propres sorts."] end
         if #rows > limit then lines[#lines + 1] = string.format(L["+%d autres"], #rows - limit) end
         local unread = info.unread or 0
         if unread > 0 then
@@ -419,10 +427,13 @@ function UI.Footer(rows, info, limit)
     return table.concat(lines, "\n")
 end
 
--- Ce que le tableau montre : les lignes au plus (D51) et le message du pied. Réduit (D53) : ni ligne
--- ni pied, quelle que soit la limite.
+-- Ce que le tableau montre : les lignes au plus (D51) et le message du pied. Réduit (D53) : aucune
+-- ligne, quelle que soit la limite, et du pied les seuls messages d'état (choix du user, 2026-11-03).
 function UI.Shape(rows, info, db)
-    if db and db.collapsed then return 0, nil end
+    if db and db.collapsed then
+        local lines = stateLines(info)
+        return 0, lines[1] and table.concat(lines, "\n") or nil
+    end
     local limit = UI.Limit(db)
     return limit, UI.Footer(rows, info, limit)
 end
@@ -471,6 +482,7 @@ function UI:Render(rows, info)
     NS.Touche:Load(self.next, rows)   -- la liste que la touche descendra en combat
     local limit, msg = UI.Shape(rows, info, NS.db)
     local y = self:Layout(rows, info.group, limit)
+    if limit == 0 then y = FOLDED_H - PAD - 2 end   -- D53 : le message d'état juste sous la barre de titre
     self.panel.count:SetText(string.format(L["%d à buffer"], #rows))
     NS.Header:Refresh()   -- après le compteur : la place de la touche dépend de sa largeur
     if NS.Tank then NS.Tank:RefreshLine(); NS.Tank:ShowLine(limit > 0) end   -- D53 : réduit, cachée
@@ -478,5 +490,5 @@ function UI:Render(rows, info)
     self.panel.msg:SetPoint("TOPLEFT", PAD, -(y + 2))
     self.panel.msg:SetText(msg or "")
     local msgH = msg and (self.panel.msg:GetStringHeight() + 4) or 0
-    self.panel:SetHeight(limit == 0 and FOLDED_H or (y + 2 + PAD + msgH))
+    self.panel:SetHeight(y + 2 + PAD + msgH)   -- réduit et sans message : FOLDED_H
 end
