@@ -26,7 +26,7 @@ NS.UI = UI
 local WIDTH, ROW_H, HEAD_H, MAX_ROWS, PAD, TOP = 300, 18, 16, 16, 8, 20   -- 300 : place pour le temps restant
 -- D53 : le bouton − / + à gauche du titre, et la hauteur du tableau réduit (sa barre de titre : le
 -- rouage fait 16 px, la case « Groupe seul » 18). Textures du journal de quêtes vanilla, que cite
--- Blizzard_UIPanels_Game/Vanilla/QuestLogFrame.lua de Forever (70707) : Minus / Plus, Up / Down.
+-- Blizzard_UIPanels_Game/Vanilla/QuestLogFrame.lua de Forever (70707) : Minus / Plus, Up / Hilight.
 local FOLD, FOLDED_H = 12, 2 * PAD + 14
 local FOLD_TEX = "Interface\\Buttons\\UI-%sButton-%s"
 -- Le rouage (D32) : le premier de ces atlas que le client connaît (une mention dans la source
@@ -138,11 +138,10 @@ local function gearButton(panel)
     return b
 end
 
--- D53 : − déplié, + réduit.
+-- D53 : − déplié, + réduit. Pas de texture « Down » : le journal de quêtes de Forever n'en pose pas
+-- (Up et Hilight seulement), son existence sur ce client n'est pas vérifiée.
 local function paintFold(b)
-    local kind = NS.db.collapsed and "Plus" or "Minus"
-    b:SetNormalTexture(FOLD_TEX:format(kind, "Up"))
-    b:SetPushedTexture(FOLD_TEX:format(kind, "Down"))
+    b:SetNormalTexture(FOLD_TEX:format(NS.db.collapsed and "Plus" or "Minus", "Up"))
 end
 
 local function foldTooltip(b)

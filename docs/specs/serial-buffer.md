@@ -725,8 +725,9 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   entier et vide la touche.
   *Dérivé :* hors combat seulement, comme `/sbuff` (replier cache des boutons sécurisés et retaille
   un panneau protégé) : en combat, un clic dit « Pas pendant un combat. ». Les textures sont celles
-  du journal de quêtes vanilla (`Interface\Buttons\UI-MinusButton-*` / `UI-PlusButton-*`, citées par
-  `Blizzard_UIPanels_Game/Vanilla/QuestLogFrame.lua` de Forever 70707) ; − = déplié, + = réduit. Le
+  du journal de quêtes vanilla (`Interface\Buttons\UI-MinusButton-Up` / `UI-PlusButton-Up` et
+  `-Hilight`, citées par `Blizzard_UIPanels_Game/Vanilla/QuestLogFrame.lua` de Forever 70707 ; pas
+  de `-Down`, que Blizzard n'y pose pas) ; − = déplié, + = réduit. Le
   bouton prend 14 px à la touche de l'en-tête, qui se raccourcit plus tôt (D41). Code :
   `UI:SetCollapsed`, `UI.Shape`, `Tank:ShowLine`, `Header:Room`, `db.collapsed`.
 
