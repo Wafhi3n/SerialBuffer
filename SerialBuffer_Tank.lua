@@ -143,7 +143,7 @@ function T:BuildLine(panel, y)
     local label = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     label:SetPoint("LEFT", panel, "TOPLEFT", 8, -y - self.LINE_H / 2)
     label:SetText(L["À tous :"])
-    self.checks = {}
+    self.label, self.checks = label, {}
     local anchor, gap = label, 2
     for i, id in ipairs(ids) do
         local cb = allCheck(panel, id)
@@ -166,4 +166,11 @@ function T:RefreshLine()
         if missing[cb.id] then cb.icon:SetVertexColor(1, 0.3, 0.3) else cb.icon:SetVertexColor(1, 1, 1) end
     end
     if self.short then self.short.text:SetText(string.format(L["courts : sous %d min"], NS.db.refreshShort or 2)) end
+end
+
+-- D53 : le tableau réduit cache la ligne avec ses lignes de joueurs (UI:Render, hors combat).
+function T:ShowLine(on)
+    if self.label then self.label:SetShown(on) end
+    for _, cb in ipairs(self.checks or {}) do cb:SetShown(on) end
+    if self.short then self.short:SetShown(on) end
 end

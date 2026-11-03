@@ -14,7 +14,8 @@
 -- Le tableau ne lit QUE ce que SerialBuffer_Run.lua lui passe (rows, état) : jamais le client.
 -- D30 : groupé, les lignes se rangent sous trois titres (Raid ou Groupe, Autour de toi, Hors de
 -- portée) ; les lignes se replacent donc à chaque rendu, hors combat. Groupé, un titre précède
--- toujours la première ligne : elle ne bouge pas (D25). D32 : un rouage ouvre les options.
+-- toujours la première ligne : elle ne bouge pas (D25). D32 : un rouage ouvre les options. D53 : un
+-- bouton − / + replie le tableau à sa barre de titre.
 local _, NS = ...
 NS = NS or _G.SerialBuffer
 local L = NS.L
@@ -23,6 +24,11 @@ local UI = { rows = {}, heads = {} }
 NS.UI = UI
 
 local WIDTH, ROW_H, HEAD_H, MAX_ROWS, PAD, TOP = 300, 18, 16, 16, 8, 20   -- 300 : place pour le temps restant
+-- D53 : le bouton − / + à gauche du titre, et la hauteur du tableau réduit (sa barre de titre : le
+-- rouage fait 16 px, la case « Groupe seul » 18). Textures du journal de quêtes vanilla, que cite
+-- Blizzard_UIPanels_Game/Vanilla/QuestLogFrame.lua de Forever (70707) : Minus / Plus, Up / Down.
+local FOLD, FOLDED_H = 12, 2 * PAD + 14
+local FOLD_TEX = "Interface\\Buttons\\UI-%sButton-%s"
 -- Le rouage (D32) : le premier de ces atlas que le client connaît (une mention dans la source
 -- Blizzard ne prouve pas qu'il existe sur Forever), sinon une texture de fichier.
 local GEAR_ATLASES = { "questlog-icon-setting", "OptionsIcon-Brown", "GM-icon-settings" }
@@ -132,6 +138,36 @@ local function gearButton(panel)
     return b
 end
 
+-- D53 : − déplié, + réduit.
+local function paintFold(b)
+    local kind = NS.db.collapsed and "Plus" or "Minus"
+    b:SetNormalTexture(FOLD_TEX:format(kind, "Up"))
+    b:SetPushedTexture(FOLD_TEX:format(kind, "Down"))
+end
+
+local function foldTooltip(b)
+    GameTooltip:SetOwner(b, "ANCHOR_LEFT")
+    GameTooltip:SetText(NS.db.collapsed and L["Déplier le tableau"] or L["Réduire le tableau à sa barre de titre"])
+    GameTooltip:AddLine(L["Réduit, la touche « buff suivant » buffe toujours le premier de la liste."], 1, 1, 1, true)
+    GameTooltip:Show()
+end
+
+-- D53 : un bouton ordinaire ; UI:SetCollapsed refuse lui-même en combat.
+local function foldButton(panel)
+    local b = CreateFrame("Button", nil, panel)
+    b:SetSize(FOLD, FOLD)
+    b:SetPoint("TOPLEFT", PAD, -PAD)
+    b:SetHighlightTexture(FOLD_TEX:format("Plus", "Hilight"), "ADD")
+    paintFold(b)
+    b:SetScript("OnClick", function(self)
+        UI:SetCollapsed(not NS.db.collapsed)
+        if GameTooltip:IsOwned(self) then foldTooltip(self) end
+    end)
+    b:SetScript("OnEnter", foldTooltip)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    return b
+end
+
 function UI:Build()
     if self.panel then return end
     local driver = CreateFrame("Frame", "SerialBufferDriver", UIParent)
@@ -162,8 +198,9 @@ function UI:Build()
         f:StopMovingOrSizing()
         anchorTop(f)
     end)
+    panel.fold = foldButton(panel)   -- D53
     panel.title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    panel.title:SetPoint("TOPLEFT", PAD, -PAD)
+    panel.title:SetPoint("LEFT", panel.fold, "RIGHT", 2, 0)
     panel.title:SetText("Serial Buffer")
     panel.gear = gearButton(panel)
     panel.count = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -223,6 +260,17 @@ end
 function UI:Toggle()
     if not self.panel then return end
     self:SetVisible(not self.panel:IsShown())
+end
+
+-- D53 : réduire ou déplier. Jamais en combat (cela cache des boutons sécurisés et retaille le panneau
+-- protégé) : rend false si refusé. Réduit, la file se calcule toujours : compteur et touche suivent.
+function UI:SetCollapsed(on)
+    if not self.panel then return false end
+    if InCombatLockdown() then NS:Print(L["Pas pendant un combat."]) return false end
+    NS.db.collapsed = on and true or false
+    paintFold(self.panel.fold)
+    if self:IsVisible() then NS.Run:Refresh() end
+    return true
 end
 
 -- Hors combat seulement (Render). Remet aussi ce que le combat a changé (D36 : gris, note).
@@ -372,6 +420,14 @@ function UI.Footer(rows, info, limit)
     return table.concat(lines, "\n")
 end
 
+-- Ce que le tableau montre : les lignes au plus (D51) et le message du pied. Réduit (D53) : ni ligne
+-- ni pied, quelle que soit la limite.
+function UI.Shape(rows, info, db)
+    if db and db.collapsed then return 0, nil end
+    local limit = UI.Limit(db)
+    return limit, UI.Footer(rows, info, limit)
+end
+
 -- Place les titres de partie (groupé seulement, D30) et les lignes ; rend le y libre sous la dernière.
 -- Une ligne n'est replacée que si sa place change (attribut sécurisé ou pas, hors combat : Render).
 -- Au-delà de la limite (D51), la ligne se cache ; le titre de sa partie garde le compte entier.
@@ -414,15 +470,14 @@ function UI:Render(rows, info)
     local nextRow = NS.Cast.NextRow(rows)
     setMacro(self.next, nextRow and NS.Cast.MacroFor(nextRow), nextRow)
     NS.Touche:Load(self.next, rows)   -- la liste que la touche descendra en combat
-    local limit = UI.Limit(NS.db)
+    local limit, msg = UI.Shape(rows, info, NS.db)
     local y = self:Layout(rows, info.group, limit)
     self.panel.count:SetText(string.format(L["%d à buffer"], #rows))
     NS.Header:Refresh()   -- après le compteur : la place de la touche dépend de sa largeur
-    if NS.Tank then NS.Tank:RefreshLine() end
-    local msg = UI.Footer(rows, info, limit)
+    if NS.Tank then NS.Tank:RefreshLine(); NS.Tank:ShowLine(limit > 0) end   -- D53 : réduit, cachée
     self.panel.msg:ClearAllPoints()
     self.panel.msg:SetPoint("TOPLEFT", PAD, -(y + 2))
     self.panel.msg:SetText(msg or "")
     local msgH = msg and (self.panel.msg:GetStringHeight() + 4) or 0
-    self.panel:SetHeight(y + 2 + PAD + msgH)
+    self.panel:SetHeight(limit == 0 and FOLDED_H or (y + 2 + PAD + msgH))
 end

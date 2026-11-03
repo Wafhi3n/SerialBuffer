@@ -713,6 +713,22 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   mesure du user (`mesure--auras-secretes`), diront s'il faut le garder. *Pas mesuré :* rien de D52
   en champ de bataille. Code : `Units:AurasHidden`, `Units.probe.aura` ("hidden"), `Units:Deaths`,
   `Queue` (`readAura`, `blind`, `Forget`), `Run` (tic), `UI.Footer`, `/sbuff aveugle`.
+- **D53 : un bouton « réduire » replie le tableau à sa barre de titre** (un joueur, CurseForge,
+  2026-11-03 : « can we have a toggle to turn off the window in big cities? Either a toggle or a way
+  to minimize it into the header bar » ; le user a choisi le bouton le même jour, plutôt qu'une
+  cachette automatique en capitale, la ville étant là où l'addon sert le plus). Un bouton **− / +** à
+  gauche du titre : un clic replie le tableau (plus de lignes, ni de titres de partie, ni de ligne
+  « À tous : », ni de pied ; la barre de titre reste, compteur compris), un second le déplie. L'état
+  est gardé (`db.collapsed`, déplié par défaut). **Réduit, la file se calcule toujours** (choix du
+  user) : le compteur reste juste et la touche « buff suivant » buffe le premier de la liste, en
+  combat compris (spec `touche-en-combat.md`). Rien ne change pour `/sbuff`, qui cache le tableau
+  entier et vide la touche.
+  *Dérivé :* hors combat seulement, comme `/sbuff` (replier cache des boutons sécurisés et retaille
+  un panneau protégé) : en combat, un clic dit « Pas pendant un combat. ». Les textures sont celles
+  du journal de quêtes vanilla (`Interface\Buttons\UI-MinusButton-*` / `UI-PlusButton-*`, citées par
+  `Blizzard_UIPanels_Game/Vanilla/QuestLogFrame.lua` de Forever 70707) ; − = déplié, + = réduit. Le
+  bouton prend 14 px à la touche de l'en-tête, qui se raccourcit plus tôt (D41). Code :
+  `UI:SetCollapsed`, `UI.Shape`, `Tank:ShowLine`, `Header:Room`, `db.collapsed`.
 
 ## Questions ouvertes (au user)
 
@@ -919,6 +935,16 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     combat, le pied dit « Buffs hidden by the game… » si le jeu cache les auras ; un allié buffé sort
     de la liste et y revient après sa mort. Les sondes SB1 / SB3 (commentaire CurseForge) disent
     lequel des signes s'est levé.
+45. [test] (D53) Réduit : aucune ligne, aucun pied, quelle que soit la limite de D51 ; déplié : la
+    limite et le pied d'avant. Le bouton refuse en combat sans rien changer ; hors combat il bascule
+    `db.collapsed` et recalcule le tableau. La place de la touche de l'en-tête compte le bouton
+    (`test_serialbuffer_rows.lua`, `_header.lua`).
+46. [humain] (D53) Sur le paladin du banc, en ville avec au moins 3 joueurs à buffer : un − est à
+    gauche de « Serial Buffer », sans chevaucher le titre. Un clic : le tableau se replie à sa barre
+    de titre, le − devient +, le compteur dit toujours « N à buffer ». La touche « buff suivant »
+    buffe un joueur et le compteur baisse. `/reload` : toujours réduit. Le + : la liste revient, comme
+    avant. En combat, un clic sur le bouton dit « Pas pendant un combat. » et rien ne bouge. Aucune
+    erreur Lua. Témoin connu-bon : `/sbuff`, qui cache et rend le tableau entier de la même façon.
 
 ## Contrat
 
@@ -928,7 +954,7 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
   `off`, `priority` et `classBuffs`, migrés par `schemaVer` 3), la ligne « Groupe / raid »
   (`groupPick`, classe du lanceur → classe de la cible → id ; D35), les refus « trop bas » appris
   (`tooLow`, rang de sort → niveau ; D38), l'option PvP, la case « Groupe seul » (`groupOnly` ; D40),
-  les lignes du tableau au plus (`maxRows` ; D51), la durée des buffs lue en clair (`auraDur`, nom
+  les lignes du tableau au plus (`maxRows` ; D51), le tableau réduit (`collapsed` ; D53), la durée des buffs lue en clair (`auraDur`, nom
   de sort → secondes, une donnée du sort et pas du joueur ; D52), la réponse à la
   proposition des plaques et la position du tableau (son coin haut gauche). Pour le diagnostic, `seenErrors` : le
   nom et le texte des erreurs du jeu vues juste après un de nos clics. **Aucun nom de joueur, aucun

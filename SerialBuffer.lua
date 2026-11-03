@@ -28,6 +28,7 @@ NS.DEFAULTS = {
     tankAll = false,        -- D44 : coché, Épines (buff réservé aux tanks) va à tous ceux qui ne l'ont pas
     shortAll = {},          -- D47 : buff court coché « à tous » (id -> true) ; absent : toi et ton groupe
     maxRows = 16,           -- D51 : lignes du tableau au plus (1 à 16) ; le reste se compte au pied
+    collapsed = false,      -- D53 : le tableau réduit à sa barre de titre (bouton − / +)
     auraDur = {},           -- D52 : nom de buff -> durée totale lue en clair (s), pour le mode à l'aveugle
 }
 
