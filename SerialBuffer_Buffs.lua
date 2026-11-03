@@ -43,13 +43,14 @@ B.REAGENTS = { [546] = 17058, [131] = 17057 }   -- Huile de poisson, Écailles d
 B.RANK_IDS = { [132] = { 132, 2970, 11743 } }
 
 -- Les bénédictions du paladin, par clé stable.
-B.BLESSINGS = { MIGHT = 19740, WISDOM = 19742, KINGS = 20217, LIGHT = 19977, SANCTUARY = 20911 }
+B.BLESSINGS = { MIGHT = 19740, WISDOM = 19742, KINGS = 20217, SANCTUARY = 20911 }
 
--- D22 : l'ordre par défaut ; Lumière et Sanctuaire en grille, dans aucune colonne. Plus de Salut
--- (1038) : sur Forever ce n'est plus une bénédiction, il a ses lignes (Salut.lua, salut.md S-Q2) ; un
--- 1038 sauvé ou reçu d'un pair en v0.7.0 tombe tout seul (owns() ne le connaît plus).
-B.PRIORITY_DEFAULT = { "KINGS", "WISDOM", "MIGHT", "LIGHT", "SANCTUARY" }
-B.DEFAULT_OFF = { [19977] = true, [20911] = true }
+-- D22 : l'ordre par défaut ; Sanctuaire en grille, dans aucune colonne. Plus de Lumière (19977) ni de
+-- Salut (1038) : le build 70753 de Forever (2026-11-02) les a retirés du jeu, avec Mass Salvation et
+-- Revoke (table SpellName lue sur wago.tools le 2026-11-03). Un 19977 ou un 1038 sauvé, ou reçu d'un
+-- pair d'avant, tombe tout seul (owns() ne le connaît plus).
+B.PRIORITY_DEFAULT = { "KINGS", "WISDOM", "MIGHT", "SANCTUARY" }
+B.DEFAULT_OFF = { [20911] = true }
 -- D49 (user, 2026-10-11) : Puissance ne sert à rien aux lanceurs de sorts ; hors de LEUR colonne par
 -- défaut, et » ne la leur recopie pas (la case la propose toujours, la colonne « Toutes » la garde).
 B.DEFAULT_OFF_FOR = { [19740] = { PRIEST = true, MAGE = true, WARLOCK = true } }

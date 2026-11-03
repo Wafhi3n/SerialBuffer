@@ -299,7 +299,8 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   les options du jeu (Options > AddOns > Serial Buffer). Chaque cible reçoit la première bénédiction
   de la liste que le paladin connaît, qui est cochée et qui lui sert (D23). Une bénédiction que tu ne
   connais pas encore (Rois est un talent) cède simplement sa place à la suivante. Salut n'est pas dans
-  la liste. Cela règle Q12.
+  la liste. Cela règle Q12. *Depuis le build 70753 de Forever (2026-11-02), ni le Salut ni la Lumière
+  n'existent plus dans le jeu (table `SpellName`, lue le 2026-11-03) : l'addon ne les connaît plus.*
 - **D24 : une cible trop basse pour un buff sort de la liste POUR CE BUFF**, jusqu'à ce qu'elle monte
   de niveau (retour du user en jeu, 2026-10-04 : « malgré l'erreur target too low elle reste dans la
   liste »). Un paladin passe à la bénédiction suivante de sa priorité ; un prêtre au buff suivant ;
@@ -369,7 +370,9 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   colonne par classe de la cible ; une case cochée = ce buff se pose sur cette classe.
   - **Paladin** : les six bénédictions (Rois, Sagesse, Puissance, Salut, Lumière, Sanctuaire ; choix
     du user le 2026-10-05). *Depuis le 2026-10-16, cinq : le Salut n'est plus une bénédiction sur
-    Forever et quitte la grille pour ses propres lignes (`salut.md`, S-Q2).* Salut, Lumière et
+    Forever et quitte la grille pour ses propres lignes (`salut.md`, S-Q2). Depuis le build 70753
+    (2026-11-02), quatre : Rois, Sagesse, Puissance, Sanctuaire ; la Lumière et le Salut ont quitté le
+    jeu, et les lignes de Salut avec eux.* Salut, Lumière et
     Sanctuaire sont **décochées partout par défaut**
     (proposé par l'agent dans la question, retenu). Chaque cible reçoit la première bénédiction de
     la priorité (D22) qui est connue, cochée pour sa classe, et qu'elle peut recevoir (D23, D24,
@@ -807,8 +810,9 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
 23. [humain] (D34) Dans la grille, passer le 1er choix de la colonne Guerrier de Rois à Puissance
     (clic ou molette) : le tableau propose aussitôt Puissance aux guerriers, et Rois aux autres
     classes. La molette sur une case change la case sans faire défiler le panneau. Dans la colonne
-    Guerrier, Sagesse n'est jamais proposée. Choisir Salut dans « Toutes » puis Remplir : Salut en
-    1er choix partout. ↺ sous Guerrier remet sa colonne. Le réglage survit à un `/reload`.
+    Guerrier, Sagesse n'est jamais proposée. Choisir Sagesse dans « Toutes » puis Remplir : Sagesse en
+    1er choix partout, sauf guerrier et voleur (D23). *(Le critère disait « Salut », retiré du jeu au
+    build 70753.)* ↺ sous Guerrier remet sa colonne. Le réglage survit à un `/reload`.
 24. [test] (D34) Le défaut de chaque colonne ; le cycle d'une case (vide → buffs → vide), qui saute
     les buffs interdits (D23) et ceux déjà pris dans la colonne ; Remplir, qui laisse une case
     interdite et échange un doublon ; ↺ et « Tout par défaut » ; une case vide ne propose rien ;

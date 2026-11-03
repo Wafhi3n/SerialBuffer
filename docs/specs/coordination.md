@@ -170,7 +170,8 @@ uniques) ; les prêtres, mages et druides posent tout, comme avant.
   paladin plus ancien n'a annoncée pour cette classe. C'est ce qu'il annonce, et ce que son tableau
   propose aux membres du groupe de cette classe. Un paladin dont toutes les préférences sont prises
   ne propose rien à cette classe : on ne sort jamais de ce que le joueur a choisi dans sa grille
-  (Salut sur un guerrier, par exemple, n'arrive que s'il l'a mis dans sa colonne).
+  (Puissance sur un mage, par exemple, n'arrive que s'il l'a mise dans sa colonne ; l'exemple disait
+  « Salut », retiré du jeu au build 70753 de Forever, le 2026-11-02).
 - Le plus ancien ne bouge jamais pour un plus récent ; un plus récent se réajuste dès qu'une annonce
   d'un plus ancien change (regroupé, comme toute annonce).
 - Un client du palier 1 n'annonce pas son heure d'arrivée : il compte comme le plus ancien (il ne
