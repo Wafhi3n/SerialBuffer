@@ -270,7 +270,8 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   avec les libellés du jeu dans sa langue (`GAMEMENU_OPTIONS` > `NAMEPLATE_OPTIONS_LABEL` >
   `UNIT_NAMEPLATES_SHOW_FRIENDS`, chemin lu dans le code d'UI de Forever 70707 ; sans l'un d'eux,
   pas de chemin). Avant le 2026-11-07, il disait « seuls toi et ton groupe sont vus », qu'un joueur
-  a pris pour la case « Groupe seul » restée cochée (CurseForge, 2026-11-07). Code : `UI.Footer`.
+  a pris pour la case « Groupe seul » restée cochée (CurseForge, 2026-11-07). Code : `Units:PlatesPath`,
+  `UI.Footer`.
 - **D7 : une ligne par joueur**, qui propose le prochain buff qui lui manque.
 - **D8 : l'ordre est FIFO.** Le premier joueur entré dans la liste est en tête. ~~Ni toi ni ton
   groupe ne passez devant~~ : le groupe passe devant depuis D30 (2026-10-05). Le FIFO tient à
