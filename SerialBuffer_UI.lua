@@ -324,11 +324,25 @@ function UI:MarkStale()
     end
 end
 
+-- Plaques amies coupées : où les rallumer, avec les libellés du JEU, donc dans la langue du client :
+-- le bouton du menu, la catégorie et la case du panneau d'options (Blizzard_GameMenu,
+-- Blizzard_SettingsDefinitions_Frame/Nameplates.lua, Forever 70707). Un joueur lisait l'ancien
+-- « seuls toi et ton groupe sont vus » comme la case « Groupe seul » cochée (CurseForge, 2026-11-07).
+-- Un libellé absent (autre client) : pas de chemin plutôt qu'un chemin faux.
+local function platesPath()
+    local menu, cat, box = _G.GAMEMENU_OPTIONS, _G.NAMEPLATE_OPTIONS_LABEL, _G.UNIT_NAMEPLATES_SHOW_FRIENDS
+    if type(menu) ~= "string" or type(cat) ~= "string" or type(box) ~= "string" then return nil end
+    return string.format(L["Pour les voir : %s > %s > %s."], menu, cat, box)
+end
+
 -- Clés écrites en toutes lettres : la porte de localisation ne voit pas un L[variable].
 local function stateMessage(state)
     if state == "instance" then return L["En instance : seul ton groupe est listé."] end
     if state == "nobuffs" then return L["Ta classe n'a pas de buff à poser sur les autres."] end
-    if state == "noplates" then return L["Plaques des joueurs amis coupées : seuls toi et ton groupe sont vus."] end
+    if state == "noplates" then
+        local m, path = L["Plaques des joueurs amis coupées : l'addon ne voit pas les joueurs autour de toi."], platesPath()
+        return path and (m .. "\n" .. path) or m
+    end
     return nil
 end
 
