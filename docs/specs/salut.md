@@ -1,6 +1,13 @@
 # Serial Buffer : le Salut de Forever, classe par classe, puis Révoquer sur les tanks
 
-> État : **codée sur `feat/sb-salut`, vue GO au banc le 2026-10-16 pour un paladin de niveau 30** (registre,
+> ⛔ **CADUQUE depuis le 2026-11-03.** Le build 70753 de Forever (2026-11-02) a retiré du jeu
+> Salvation (1038, 1912), Mass Salvation (25895), Revoke (1325499) et la Bénédiction de lumière
+> (19977-19979, 25890) : dit par le user, lu le 2026-11-03 dans la table `SpellName` de wago.tools
+> (70658 → 70753). Le code de cette spec est retiré sur `fix/sb-sans-salut` (SerialBuffer_Salut.lua,
+> l'icône de l'en-tête, les clés de locale, `tests/test_serialbuffer_salut.lua`). Gardée pour
+> l'histoire ; ne plus rien en tirer.
+>
+> État d'avant : **codée sur `feat/sb-salut`, vue GO au banc le 2026-10-16 pour un paladin de niveau 30** (registre,
 > relevé de 20:51 ; Mass Salvation et les lignes par classe jamais vues). Approuvée le 2026-10-16 (S-Q1, S-Q2, S-Q4, S-Q7 tranchées par le user ; S-Q3, S-Q5,
 > S-Q6, S-Q8 retenues sur proposition), **aucune ligne de code**, toutes les mesures faites.
 > Idée du user le 2026-10-16, trois infobulles du jeu à

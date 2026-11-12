@@ -126,6 +126,7 @@ f:SetScript("OnEvent", function(_, event, arg1)
         CopyDefaults(SerialBufferDB, NS.DEFAULTS)   -- une base neuve naît en schemaVer 4 : rien à migrer
         NS.Buffs:Migrate(SerialBufferDB)
         ForgetLearned(SerialBufferDB)
+        SerialBufferDB.salutOff = nil   -- l'interrupteur du Salut (v0.8.0), retiré du jeu au build 70753
         NS.db = SerialBufferDB
     elseif event == "PLAYER_LOGIN" then
         -- Muet à la connexion, sauf la première après une installation ou une mise à jour (règle
