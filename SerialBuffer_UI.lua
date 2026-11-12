@@ -375,7 +375,10 @@ end
 local function stateMessage(state)
     if state == "instance" then return L["En instance : seul ton groupe est listé."] end
     if state == "nobuffs" then return L["Ta classe n'a pas de buff à poser sur les autres."] end
-    if state == "noplates" then return L["Plaques des joueurs amis coupées : seuls toi et ton groupe sont vus."] end
+    if state == "noplates" then   -- la cause, puis où les rallumer (Units:PlatesPath, 2026-11-07)
+        local path = NS.Units:PlatesPath()
+        return L["Plaques des joueurs amis coupées : l'addon ne voit pas les joueurs autour de toi."] .. (path and "\n" .. path or "")
+    end
     return nil
 end
 

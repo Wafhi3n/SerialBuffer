@@ -196,3 +196,14 @@ function U:State()
     if get and get("nameplateShowFriendlyPlayers") == "0" then return "noplates" end
     return "ok"
 end
+
+-- "noplates" : le chemin du panneau d'options qui les rallume, avec les libellés du JEU, donc dans sa
+-- langue : le bouton du menu, la catégorie, la case (Blizzard_GameMenu et
+-- Blizzard_SettingsDefinitions_Frame/Nameplates.lua, Forever 70707). Dit au pied (SerialBuffer_UI.lua) :
+-- l'ancien « seuls toi et ton groupe sont vus » passait pour la case « Groupe seul » restée cochée
+-- (un joueur, CurseForge, 2026-11-07). Un libellé absent (autre client) : nil, plutôt qu'un chemin faux.
+function U:PlatesPath()
+    local menu, cat, box = _G.GAMEMENU_OPTIONS, _G.NAMEPLATE_OPTIONS_LABEL, _G.UNIT_NAMEPLATES_SHOW_FRIENDS
+    if type(menu) ~= "string" or type(cat) ~= "string" or type(box) ~= "string" then return nil end
+    return string.format(NS.L["Pour les voir : %s > %s > %s."], menu, cat, box)
+end
