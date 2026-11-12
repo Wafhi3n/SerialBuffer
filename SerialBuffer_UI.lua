@@ -72,7 +72,7 @@ local function setMacro(b, text, r)
     end
     b.guid = r and r.guid
     b.buffName = r and r.buff and r.buff.name
-    b.level = r and r.level
+    b.level, b.rank = r and r.level, r and r.rank   -- rank : le rang lancé (D54, Cast:NoteClick)
     b.combatOk = NS.Cast.CombatClickable(r)   -- en combat, ce clic lance-t-il encore ? (Cast:NoteClick)
 end
 

@@ -41,17 +41,18 @@ function C.CombatClickable(row)
     return row ~= nil and (row.self == true or (row.group == true and C.GroupToken(row.unit)))
 end
 
--- Le texte de macro d'une ligne de la file, ou nil (nom ou sort absent, macro trop longue).
+-- Le texte de macro d'une ligne de la file, ou nil (nom ou sort absent, macro trop longue). Le sort :
+-- row.cast, le rang choisi par la file (D54 : « Nom(Rang 2) » pour un joueur trop bas), sinon le nom.
 function C.MacroFor(row)
     if not (row and row.buff and row.buff.name) then return nil end
-    local text
+    local spell, text = row.cast or row.buff.name
     if row.self then
-        text = "/cast [@player] " .. row.buff.name
+        text = "/cast [@player] " .. spell
     elseif row.group and C.GroupToken(row.unit) then
-        text = "/cast [@" .. row.unit .. ",help,nodead] " .. row.buff.name
+        text = "/cast [@" .. row.unit .. ",help,nodead] " .. spell
     elseif row.name then
         text = "/stopmacro [combat]\n/cleartarget\n/targetexact " .. row.name
-            .. "\n/cast [@target,exists,help,nodead] " .. row.buff.name
+            .. "\n/cast [@target,exists,help,nodead] " .. spell
     end
     if text and #text <= C.MAX_MACRO then return text end
     return nil
@@ -105,13 +106,14 @@ end
 -- qu'elle vise n'est connue qu'après le clic (NoteKey).
 function C:NoteClick(b, now, inCombat)
     if inCombat and not (b and b.combatOk and not b.nextKey) then return end
-    self.last = (b and b.guid) and { guid = b.guid, buff = b.buffName, level = b.level, t = now } or nil
+    self.last = (b and b.guid) and { guid = b.guid, buff = b.buffName, level = b.level, rank = b.rank, t = now }
+        or nil   -- rank : le rang lancé (D54), la clé d'un refus « trop bas »
 end
 
 -- En combat, un appui de la touche (SerialBuffer_Touche.lua) : la ligne que le code restreint vient
 -- de viser, notée comme un clic sur elle.
 function C:NoteKey(e, now)
-    self.last = { guid = e.guid, buff = e.buff, level = e.level, t = now }
+    self.last = { guid = e.guid, buff = e.buff, level = e.level, rank = e.rank, t = now }
 end
 
 -- Le sort du dernier clic a réussi (SerialBuffer_Run.lua, OnCast) : une erreur qui suit n'est plus la

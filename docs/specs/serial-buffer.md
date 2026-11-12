@@ -489,6 +489,35 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   `Cast:Done`), et les seuils appris repartent de zéro une fois (`schemaVer` 4). *Pas fait :* relier
   l'erreur au sort qui échoue (`UI_ERROR_MESSAGE` ne le porte pas ; `UNIT_SPELLCAST_FAILED` n'a pas
   été mesuré sur Forever pour ce refus).
+- **D54 : trop bas pour un rang, la ligne repasse au rang inférieur du MÊME buff** (rangée ici, près
+  de D38 qu'elle complète ; prise le 2026-11-12, après un commentaire CurseForge relayé par le user :
+  « If other players are lower level (10-12 level vs my 30+) I simply don't buff them anymore as a
+  paladin. Not Kings, not Wisdom, Might, etc. I can, and I do manually ». Le user, entre deux options :
+  « (a) », contre la prédiction du rang par le niveau d'apprentissage, qui coderait une règle jamais
+  mesurée). Lancé par son nom, un sort part au plus haut rang connu ; à 30+, Puissance rang 3 ou 4 et
+  Sagesse rang 2 ou 3 sont trop forts pour un niveau 10-12, le jeu refuse, D38 apprenait le refus et,
+  tout refusé, le joueur sortait (D24). Désormais, refusé « trop bas », un rang cède au rang
+  inférieur connu du même buff ; quand plus aucun rang ne passe, on change de buff comme avant.
+  Chaque rang garde son propre seuil appris (D38) : toujours aucun niveau codé en dur. Le plus haut
+  rang se lance comme avant, par le nom seul (même clé `tooLow`, les seuils déjà appris gardent leur
+  sens) ; un rang inférieur se lance par « Nom(Rang N) », sous-texte du client
+  (`C_Spell.GetSpellSubtext`). Les ids des rangs : tables du client Forever (`SpellName`,
+  `Spell.NameSubtext_lang`, `SpellLevels` sur wago.tools, build 1.60.1.70888, lues le 2026-11-12),
+  dans `SerialBuffer_Rangs.lua`. *Conséquences dérivées, non décidées par le user :*
+  - les buffs des autres classes qui ont des rangs (Intelligence des Arcanes, Robustesse, Esprit
+    divin, Protection contre l'Ombre, Marque du fauve, Épines, Détection de l'invisibilité) suivent la
+    même règle : un mage de niveau 30 butait de la même façon sur un niveau 10 ;
+  - D24 (ce joueur, cette séance) est désormais tenu par RANG : le refus du rang 3 laisse le rang 2
+    permis au même joueur ;
+  - un sous-texte vide (donnée du sort pas encore chargée) saute ce rang, qui revient au prochain
+    `SPELLS_CHANGED` ;
+  - le coût : un clic refusé par rang et par niveau, une fois pour tout le compte (D38).
+
+  *À mesurer avant de publier :* que le jeu accepte `Nom(Rank 2)` dans un `/cast` de macro sécurisée
+  (la forme `nom(sous-texte)` est documentée pour `C_Spell`, jamais éprouvée dans un `/cast` sur
+  Forever) ; le sous-texte sur un client français (« Rang 2 ») ; si Rois se refuse sous le niveau 10
+  (rang unique, appris au niveau 20). Le cas « Not Kings » du joueur n'est pas expliqué par D54 : sans
+  le talent, Rois n'est pas proposé ; avec, un `tooLow[20217]` à 10 ou plus serait un autre problème.
 - **D39 : une ligne affiche le temps qui reste au buff qu'elle refait, décompté en combat** (user,
   2026-10-05, après un donjon : « c'est quand les buffs dépop en combat », puis « rajouter les
   lignes des membres où il ne reste que 10 min, avec le temps restant »). Un buff qui expire bientôt
@@ -828,6 +857,16 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     clic sur Gnomi → « too low level » → la ligne passe à Sagesse, refusée → Puissance, qui passe.
     Après un `/reload`, Gnomi se voit proposer Puissance d'emblée. `SerialBufferDB.tooLow` porte les
     rangs de Rois et de Sagesse à 2. Témoin connu-bon : la v0.2.0-beta, où Gnomi n'avait plus rien.
+28b. [test] (D54) Les rangs d'un buff, du plus haut (nom seul, clé `entry.rank`) au plus bas
+    (« Nom(sous-texte) »), sans doublon ; un sous-texte vide saute ce rang ; un sort à un seul rang n'a
+    que son nom. Un rang appris trop bas (D38) ou refusé à ce joueur (D24, par rang) cède au rang
+    d'en dessous du même buff ; tous refusés, le buff suivant. La ligne, la macro, le clic et la
+    touche en combat portent le rang jusqu'à l'erreur « trop bas » (`tests/test_serialbuffer_rangs.lua`).
+28c. [humain] (D54) Le paladin du banc, niveau 30+, près d'un joueur de niveau 10 à 12 sans
+    bénédiction : un clic sur sa ligne → au pire « too low level », la ligne RESTE et le clic suivant
+    pose la bénédiction (un rang plus bas) ; le joueur sort de la liste. `SerialBufferDB.tooLow` porte
+    le rang refusé (pas 19740 / 19742) au niveau de ce joueur. Témoin connu-bon : la v0.8.1, où ce
+    joueur sortait de la liste sans rien recevoir.
 29. [test] (D39) Une ligne porte le temps restant du buff qu'elle refait (aucun si le buff est
     absent) et son heure de fin ; le décompte rend le temps qui reste à un instant donné, et zéro
     passé l'heure de fin ; un membre du groupe en combat entre dans la liste, un inconnu en combat

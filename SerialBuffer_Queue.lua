@@ -11,6 +11,7 @@
 --   D30 le groupe passe devant (remplace « ni ton groupe » de D8)
 --   D37 le choix unique du groupe, puis la colonne en repli        D38 refus « trop bas » APPRIS (db.tooLow)
 --   D50 marqué PvP toi-même, D5 ne joue plus (champ de bataille, zone contestée d'un royaume PvP)
+--   D54 trop bas pour un rang : le rang d'en dessous du même buff, avant le buff suivant (pickRank)
 -- AFFICHAGE, trois parties, FIFO dans chacune (D30, D25) : « group » (ton groupe ou ton raid, à
 -- portée), « around » (les autres, à portée), « far » (le groupe hors de portée), tout en bas : la
 -- première ligne est toujours quelqu'un qu'on peut buffer, et un clic répété dessus vide la file.
@@ -39,7 +40,8 @@ end
 
 -- Le jeu a refusé ce buff sur ce joueur. On ne le lui propose plus, jusqu'à ce qu'il gagne un niveau
 -- (D24, « trop bas ») ou pendant STRONGER_WAIT (D26, « plus puissant actif »). Mémoire de session :
--- rien n'est sauvegardé (spec, Contrat).
+-- rien n'est sauvegardé (spec, Contrat). Clé : le nom du buff, ou l'id du RANG refusé (D24 depuis
+-- D54 : le rang d'en dessous reste permis ; pickRank).
 local function block(guid, buffName, rule)
     if not (guid and buffName) then return end
     Q.blocked[guid] = Q.blocked[guid] or {}
@@ -106,9 +108,19 @@ end
 -- "hidden" (D52, converti par readAura) ou les secondes restantes (math.huge = sans fin), plus « est-ce
 -- la mienne » ; nil = illisible. Prêtre, mage, druide : le premier qui manque (D7).
 -- D38 : le jeu a déjà refusé ce rang « trop bas » jusqu'à un niveau ≥ celui du joueur.
-local function learnedLow(snap, w, low)
-    local max = low and low[w.rank or w.id]
+local function learnedLow(snap, key, low)
+    local max = low and low[key]
     return max ~= nil and type(snap.level) == "number" and snap.level > 0 and snap.level <= max
+end
+
+-- D54 : le rang à lancer à ce joueur, du plus haut au plus bas (w.ranks, SerialBuffer_Rangs.lua) : le
+-- premier que ni D38 (appris, pour tous) ni D24 (ce joueur, cette séance, clé = le rang) n'écarte.
+-- nil : aucun rang ne passe, le buff est sauté. Sans liste (test), le seul rang lancé par le nom.
+local function pickRank(snap, w, low)
+    for _, r in ipairs(w.ranks or { { id = w.rank or w.id, cast = w.name } }) do
+        if not learnedLow(snap, r.id, low) and not isBlocked(snap, r.id) then return r end
+    end
+    return nil
 end
 
 -- D45 : un buff COURT (Épines, 10 min) a son propre seuil : celui d'une heure (45 min) le reproposait
@@ -176,11 +188,12 @@ end
 
 -- opts.tooLow : les refus « trop bas » appris (db.tooLow). wanted.single (D37) : le 1er est le choix
 -- unique du groupe ; présent sur le joueur, il vaut « servi » pour un lanceur non paladin (la colonne
--- qui suit n'est qu'un repli s'il ne peut pas passer).
+-- qui suit n'est qu'un repli s'il ne peut pas passer). Rend aussi le rang à lancer (D54, pickRank).
 local function nextMissing(snap, wanted, probe, opts)
     local low = opts.tooLow
     for i, w in ipairs(wanted) do
-        if not isBlocked(snap, w.name) and not learnedLow(snap, w, low) and not skipLimited(snap, w, opts) then
+        local rk = not isBlocked(snap, w.name) and not skipLimited(snap, w, opts) and pickRank(snap, w, low)
+        if rk then
             local left, mine, dur = readAura(probe, snap, w, opts)
             if left == nil then return nil, "unread" end
             if mine ~= true and left ~= "absent" and castByMe(snap, w.name) then mine = true end
@@ -190,10 +203,10 @@ local function nextMissing(snap, wanted, probe, opts)
                 if v == "next" then st.next = st.next + 1
                 elseif v == "stop" and mine == nil then st.stopUnknown = st.stopUnknown + 1
                 elseif v == "stop" then st.stopMine = st.stopMine + 1 end
-                if v == "take" then return w, left end
+                if v == "take" then return w, left, rk end
                 if v == "stop" then return nil end
             elseif needs(left, threshold(dur, opts)) then   -- D28 / D45 : seuils réglables hors paladin
-                return w, left
+                return w, left, rk
             elseif wanted.single and i == 1 then     -- D37 : le choix unique est là
                 return nil
             end
@@ -203,7 +216,7 @@ local function nextMissing(snap, wanted, probe, opts)
 end
 
 -- D38 : un refus « trop bas » sur un joueur de ce niveau. Le seuil ne fait que monter. key = le rang
--- lancé (Buffs, entry.rank). Rien d'autre que des ids et des niveaux : aucune donnée de joueur.
+-- lancé (la ligne, D54 ; sinon Buffs, entry.rank). Que des ids et des niveaux : aucune donnée de joueur.
 function Q.LearnLow(db, key, level)
     if not (db and key and type(level) == "number" and level > 0) then return end
     db.tooLow = db.tooLow or {}
@@ -237,7 +250,7 @@ function Q:Eligible(snap, wantedFor, probe, opts)
     opts = opts or {}
     local ok, why = admissible(snap, opts)
     if not ok then return nil, why end
-    local buff, info = nextMissing(snap, wantedFor(snap.class, snap.group), probe, opts)
+    local buff, info, rk = nextMissing(snap, wantedFor(snap.class, snap.group), probe, opts)
     if not buff then return nil, info end   -- info : "unread", ou rien
     -- D39 : le temps qui reste au buff que la ligne refait (nil s'il est absent), et son heure de fin.
     local left = (type(info) == "number" and info ~= math.huge) and info or nil
@@ -253,7 +266,7 @@ function Q:Eligible(snap, wantedFor, probe, opts)
     local section = outOfRange and "far" or (snap.group and "group" or "around")   -- D30
     return { guid = snap.guid, name = snap.name, class = snap.class, unit = snap.unit, level = snap.level,
              buff = buff, group = snap.group, self = snap.self, outOfRange = outOfRange, section = section,
-             left = left, expiresAt = left and (now + left) or nil,
+             left = left, expiresAt = left and (now + left) or nil, rank = rk.id, cast = rk.cast,   -- D54
              pvp = (snap.pvp and not snap.self) or false }
 end
 
