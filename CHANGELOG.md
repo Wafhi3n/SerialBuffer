@@ -1,5 +1,23 @@
 # Changelog - Serial Buffer
 
+## v0.9.0 - 2026-11-12
+
+- Players well below your level get your blessings again. Cast by name, a blessing goes out at your
+  top rank, and the game turns it down on a low-level player ("Target is too low level"). Serial
+  Buffer used to give up on them. Now the next click casts the rank below, and so on until one
+  fits: a level 30 paladin's Wisdom lands on a level 10 at rank 1. It remembers which rank was
+  refused at which level, so it doesn't keep trying one that already failed. Mages, priests,
+  druids and warlocks get the same for their ranked buffs.
+- A − button left of the title folds the panel down to its title bar, for big cities. Folded, the
+  "Next buff" key still buffs the first player on the list, and the footer still tells you when
+  something's off, like being in an instance. Click + to open it again. It stays folded after a
+  reload.
+- With friendly player nameplates off, the panel can't see the players around you. The footer used
+  to say "only you and your group are seen", which read like "Group only" was ticked. It now says
+  why the list is empty and where to turn them on in the game's options.
+- Salvation and Blessing of Light were taken out of the game in build 70753, so their icon and
+  lines are gone from Serial Buffer as well.
+
 ## v0.8.1 - 2026-10-17
 
 - The group leader (or an assistant) can set your Group / raid line from their own Serial Buffer.

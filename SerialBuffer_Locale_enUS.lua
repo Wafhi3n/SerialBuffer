@@ -20,7 +20,8 @@ local T = {
     ["PvP"]                                                                         = "PvP",
     ["En instance : seul ton groupe est listé."]                                    = "In an instance: only your group is listed.",
     ["Ta classe n'a pas de buff à poser sur les autres."]                           = "Your class has no buff to cast on others.",
-    ["Plaques des joueurs amis coupées : seuls toi et ton groupe sont vus."]        = "Friendly player nameplates are off: only you and your group are seen.",
+    ["Plaques des joueurs amis coupées : l'addon ne voit pas les joueurs autour de toi."] = "Friendly player nameplates are off: the addon can't see the players around you.",
+    ["Pour les voir : %s > %s > %s."]                                               = "To see them: %s > %s > %s.",
     ["+%d autres"]                                                                  = "+%d more",
     ["Personne à buffer autour de toi."]                                            = "Nobody around you needs a buff.",
     ["Tournée finie !"]                                                             = "Round done!",
@@ -138,8 +139,9 @@ local T = {
     ["(/sbuff %s %s pour changer)"] = "(/sbuff %s %s to change it)",
     -- D51 : lignes du tableau au plus (2026-10-14)
     ["Lignes du tableau, au plus"] = "Max rows in the panel",
-    -- salut.md : l'icône du Salut dans l'en-tête (2026-10-16)
-    ["Allumé : des lignes pour poser ce buff à ton groupe (sauf les tanks), puis pour le retirer aux tanks qui l'ont. Clic : éteindre."] = "On: lines to cast this buff on your group (tanks excepted), then to remove it from tanks who have it. Click to turn off.",
-    ["Éteint : pas de lignes pour ce buff. Clic : allumer."] = "Off: no lines for this buff. Click to turn on.",
+    -- D53 : le tableau réduit à sa barre de titre (2026-11-03)
+    ["Réduire le tableau à sa barre de titre"] = "Collapse the panel to its title bar",
+    ["Déplier le tableau"] = "Expand the panel",
+    ["Réduit, la touche « buff suivant » buffe toujours le premier de la liste."] = "Collapsed, the “Next buff” key still buffs the top of the list.",
 }
 for k, v in pairs(T) do NS.L[k] = v end

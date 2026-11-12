@@ -265,6 +265,13 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   buffer te met PvP. Sauf quand tu es déjà marqué toi-même : D50.
 - **D6 : l'addon propose d'activer les plaques amies** (en mode « noms seuls ») à la première
   ouverture. Si tu refuses, la question ne revient pas, et une liste vide dit pourquoi.
+  *Pas codé* (registre, 2026-10-05). Ce qui existe : plaques coupées, le pied dit la cause, « Plaques
+  des joueurs amis coupées : l'addon ne voit pas les joueurs autour de toi. », puis où les rallumer,
+  avec les libellés du jeu dans sa langue (`GAMEMENU_OPTIONS` > `NAMEPLATE_OPTIONS_LABEL` >
+  `UNIT_NAMEPLATES_SHOW_FRIENDS`, chemin lu dans le code d'UI de Forever 70707 ; sans l'un d'eux,
+  pas de chemin). Avant le 2026-11-07, il disait « seuls toi et ton groupe sont vus », qu'un joueur
+  a pris pour la case « Groupe seul » restée cochée (CurseForge, 2026-11-07). Code : `Units:PlatesPath`,
+  `UI.Footer`.
 - **D7 : une ligne par joueur**, qui propose le prochain buff qui lui manque.
 - **D8 : l'ordre est FIFO.** Le premier joueur entré dans la liste est en tête. ~~Ni toi ni ton
   groupe ne passez devant~~ : le groupe passe devant depuis D30 (2026-10-05). Le FIFO tient à
@@ -299,7 +306,8 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   les options du jeu (Options > AddOns > Serial Buffer). Chaque cible reçoit la première bénédiction
   de la liste que le paladin connaît, qui est cochée et qui lui sert (D23). Une bénédiction que tu ne
   connais pas encore (Rois est un talent) cède simplement sa place à la suivante. Salut n'est pas dans
-  la liste. Cela règle Q12.
+  la liste. Cela règle Q12. *Depuis le build 70753 de Forever (2026-11-02), ni le Salut ni la Lumière
+  n'existent plus dans le jeu (table `SpellName`, lue le 2026-11-03) : l'addon ne les connaît plus.*
 - **D24 : une cible trop basse pour un buff sort de la liste POUR CE BUFF**, jusqu'à ce qu'elle monte
   de niveau (retour du user en jeu, 2026-10-04 : « malgré l'erreur target too low elle reste dans la
   liste »). Un paladin passe à la bénédiction suivante de sa priorité ; un prêtre au buff suivant ;
@@ -369,7 +377,9 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   colonne par classe de la cible ; une case cochée = ce buff se pose sur cette classe.
   - **Paladin** : les six bénédictions (Rois, Sagesse, Puissance, Salut, Lumière, Sanctuaire ; choix
     du user le 2026-10-05). *Depuis le 2026-10-16, cinq : le Salut n'est plus une bénédiction sur
-    Forever et quitte la grille pour ses propres lignes (`salut.md`, S-Q2).* Salut, Lumière et
+    Forever et quitte la grille pour ses propres lignes (`salut.md`, S-Q2). Depuis le build 70753
+    (2026-11-02), quatre : Rois, Sagesse, Puissance, Sanctuaire ; la Lumière et le Salut ont quitté le
+    jeu, et les lignes de Salut avec eux.* Salut, Lumière et
     Sanctuaire sont **décochées partout par défaut**
     (proposé par l'agent dans la question, retenu). Chaque cible reçoit la première bénédiction de
     la priorité (D22) qui est connue, cochée pour sa classe, et qu'elle peut recevoir (D23, D24,
@@ -489,6 +499,35 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   `Cast:Done`), et les seuils appris repartent de zéro une fois (`schemaVer` 4). *Pas fait :* relier
   l'erreur au sort qui échoue (`UI_ERROR_MESSAGE` ne le porte pas ; `UNIT_SPELLCAST_FAILED` n'a pas
   été mesuré sur Forever pour ce refus).
+- **D54 : trop bas pour un rang, la ligne repasse au rang inférieur du MÊME buff** (rangée ici, près
+  de D38 qu'elle complète ; prise le 2026-11-12, après un commentaire CurseForge relayé par le user :
+  « If other players are lower level (10-12 level vs my 30+) I simply don't buff them anymore as a
+  paladin. Not Kings, not Wisdom, Might, etc. I can, and I do manually ». Le user, entre deux options :
+  « (a) », contre la prédiction du rang par le niveau d'apprentissage, qui coderait une règle jamais
+  mesurée). Lancé par son nom, un sort part au plus haut rang connu ; à 30+, Puissance rang 3 ou 4 et
+  Sagesse rang 2 ou 3 sont trop forts pour un niveau 10-12, le jeu refuse, D38 apprenait le refus et,
+  tout refusé, le joueur sortait (D24). Désormais, refusé « trop bas », un rang cède au rang
+  inférieur connu du même buff ; quand plus aucun rang ne passe, on change de buff comme avant.
+  Chaque rang garde son propre seuil appris (D38) : toujours aucun niveau codé en dur. Le plus haut
+  rang se lance comme avant, par le nom seul (même clé `tooLow`, les seuils déjà appris gardent leur
+  sens) ; un rang inférieur se lance par « Nom(Rang N) », sous-texte du client
+  (`C_Spell.GetSpellSubtext`). Les ids des rangs : tables du client Forever (`SpellName`,
+  `Spell.NameSubtext_lang`, `SpellLevels` sur wago.tools, build 1.60.1.70888, lues le 2026-11-12),
+  dans `SerialBuffer_Rangs.lua`. *Conséquences dérivées, non décidées par le user :*
+  - les buffs des autres classes qui ont des rangs (Intelligence des Arcanes, Robustesse, Esprit
+    divin, Protection contre l'Ombre, Marque du fauve, Épines, Détection de l'invisibilité) suivent la
+    même règle : un mage de niveau 30 butait de la même façon sur un niveau 10 ;
+  - D24 (ce joueur, cette séance) est désormais tenu par RANG : le refus du rang 3 laisse le rang 2
+    permis au même joueur ;
+  - un sous-texte vide (donnée du sort pas encore chargée) saute ce rang, qui revient au prochain
+    `SPELLS_CHANGED` ;
+  - le coût : un clic refusé par rang et par niveau, une fois pour tout le compte (D38).
+
+  *À mesurer avant de publier :* que le jeu accepte `Nom(Rank 2)` dans un `/cast` de macro sécurisée
+  (la forme `nom(sous-texte)` est documentée pour `C_Spell`, jamais éprouvée dans un `/cast` sur
+  Forever) ; le sous-texte sur un client français (« Rang 2 ») ; si Rois se refuse sous le niveau 10
+  (rang unique, appris au niveau 20). Le cas « Not Kings » du joueur n'est pas expliqué par D54 : sans
+  le talent, Rois n'est pas proposé ; avec, un `tooLow[20217]` à 10 ou plus serait un autre problème.
 - **D39 : une ligne affiche le temps qui reste au buff qu'elle refait, décompté en combat** (user,
   2026-10-05, après un donjon : « c'est quand les buffs dépop en combat », puis « rajouter les
   lignes des membres où il ne reste que 10 min, avec le temps restant »). Un buff qui expire bientôt
@@ -710,6 +749,26 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   mesure du user (`mesure--auras-secretes`), diront s'il faut le garder. *Pas mesuré :* rien de D52
   en champ de bataille. Code : `Units:AurasHidden`, `Units.probe.aura` ("hidden"), `Units:Deaths`,
   `Queue` (`readAura`, `blind`, `Forget`), `Run` (tic), `UI.Footer`, `/sbuff aveugle`.
+- **D53 : un bouton « réduire » replie le tableau à sa barre de titre** (un joueur, CurseForge,
+  2026-11-03 : « can we have a toggle to turn off the window in big cities? Either a toggle or a way
+  to minimize it into the header bar » ; le user a choisi le bouton le même jour, plutôt qu'une
+  cachette automatique en capitale, la ville étant là où l'addon sert le plus). Un bouton **− / +** à
+  gauche du titre : un clic replie le tableau (plus de lignes, ni de titres de partie, ni de ligne
+  « À tous : » ; la barre de titre reste, compteur compris), un second le déplie. Du pied, le tableau
+  réduit **garde les messages d'état** (en instance, plaques amies coupées, pas de buff, buffs cachés
+  par le jeu : ils disent pourquoi le compteur est ce qu'il est ; choix du user, 2026-11-03) et cache
+  le reste (« +N autres », illisibles, « Tournée finie ! »). L'état
+  est gardé (`db.collapsed`, déplié par défaut). **Réduit, la file se calcule toujours** (choix du
+  user) : le compteur reste juste et la touche « buff suivant » buffe le premier de la liste, en
+  combat compris (spec `touche-en-combat.md`). Rien ne change pour `/sbuff`, qui cache le tableau
+  entier et vide la touche.
+  *Dérivé :* hors combat seulement, comme `/sbuff` (replier cache des boutons sécurisés et retaille
+  un panneau protégé) : en combat, un clic dit « Pas pendant un combat. ». Les textures sont celles
+  du journal de quêtes vanilla (`Interface\Buttons\UI-MinusButton-Up` / `UI-PlusButton-Up` et
+  `-Hilight`, citées par `Blizzard_UIPanels_Game/Vanilla/QuestLogFrame.lua` de Forever 70707 ; pas
+  de `-Down`, que Blizzard n'y pose pas) ; − = déplié, + = réduit. Le
+  bouton prend 14 px à la touche de l'en-tête, qui se raccourcit plus tôt (D41). Code :
+  `UI:SetCollapsed`, `UI.Shape`, `Tank:ShowLine`, `Header:Room`, `db.collapsed`.
 
 ## Questions ouvertes (au user)
 
@@ -807,8 +866,9 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
 23. [humain] (D34) Dans la grille, passer le 1er choix de la colonne Guerrier de Rois à Puissance
     (clic ou molette) : le tableau propose aussitôt Puissance aux guerriers, et Rois aux autres
     classes. La molette sur une case change la case sans faire défiler le panneau. Dans la colonne
-    Guerrier, Sagesse n'est jamais proposée. Choisir Salut dans « Toutes » puis Remplir : Salut en
-    1er choix partout. ↺ sous Guerrier remet sa colonne. Le réglage survit à un `/reload`.
+    Guerrier, Sagesse n'est jamais proposée. Choisir Sagesse dans « Toutes » puis Remplir : Sagesse en
+    1er choix partout, sauf guerrier et voleur (D23). *(Le critère disait « Salut », retiré du jeu au
+    build 70753.)* ↺ sous Guerrier remet sa colonne. Le réglage survit à un `/reload`.
 24. [test] (D34) Le défaut de chaque colonne ; le cycle d'une case (vide → buffs → vide), qui saute
     les buffs interdits (D23) et ceux déjà pris dans la colonne ; Remplir, qui laisse une case
     interdite et échange un doublon ; ↺ et « Tout par défaut » ; une case vide ne propose rien ;
@@ -828,6 +888,16 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     clic sur Gnomi → « too low level » → la ligne passe à Sagesse, refusée → Puissance, qui passe.
     Après un `/reload`, Gnomi se voit proposer Puissance d'emblée. `SerialBufferDB.tooLow` porte les
     rangs de Rois et de Sagesse à 2. Témoin connu-bon : la v0.2.0-beta, où Gnomi n'avait plus rien.
+28b. [test] (D54) Les rangs d'un buff, du plus haut (nom seul, clé `entry.rank`) au plus bas
+    (« Nom(sous-texte) »), sans doublon ; un sous-texte vide saute ce rang ; un sort à un seul rang n'a
+    que son nom. Un rang appris trop bas (D38) ou refusé à ce joueur (D24, par rang) cède au rang
+    d'en dessous du même buff ; tous refusés, le buff suivant. La ligne, la macro, le clic et la
+    touche en combat portent le rang jusqu'à l'erreur « trop bas » (`tests/test_serialbuffer_rangs.lua`).
+28c. [humain] (D54) Le paladin du banc, niveau 30+, près d'un joueur de niveau 10 à 12 sans
+    bénédiction : un clic sur sa ligne → au pire « too low level », la ligne RESTE et le clic suivant
+    pose la bénédiction (un rang plus bas) ; le joueur sort de la liste. `SerialBufferDB.tooLow` porte
+    le rang refusé (pas 19740 / 19742) au niveau de ce joueur. Témoin connu-bon : la v0.8.1, où ce
+    joueur sortait de la liste sans rien recevoir.
 29. [test] (D39) Une ligne porte le temps restant du buff qu'elle refait (aucun si le buff est
     absent) et son heure de fin ; le décompte rend le temps qui reste à un instant donné, et zéro
     passé l'heure de fin ; un membre du groupe en combat entre dans la liste, un inconnu en combat
@@ -915,6 +985,17 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     combat, le pied dit « Buffs hidden by the game… » si le jeu cache les auras ; un allié buffé sort
     de la liste et y revient après sa mort. Les sondes SB1 / SB3 (commentaire CurseForge) disent
     lequel des signes s'est levé.
+45. [test] (D53) Réduit : aucune ligne quelle que soit la limite de D51, et du pied les seuls
+    messages d'état (plaques coupées, à l'aveugle, classe sans buff) ; déplié : la limite et le pied
+    d'avant. Le bouton refuse en combat sans rien changer ; hors combat il bascule
+    `db.collapsed` et recalcule le tableau. La place de la touche de l'en-tête compte le bouton
+    (`test_serialbuffer_rows.lua`, `_header.lua`).
+46. [humain] (D53) Sur le paladin du banc, en ville avec au moins 3 joueurs à buffer : un − est à
+    gauche de « Serial Buffer », sans chevaucher le titre. Un clic : le tableau se replie à sa barre
+    de titre, le − devient +, le compteur dit toujours « N à buffer ». La touche « buff suivant »
+    buffe un joueur et le compteur baisse. `/reload` : toujours réduit. Le + : la liste revient, comme
+    avant. En combat, un clic sur le bouton dit « Pas pendant un combat. » et rien ne bouge. Aucune
+    erreur Lua. Témoin connu-bon : `/sbuff`, qui cache et rend le tableau entier de la même façon.
 
 ## Contrat
 
@@ -924,7 +1005,7 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
   `off`, `priority` et `classBuffs`, migrés par `schemaVer` 3), la ligne « Groupe / raid »
   (`groupPick`, classe du lanceur → classe de la cible → id ; D35), les refus « trop bas » appris
   (`tooLow`, rang de sort → niveau ; D38), l'option PvP, la case « Groupe seul » (`groupOnly` ; D40),
-  les lignes du tableau au plus (`maxRows` ; D51), la durée des buffs lue en clair (`auraDur`, nom
+  les lignes du tableau au plus (`maxRows` ; D51), le tableau réduit (`collapsed` ; D53), la durée des buffs lue en clair (`auraDur`, nom
   de sort → secondes, une donnée du sort et pas du joueur ; D52), la réponse à la
   proposition des plaques et la position du tableau (son coin haut gauche). Pour le diagnostic, `seenErrors` : le
   nom et le texte des erreurs du jeu vues juste après un de nos clics. **Aucun nom de joueur, aucun

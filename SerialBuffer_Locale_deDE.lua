@@ -19,7 +19,8 @@ local T = {
     ["PvP"]                                                                         = "PvP",
     ["En instance : seul ton groupe est listé."]                                    = "In einer Instanz: nur deine Gruppe wird aufgelistet.",
     ["Ta classe n'a pas de buff à poser sur les autres."]                           = "Deine Klasse hat keinen Buff für andere.",
-    ["Plaques des joueurs amis coupées : seuls toi et ton groupe sont vus."]        = "Namensplaketten freundlicher Spieler sind aus: nur du und deine Gruppe werden gesehen.",
+    ["Plaques des joueurs amis coupées : l'addon ne voit pas les joueurs autour de toi."] = "Namensplaketten freundlicher Spieler sind aus: das Addon sieht die Spieler um dich herum nicht.",
+    ["Pour les voir : %s > %s > %s."]                                               = "Um sie zu sehen: %s > %s > %s.",
     ["+%d autres"]                                                                  = "+%d weitere",
     ["Personne à buffer autour de toi."]                                            = "Niemand in deiner Nähe braucht einen Buff.",
     ["Tournée finie !"]                                                             = "Runde fertig!",
@@ -137,8 +138,9 @@ local T = {
     ["(/sbuff %s %s pour changer)"] = "(/sbuff %s %s zum Ändern)",
     -- D51 : lignes du tableau au plus (2026-10-14)
     ["Lignes du tableau, au plus"] = "Max. Zeilen in der Tabelle",
-    -- salut.md : l'icône du Salut dans l'en-tête (2026-10-16)
-    ["Allumé : des lignes pour poser ce buff à ton groupe (sauf les tanks), puis pour le retirer aux tanks qui l'ont. Clic : éteindre."] = "An: Zeilen, um diesen Buff auf deine Gruppe zu wirken (außer Tanks), dann um ihn Tanks zu entfernen, die ihn haben. Klick: ausschalten.",
-    ["Éteint : pas de lignes pour ce buff. Clic : allumer."] = "Aus: keine Zeilen für diesen Buff. Klick: einschalten.",
+    -- D53 : le tableau réduit à sa barre de titre (2026-11-03)
+    ["Réduire le tableau à sa barre de titre"] = "Tabelle auf die Titelleiste einklappen",
+    ["Déplier le tableau"] = "Tabelle ausklappen",
+    ["Réduit, la touche « buff suivant » buffe toujours le premier de la liste."] = "Eingeklappt bufft die Taste „Nächster Buff“ weiterhin den Ersten der Liste.",
 }
 for k, v in pairs(T) do NS.L[k] = v end

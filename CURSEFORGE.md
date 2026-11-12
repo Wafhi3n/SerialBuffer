@@ -18,12 +18,12 @@ and drops off the list. Or bind "Next buff" in the game's key bindings and just 
 - Mages, priests, druids, warlocks and shamans hand out all their buffs with no setup.
 - Paladins pick a first, second and third blessing per class in the options (Kings, Wisdom, Might
   by default), and skip what another paladin already cast.
-- Salvation gets its own lines when your group has a tank: everyone gets it but the tanks, and a
-  tank wearing it gets a Revoke line.
 - 10-minute buffs like Thorns stay in your group unless you tick "For everyone".
+- A player too low for your top rank gets the highest rank they can take.
 
 In combat the panel freezes, but the key keeps going down your group, one player per press. In
 battlegrounds the game hides buffs, so the list follows your own casts instead.
 
 You need friendly nameplates on (Options, Nameplates). In dungeons, only your group is listed.
-/sbuff shows or hides the panel, /sbuff options opens the settings. English, French, German, Spanish.
+/sbuff shows or hides the panel, the − next to its title folds it down, /sbuff options opens the
+settings. English, French, German, Spanish.

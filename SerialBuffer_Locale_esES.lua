@@ -20,7 +20,8 @@ local T = {
     ["PvP"]                                                                         = "JcJ",
     ["En instance : seul ton groupe est listé."]                                    = "En una instancia: solo se muestra tu grupo.",
     ["Ta classe n'a pas de buff à poser sur les autres."]                           = "Tu clase no tiene beneficios para lanzar a otros.",
-    ["Plaques des joueurs amis coupées : seuls toi et ton groupe sont vus."]        = "Placas de jugadores amistosos desactivadas: solo se ve a ti y a tu grupo.",
+    ["Plaques des joueurs amis coupées : l'addon ne voit pas les joueurs autour de toi."] = "Placas de jugadores amistosos desactivadas: el addon no ve a los jugadores a tu alrededor.",
+    ["Pour les voir : %s > %s > %s."]                                               = "Para verlos: %s > %s > %s.",
     ["+%d autres"]                                                                  = "+%d más",
     ["Personne à buffer autour de toi."]                                            = "Nadie a tu alrededor necesita un beneficio.",
     ["Tournée finie !"]                                                             = "¡Ronda terminada!",
@@ -138,8 +139,9 @@ local T = {
     ["(/sbuff %s %s pour changer)"] = "(/sbuff %s %s para cambiarlo)",
     -- D51 : lignes du tableau au plus (2026-10-14)
     ["Lignes du tableau, au plus"] = "Filas de la tabla, como máximo",
-    -- salut.md : l'icône du Salut dans l'en-tête (2026-10-16)
-    ["Allumé : des lignes pour poser ce buff à ton groupe (sauf les tanks), puis pour le retirer aux tanks qui l'ont. Clic : éteindre."] = "Activado: líneas para lanzar este beneficio a tu grupo (salvo los tanques) y luego para quitárselo a los tanques que lo tengan. Clic: desactivar.",
-    ["Éteint : pas de lignes pour ce buff. Clic : allumer."] = "Desactivado: sin líneas para este beneficio. Clic: activar.",
+    -- D53 : le tableau réduit à sa barre de titre (2026-11-03)
+    ["Réduire le tableau à sa barre de titre"] = "Plegar la tabla a su barra de título",
+    ["Déplier le tableau"] = "Desplegar la tabla",
+    ["Réduit, la touche « buff suivant » buffe toujours le premier de la liste."] = "Plegada, la tecla «Siguiente beneficio» sigue lanzando el beneficio al primero de la lista.",
 }
 for k, v in pairs(T) do NS.L[k] = v end

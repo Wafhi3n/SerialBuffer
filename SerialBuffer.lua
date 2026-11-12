@@ -6,7 +6,7 @@
 local ADDON, NS = ...
 local L = NS.L
 
-NS.VERSION = "0.8.1"   -- = ## Version du .toc ; scripts\bump_version.ps1 -Addon SerialBuffer la tient égale
+NS.VERSION = "0.9.0"   -- = ## Version du .toc ; scripts\bump_version.ps1 -Addon SerialBuffer la tient égale
 _G.SerialBuffer = NS
 
 -- Réglages par défaut. CopyDefaults complète la base sans écraser ce que le joueur a changé ;
@@ -28,6 +28,7 @@ NS.DEFAULTS = {
     tankAll = false,        -- D44 : coché, Épines (buff réservé aux tanks) va à tous ceux qui ne l'ont pas
     shortAll = {},          -- D47 : buff court coché « à tous » (id -> true) ; absent : toi et ton groupe
     maxRows = 16,           -- D51 : lignes du tableau au plus (1 à 16) ; le reste se compte au pied
+    collapsed = false,      -- D53 : le tableau réduit à sa barre de titre (bouton − / +)
     auraDur = {},           -- D52 : nom de buff -> durée totale lue en clair (s), pour le mode à l'aveugle
 }
 
@@ -126,6 +127,7 @@ f:SetScript("OnEvent", function(_, event, arg1)
         CopyDefaults(SerialBufferDB, NS.DEFAULTS)   -- une base neuve naît en schemaVer 4 : rien à migrer
         NS.Buffs:Migrate(SerialBufferDB)
         ForgetLearned(SerialBufferDB)
+        SerialBufferDB.salutOff = nil   -- l'interrupteur du Salut (v0.8.0), retiré du jeu au build 70753
         NS.db = SerialBufferDB
     elseif event == "PLAYER_LOGIN" then
         -- Muet à la connexion, sauf la première après une installation ou une mise à jour (règle
