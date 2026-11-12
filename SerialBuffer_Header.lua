@@ -57,8 +57,9 @@ end
 
 -- La place de la touche (le bouton entier), entre le libellé de la case et le compteur. CALCULÉE
 -- d'après les ancres, pas lue à l'écran : GetLeft/GetRight rendent nil tant que le tableau est
--- caché. Les écarts viennent des ancres elles-mêmes (le titre et le rouage : SerialBuffer_UI.lua ;
--- le scarabée : SerialBuffer_Report.lua), donc un déplacement de l'un d'eux est suivi.
+-- caché. Les écarts viennent des ancres elles-mêmes (le bouton − / + de D53, le titre et le rouage :
+-- SerialBuffer_UI.lua ; le scarabée : SerialBuffer_Report.lua), donc un déplacement de l'un d'eux est
+-- suivi.
 local GAP = 6   -- entre la touche et ses voisins (son ancre sur le compteur, keyButton)
 
 local function offsetX(region)
@@ -68,7 +69,8 @@ end
 
 function H:Room()
     local p, cb = self.panel, self.check
-    local left = offsetX(p.title) + p.title:GetStringWidth() + offsetX(cb) + cb:GetWidth()
+    local left = offsetX(p.fold) + p.fold:GetWidth() + offsetX(p.title) + p.title:GetStringWidth()
+        + offsetX(cb) + cb:GetWidth()
         + offsetX(cb.label) + cb.label:GetStringWidth()
     local right = p.count:GetStringWidth() - offsetX(p.count) + p.gear:GetWidth() - offsetX(p.gear)
     if p.report then right = right + p.report:GetWidth() - offsetX(p.report) end

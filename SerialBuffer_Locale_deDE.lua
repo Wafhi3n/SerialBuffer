@@ -137,5 +137,9 @@ local T = {
     ["(/sbuff %s %s pour changer)"] = "(/sbuff %s %s zum Ändern)",
     -- D51 : lignes du tableau au plus (2026-10-14)
     ["Lignes du tableau, au plus"] = "Max. Zeilen in der Tabelle",
+    -- D53 : le tableau réduit à sa barre de titre (2026-11-03)
+    ["Réduire le tableau à sa barre de titre"] = "Tabelle auf die Titelleiste einklappen",
+    ["Déplier le tableau"] = "Tabelle ausklappen",
+    ["Réduit, la touche « buff suivant » buffe toujours le premier de la liste."] = "Eingeklappt bufft die Taste „Nächster Buff“ weiterhin den Ersten der Liste.",
 }
 for k, v in pairs(T) do NS.L[k] = v end

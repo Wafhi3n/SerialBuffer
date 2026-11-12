@@ -138,5 +138,9 @@ local T = {
     ["(/sbuff %s %s pour changer)"] = "(/sbuff %s %s to change it)",
     -- D51 : lignes du tableau au plus (2026-10-14)
     ["Lignes du tableau, au plus"] = "Max rows in the panel",
+    -- D53 : le tableau réduit à sa barre de titre (2026-11-03)
+    ["Réduire le tableau à sa barre de titre"] = "Collapse the panel to its title bar",
+    ["Déplier le tableau"] = "Expand the panel",
+    ["Réduit, la touche « buff suivant » buffe toujours le premier de la liste."] = "Collapsed, the “Next buff” key still buffs the top of the list.",
 }
 for k, v in pairs(T) do NS.L[k] = v end
