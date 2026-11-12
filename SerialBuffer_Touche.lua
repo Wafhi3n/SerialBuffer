@@ -52,7 +52,7 @@ function T.List(rows)
         local macro = NS.Cast.CombatClickable(row) and NS.Cast.MacroFor(row)
         if macro then
             list[#list + 1] = { unit = row.self and "player" or row.unit, macro = macro, guid = row.guid,
-                                buff = row.buff.name, level = row.level }
+                                buff = row.buff.name, level = row.level, rank = row.rank }
             if #list >= T.MAX then break end
         end
     end

@@ -25,6 +25,7 @@ SerialBuffer_Toast.lua
 # Modules (spec docs\specs\serial-buffer.md) : ce que ta classe pose, la file FIFO (logique pure),
 # la lecture du client, le tableau, la grille buffs x classes des options, la boucle qui les relie.
 SerialBuffer_Buffs.lua
+SerialBuffer_Rangs.lua
 SerialBuffer_Queue.lua
 SerialBuffer_Units.lua
 SerialBuffer_Cast.lua

@@ -24,6 +24,7 @@ function R:ResolveBuffs()
     if not NS.Buffs:HasCatalog(class) then self.noBuffs = true return end
     local n = NS.Buffs:Resolve(class)
     self.noBuffs = (n == 0)
+    NS.Ranks:Attach(NS.Buffs.known)   -- D54 : les rangs connus de chaque buff, du plus haut au plus bas
     if n == 0 and not self.warned and not NS.Buffs:AnyNamed(class) then
         self.warned = true
         local ids = {}
@@ -99,9 +100,9 @@ function R:OnError(errorType, message)
     end
     local kind, click = NS.Cast:OnError(name, msg, GetTime())
     if kind == "lowlevel" then
-        NS.Queue:TooLow(click.guid, click.buff, click.level)          -- D24 : ce joueur, cette séance
+        NS.Queue:TooLow(click.guid, click.rank or click.buff, click.level)   -- D24 : ce joueur, ce rang (D54)
         local e = NS.Buffs:ByName(click.buff)
-        NS.Queue.LearnLow(NS.db, e and e.rank, click.level)           -- D38 : ce rang, pour tous, gardé
+        NS.Queue.LearnLow(NS.db, click.rank or (e and e.rank), click.level)  -- D38 : ce rang, pour tous, gardé
     elseif kind == "stronger" then NS.Queue:Stronger(click.guid, click.buff, GetTime())
     elseif kind == "target" then NS.Queue:Requeue(click.guid) end
     if kind then refreshNow() end
@@ -113,11 +114,11 @@ function R:OnCast(spellID)
     local click = NS.Cast:Recent(GetTime())
     if not click or not click.buff or (issecretvalue and issecretvalue(spellID)) then return end
     local name = C_Spell.GetSpellName and C_Spell.GetSpellName(spellID)
-    if name == click.buff then
+    if name == click.buff or spellID == click.rank then   -- D54 : un rang au nom différent (D46) compte
         NS.Cast:Done()   -- une erreur qui suit ne vient plus de ce clic (D38, revue du 2026-10-11)
         NS.Queue:Cast(click.guid, click.buff, GetTime())
         local e = NS.Buffs:ByName(click.buff)
-        NS.Queue.LearnOk(NS.db, e and e.rank, click.level)            -- D38 : un seuil faux se corrige
+        NS.Queue.LearnOk(NS.db, click.rank or (e and e.rank), click.level)   -- D38 : un seuil faux se corrige
         if InCombatLockdown() then NS.UI:MarkDone(click.guid) end   -- D36 : la ligne se grise
     end
 end
