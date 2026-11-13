@@ -26,4 +26,5 @@ battlegrounds the game hides buffs, so the list follows your own casts instead.
 
 You need friendly nameplates on (Options, Nameplates). In dungeons, only your group is listed.
 /sbuff shows or hides the panel, the − next to its title folds it down, /sbuff options opens the
-settings. English, French, German, Spanish.
+settings. English, French, German, Spanish, and Korean in beta (fixes welcome as a pull request on
+GitHub).
