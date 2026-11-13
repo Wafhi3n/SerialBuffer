@@ -1,6 +1,6 @@
 # Changelog - Serial Buffer
 
-## Unreleased
+## v0.10.0-beta - 2026-11-13
 
 - Serial Buffer now speaks Korean. This is a first draft, made without a Korean speaker, so it ships
   as a beta. If a line reads wrong, the file is `SerialBuffer_Locale_koKR.lua` on GitHub, and the

@@ -2,7 +2,7 @@
 ## Title: Serial Buffer
 ## Notes: Serial Buffer - /sbuff
 ## Author: Wafhien
-## Version: 0.9.0
+## Version: 0.10.0-beta
 ## SavedVariables: SerialBufferDB
 ## IconTexture: Interface\AddOns\SerialBuffer\Textures\icon.tga
 
