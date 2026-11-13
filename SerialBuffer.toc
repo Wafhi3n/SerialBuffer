@@ -15,7 +15,7 @@ SerialBuffer_Locale.lua
 SerialBuffer_Locale_enUS.lua
 SerialBuffer_Locale_deDE.lua
 SerialBuffer_Locale_esES.lua
-# Coréen (D56, bêta) : relu par les joueurs coréens, par pull request.
+# Coreen (D56, beta) : relu par les joueurs coreens, par pull request.
 SerialBuffer_Locale_koKR.lua
 
 # Socle : table d'addon, SavedVariables, commande /sbuff.

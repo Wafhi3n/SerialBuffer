@@ -806,7 +806,10 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
     porte l'anglais en commentaire, puisque la clé est le français ; le README a une section
     « Translations » qui dit comment proposer une correction ;
   - la porte de locale vérifie koKR comme les autres (`check_locale.lua` ajoute toute langue qu'un
-    fichier `_Locale_<xxXX>` porte dans son nom) : clé manquante, `%s` / `%d`, parité avec enUS ;
+    fichier `_Locale_<xxXX>` porte dans son nom) : clé manquante, `%s` / `%d`, parité avec enUS.
+    **Coût permanent** : toute phrase d'interface ajoutée ou retouchée dans Serial Buffer demande
+    désormais sa ligne coréenne, sinon la porte bloque (premier jet de notre main, signalé à la
+    relecture des joueurs) ;
   - le dépôt n'a aucune CI : **avant de fusionner une pull request de traduction, le mainteneur
     passe `check_locale.ps1 SerialBuffer` sur sa copie** (une clé française retouchée par erreur, un
     `%d` perdu, c'est ce qu'elle attrape) ;
