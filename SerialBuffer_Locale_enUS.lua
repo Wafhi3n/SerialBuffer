@@ -1,11 +1,15 @@
 -- SerialBuffer_Locale_enUS.lua — overlay ANGLAIS (enUS/enGB). Clé FR → texte EN.
--- Chargé APRÈS SerialBuffer_Locale.lua (qui crée NS.L). Sur un client non anglais : early-return.
+-- Chargé APRÈS SerialBuffer_Locale.lua (qui crée NS.L). Sur un client français : early-return.
+-- D55 : sur tout autre client (koKR, zhCN, ruRU, ptBR... et deDE / esES), la table devient le REPLI
+-- (NS.LocaleEN, lu par la métatable de NS.L) au lieu d'être posée dans NS.L : une clé que l'overlay
+-- de la langue ne traduit pas rend l'anglais, et check_locale (qui lit NS.L par pairs) voit toujours
+-- exactement les clés de chaque overlay.
 local _, NS = ...
 NS = NS or _G.SerialBuffer
 if not NS or not NS.L then return end
 
 local locale = GetLocale and GetLocale() or "enUS"
-if locale ~= "enUS" and locale ~= "enGB" then return end
+if locale == "frFR" then return end
 
 local T = {
     ["version %s. Tape /%s aide pour l'aide."]                                      = "version %s. Type /%s help for help.",
@@ -144,4 +148,5 @@ local T = {
     ["Déplier le tableau"] = "Expand the panel",
     ["Réduit, la touche « buff suivant » buffe toujours le premier de la liste."] = "Collapsed, the “Next buff” key still buffs the top of the list.",
 }
+if locale ~= "enUS" and locale ~= "enGB" then NS.LocaleEN = T; return end
 for k, v in pairs(T) do NS.L[k] = v end

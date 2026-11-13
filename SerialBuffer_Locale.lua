@@ -6,9 +6,16 @@
 -- Le repli passe par la métatable (invisible à pairs) : la porte scripts\check_locale.ps1 peut donc
 -- lire exactement les clés qu'un overlay pose. Elle charge ces fichiers par dofile SANS varargs,
 -- d'où la reprise par la globale _G.SerialBuffer ci-dessous.
+--
+-- D55 : hors d'un client français, une clé qu'aucun overlay ne pose rend l'ANGLAIS, pas le français.
+-- L'overlay enUS range sa table dans NS.LocaleEN sur tout client ni anglais ni français (koKR, zhCN,
+-- ruRU, ptBR... et sous deDE / esES) ; la métatable la lit à chaque accès (elle est encore nil ici).
 local _, NS = ...
 NS = NS or _G.SerialBuffer
 if not NS then return end
 _G.SerialBuffer = NS
 
-NS.L = setmetatable({}, { __index = function(_, k) return k end })
+NS.L = setmetatable({}, { __index = function(_, k)
+    local en = NS.LocaleEN
+    return en and en[k] or k
+end })

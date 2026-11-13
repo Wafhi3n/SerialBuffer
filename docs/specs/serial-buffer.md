@@ -769,6 +769,26 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   de `-Down`, que Blizzard n'y pose pas) ; − = déplié, + = réduit. Le
   bouton prend 14 px à la touche de l'en-tête, qui se raccourcit plus tôt (D41). Code :
   `UI:SetCollapsed`, `UI.Shape`, `Tank:ShowLine`, `Header:Room`, `db.collapsed`.
+- **D55 : hors d'un client français, une phrase sans traduction s'affiche en ANGLAIS** (un joueur,
+  CurseForge, 2026-11-13, client coréen : « Would it be possible to add Korean language support? […]
+  could you at least add an option to manually select the language […] Being able to manually
+  select English would already be very helpful » ; *proposée par Claude le même jour, à confirmer
+  par le user* ; le coréen et le choix manuel restent ouverts, Q14). La clé de la locale est le texte
+  français, et l'overlay anglais ne se posait que sous enUS / enGB : un client koKR, zhCN, zhTW,
+  ruRU, ptBR ou itIT ne chargeait aucun overlay et lisait la clé, donc du français. Désormais
+  l'overlay anglais ne se retire que sous frFR. Sous enUS / enGB il se pose dans `NS.L` comme avant ;
+  sur tout autre client il devient le REPLI (`NS.LocaleEN`, lu par la métatable de `NS.L`).
+  *Conséquences dérivées :*
+  - sous deDE / esES / esMX, une phrase que leur overlay ne traduit pas rend l'anglais, plus le
+    français (la porte de locale les exige toutes ; c'est le filet d'une clé oubliée) ;
+  - le repli reste hors de `NS.L` : `check_locale` lit `NS.L` par `pairs` et continue de voir
+    exactement les clés de chaque overlay (une clé allemande manquante reste signalée) ;
+  - la porte ne simule que enUS / deDE / esES : rien d'elle ne garde frFR, c'est le test qui le fait ;
+  - les sorts, rangs et erreurs du jeu viennent déjà du client, dans sa langue : seul le chrome de
+    l'addon change. Les verbes de `/sbuff` acceptent déjà l'anglais (`help`, `around`, `key`,
+    `blind`, `group`).
+  Code : `SerialBuffer_Locale.lua` (métatable), `SerialBuffer_Locale_enUS.lua` (garde frFR,
+  `NS.LocaleEN`).
 
 ## Questions ouvertes (au user)
 
@@ -785,6 +805,14 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
   priorité prend sa place.
 - ~~Q11 : un joueur trop bas pour ton buff~~ : réglée par D24.
 - ~~Q13 : un joueur à qui il manque deux buffs~~ : réglée par D29.
+- **Q14 : le coréen, et un choix manuel de la langue** (le joueur de D55, 2026-11-13). Deux pistes,
+  en plus de l'anglais de D55 :
+  - **(a)** un overlay koKR (≈ 130 phrases) : il faut un relecteur qui lit le coréen (le joueur
+    s'est-il proposé ?), sinon le texte est une traduction machine que personne ici ne peut juger ;
+    la porte de locale ne connaît que enUS / deDE / esES, une clé oubliée y rendrait l'anglais ;
+  - **(b)** un choix de langue dans les options : les overlays se posent au chargement des fichiers,
+    AVANT les SavedVariables ; il faudrait les garder tous en tables et choisir à `ADDON_LOADED`, et
+    tout texte lu au chargement (raccourcis, cadres construits tôt) ne suivrait qu'après `/reload`.
 
 ## Critères d'acceptation
 
@@ -996,6 +1024,14 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     buffe un joueur et le compteur baisse. `/reload` : toujours réduit. Le + : la liste revient, comme
     avant. En combat, un clic sur le bouton dit « Pas pendant un combat. » et rien ne bouge. Aucune
     erreur Lua. Témoin connu-bon : `/sbuff`, qui cache et rend le tableau entier de la même façon.
+47. [test] (D55) frFR : le français, sans repli ; enUS / enGB : l'anglais posé dans `NS.L` ; koKR :
+    l'anglais par la métatable, rien dans `NS.L` ; deDE / esMX : leur overlay, et une clé qu'il ne
+    traduit pas rend l'anglais. Sous koKR, la ligne de connexion nomme « help » et `/sbuff help`
+    affiche l'aide en anglais (`test_serialbuffer_locale.lua`).
+48. [humain] (D55) Le banc n'a aucun client coréen : sur le client du banc, rien ne change (le
+    tableau, les options et `/sbuff help` dans la langue d'avant, aucune erreur Lua). Le relevé koKR
+    est la réponse du joueur (le tableau et `/sbuff help` en anglais) : il ne s'écrit au registre
+    qu'une fois cette réponse reçue, citée comme telle.
 
 ## Contrat
 

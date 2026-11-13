@@ -1,5 +1,10 @@
 # Changelog - Serial Buffer
 
+## Unreleased
+
+- On a game client in a language Serial Buffer doesn't translate (Korean, Chinese, Russian,
+  Portuguese, Italian...), the addon showed its French text. It now falls back to English.
+
 ## v0.9.0 - 2026-11-12
 
 - Players well below your level get your blessings again. Cast by name, a blessing goes out at your
