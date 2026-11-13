@@ -1,5 +1,13 @@
 # Changelog - Serial Buffer
 
+## Unreleased
+
+- Serial Buffer now speaks Korean. This is a first draft, made without a Korean speaker, so it ships
+  as a beta. If a line reads wrong, the file is `SerialBuffer_Locale_koKR.lua` on GitHub, and the
+  README explains how to send a fix.
+- On a game client in a language Serial Buffer doesn't translate (Chinese, Russian, Portuguese,
+  Italian...), the addon showed its French text. It now falls back to English.
+
 ## v0.9.0 - 2026-11-12
 
 - Players well below your level get your blessings again. Cast by name, a blessing goes out at your

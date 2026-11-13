@@ -769,6 +769,56 @@ Toutes prises par le user : D1 à D29 le 2026-10-04, D30 à D33 le 2026-10-05.
   de `-Down`, que Blizzard n'y pose pas) ; − = déplié, + = réduit. Le
   bouton prend 14 px à la touche de l'en-tête, qui se raccourcit plus tôt (D41). Code :
   `UI:SetCollapsed`, `UI.Shape`, `Tank:ShowLine`, `Header:Room`, `db.collapsed`.
+- **D55 : hors d'un client français, une phrase sans traduction s'affiche en ANGLAIS** (un joueur,
+  CurseForge, 2026-11-13, client coréen : « Would it be possible to add Korean language support? […]
+  could you at least add an option to manually select the language […] Being able to manually
+  select English would already be very helpful » ; *proposée par Claude le même jour* ; le coréen :
+  D56, le choix manuel : non retenu, Q14). La clé de la locale est le texte
+  français, et l'overlay anglais ne se posait que sous enUS / enGB : un client koKR, zhCN, zhTW,
+  ruRU, ptBR ou itIT ne chargeait aucun overlay et lisait la clé, donc du français. Désormais
+  l'overlay anglais ne se retire que sous frFR. Sous enUS / enGB il se pose dans `NS.L` comme avant ;
+  sur tout autre client il devient le REPLI (`NS.LocaleEN`, lu par la métatable de `NS.L`).
+  *Conséquences dérivées :*
+  - sous deDE / esES / esMX, une phrase que leur overlay ne traduit pas rend l'anglais, plus le
+    français (la porte de locale les exige toutes ; c'est le filet d'une clé oubliée) ;
+  - le repli reste hors de `NS.L` : `check_locale` lit `NS.L` par `pairs` et continue de voir
+    exactement les clés de chaque overlay (une clé allemande manquante reste signalée) ;
+  - la porte ne simule que enUS / deDE / esES : rien d'elle ne garde frFR, c'est le test qui le fait ;
+  - les sorts, rangs et erreurs du jeu viennent déjà du client, dans sa langue : seul le chrome de
+    l'addon change. Les verbes de `/sbuff` acceptent déjà l'anglais (`help`, `around`, `key`,
+    `blind`, `group`).
+  Code : `SerialBuffer_Locale.lua` (métatable), `SerialBuffer_Locale_enUS.lua` (garde frFR,
+  `NS.LocaleEN`).
+- **D56 : un overlay coréen, publié en bêta, corrigé par les joueurs coréens par pull request**
+  (user, 2026-11-13, après le commentaire de D55 : « fait un module d'addon coréen que l'on mettra en
+  bêta, on le fera valider et on fournira le repo pour qu'ils puissent faire des merge requests pour
+  changer les trad au cas où »). `SerialBuffer_Locale_koKR.lua` traduit toutes les clés ; sous koKR
+  il se pose dans `NS.L`, et une clé qu'il n'a pas rend l'anglais (D55). La première version sort
+  dans une release **bêta** ; le joueur qui l'a demandée la valide ; le dépôt (public) reçoit les
+  corrections. Le choix manuel de la langue n'est pas retenu (Q14). *Conséquences dérivées, non
+  décidées par le user :*
+  - la traduction est un premier jet SANS locuteur coréen : les termes que le client affiche déjà
+    (rôle Tank `방어 전담`, `파티`, `공격대`, `파티장`, `부공격대장`, `설정`, `단축키 설정`, `사정 거리`,
+    `재료`, `전체`, `예` / `아니요`, `닫기`, classes, `축복`) sont copiés de GlobalStrings / ChrClasses /
+    SpellName koKR du build 1.60.1.70938 (wago.tools, 2026-11-13) ; le reste est notre formulation,
+    signalée en tête du fichier. « 버프 » est le mot des joueurs (le client dit `강화 지속효과`) ;
+  - l'en-tête du fichier est en ANGLAIS (les contributeurs ne lisent pas le français) et chaque ligne
+    porte l'anglais en commentaire, puisque la clé est le français ; le README a une section
+    « Translations » qui dit comment proposer une correction ;
+  - la porte de locale vérifie koKR comme les autres (`check_locale.lua` ajoute toute langue qu'un
+    fichier `_Locale_<xxXX>` porte dans son nom) : clé manquante, `%s` / `%d`, parité avec enUS.
+    **Coût permanent** : toute phrase d'interface ajoutée ou retouchée dans Serial Buffer demande
+    désormais sa ligne coréenne, sinon la porte bloque (premier jet de notre main, signalé à la
+    relecture des joueurs) ;
+  - le dépôt n'a aucune CI : **avant de fusionner une pull request de traduction, le mainteneur
+    passe `check_locale.ps1 SerialBuffer` sur sa copie** (une clé française retouchée par erreur, un
+    `%d` perdu, c'est ce qu'elle attrape) ;
+  - les codes courts de la souris de l'en-tête (`MH` / `MB` / `S%d`) deviennent `휠위` / `휠아래` /
+    `M%d` : plus larges que l'anglais, l'en-tête les raccourcit plus tôt (D41) ; à voir sur une
+    capture du joueur ;
+  - la liste de `/sbuff help` garde ses verbes français (`autour`, `touche`, `aveugle`, `groupe`) sur
+    tous les clients, comme avant ; les verbes anglais marchent aussi. Non changé ici.
+  Code : `SerialBuffer_Locale_koKR.lua`, `.toc`, `scripts/check_locale.lua` (outillage).
 
 ## Questions ouvertes (au user)
 
@@ -785,6 +835,14 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
   priorité prend sa place.
 - ~~Q11 : un joueur trop bas pour ton buff~~ : réglée par D24.
 - ~~Q13 : un joueur à qui il manque deux buffs~~ : réglée par D29.
+- ~~Q14 : le coréen, et un choix manuel de la langue~~ : réglée par D56 (le coréen, en bêta ; pas de
+  choix manuel). Les deux pistes telles qu'elles étaient posées (le joueur de D55, 2026-11-13) :
+  - **(a)** un overlay koKR (≈ 130 phrases) : il faut un relecteur qui lit le coréen (le joueur
+    s'est-il proposé ?), sinon le texte est une traduction machine que personne ici ne peut juger ;
+    la porte de locale ne connaît que enUS / deDE / esES, une clé oubliée y rendrait l'anglais ;
+  - **(b)** un choix de langue dans les options : les overlays se posent au chargement des fichiers,
+    AVANT les SavedVariables ; il faudrait les garder tous en tables et choisir à `ADDON_LOADED`, et
+    tout texte lu au chargement (raccourcis, cadres construits tôt) ne suivrait qu'après `/reload`.
 
 ## Critères d'acceptation
 
@@ -996,6 +1054,20 @@ Q1 à Q10 sont tranchées (D8 à D19) et D20, D21 ajoutées, toutes le 2026-10-0
     buffe un joueur et le compteur baisse. `/reload` : toujours réduit. Le + : la liste revient, comme
     avant. En combat, un clic sur le bouton dit « Pas pendant un combat. » et rien ne bouge. Aucune
     erreur Lua. Témoin connu-bon : `/sbuff`, qui cache et rend le tableau entier de la même façon.
+47. [test] (D55) frFR : le français, sans repli ; enUS / enGB : l'anglais posé dans `NS.L` ; zhCN
+    (aucun overlay) : l'anglais par la métatable, rien dans `NS.L` ; deDE / esMX : leur overlay, et
+    une clé qu'il ne traduit pas rend l'anglais. Sous zhCN, la ligne de connexion nomme « help » et
+    `/sbuff help` affiche l'aide en anglais (`test_serialbuffer_locale.lua`).
+48. [humain] (D55, D56) Le banc n'a aucun client coréen : sur le client du banc, rien ne change (le
+    tableau, les options et `/sbuff help` dans la langue d'avant, aucune erreur Lua).
+49. [test] (D56) koKR : chaque clé de l'anglais a sa traduction coréenne ; une clé retirée rend
+    l'anglais ; la ligne de connexion (avec « /sbuff help ») et `/sbuff help` sont en coréen
+    (`test_serialbuffer_locale.lua`). La porte de locale signale une clé koKR manquante et un `%d`
+    perdu (essayé le 2026-11-13 en retirant « Commandes : » puis le `%d` de « %d à buffer »).
+50. [humain] (D56) Le joueur coréen, sur la bêta : le tableau, les options et `/sbuff help` en
+    coréen, aucune erreur Lua ; ses captures du tableau et des options disent si un texte déborde
+    (en-tête, grille des options, codes de la souris). Ce relevé est SA réponse, citée comme telle,
+    et ne s'écrit au registre qu'une fois reçue.
 
 ## Contrat
 
