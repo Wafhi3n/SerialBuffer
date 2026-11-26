@@ -1,45 +1,40 @@
--- SerialBuffer_Daylight.lua — the panel in the Daylight UI look, when Daylight UI is installed.
+-- SerialBuffer_Daylight.lua: an optional Daylight UI look for the Serial Buffer panel.
 --
--- Built only on Daylight UI's public API (DaylightUI/API.md, version 1.7 or later):
--- me.RegisterSkin hands over Daylight UI's Kit once Serial Buffer has loaded, and Daylight UI runs
--- it out of combat. Without Daylight UI, or with its window skins turned off, nothing here runs.
--- Daylight UI lists "SerialBuffer" under General > Plugins, with a switch to turn the skin off.
+-- If Daylight UI isn't installed, this file does nothing. If it is, the panel, the bug report
+-- window and the toasts get Daylight UI's frames, fonts, colors and icons. Players can turn this
+-- off in Daylight UI under General > Plugins > "SerialBuffer".
 --
--- What changes: the panel's background and border, fonts and text colors, the header's icons, the
--- check boxes (Daylight UI's switches), the bug report window and the toasts.
--- What stays: every size, position and anchor (UI:Layout and Header:Room keep their numbers), the
--- secure rows themselves (only their font strings and icons are touched, never the buttons), the
--- class colors of the names and the colors that carry meaning (out of range, buffed, expired).
+-- It only uses Daylight UI's public API (DaylightUI/API.md, version 1.7 or later).
+-- It never moves or resizes anything, and never touches the secure row buttons themselves:
+-- only their text and icons are restyled.
 local _, NS = ...
 NS = NS or _G.SerialBuffer
 
-local Skin = {}
-NS.Daylight = Skin
+local NEEDS_API_MINOR = 7    -- first Daylight UI API version with everything used below
+local TITLE_SIZE = 13        -- panel title (its title bar is only 14 px high)
+local WINDOW_TITLE_SIZE = 15 -- bug report window title
+local ICON_SIZE = 14         -- gear and bug icons (on 16 px buttons)
+local CHEVRON_SIZE = 10      -- fold chevron (on a 12 px button)
+local CROP = { 0.08, 0.92, 0.08, 0.92 }   -- trims the border off spell icons
 
-local MIN_MINOR = 7     -- API.Media, API.Colors and the Kit calls used here
-local TITLE_SIZE = 13   -- Daylight UI's "body" size: the panel's title bar is only 14 px high
-local HEAD_SIZE = 15    -- "head": the bug report window's title
-local ICON = 14         -- the header's icons (gear, bug), on 16 px buttons
-local CHEVRON = 10      -- the fold button's chevron, on a 12 px button
-local CROP = { 0.08, 0.92, 0.08, 0.92 }   -- spell icons without the game's rim
--- Daylight UI's chevron points down: down = unfolded, right = folded to the title bar.
-local OPEN, FOLDED = 0, math.pi / 2
+-- Daylight UI's chevron points down. Down = panel open, right = panel folded.
+local CHEVRON_OPEN, CHEVRON_FOLDED = 0, math.pi / 2
 
-local API, Kit
-local icons = {}        -- [texture] = its button: tan at rest, the accent under the mouse
-local broken = false
+local API, Kit          -- Daylight UI's API and skin kit, set once Daylight UI hands them over
+local hoverIcons = {}   -- our header icons: tan normally, accent color on mouseover
+local chosenReport      -- which bug report button is selected (bug, idea or site)
+local broken = false    -- set after the first error, to switch the skin off
 
--- Daylight UI's API, if it's there and recent enough.
-local function daylight()
+local function getDaylightAPI()
     local dui = _G.DaylightUI
     local api = type(dui) == "table" and dui.API
-    if type(api) ~= "table" or api.major ~= 1 or (api.minor or 0) < MIN_MINOR then return nil end
+    if type(api) ~= "table" or api.major ~= 1 or (api.minor or 0) < NEEDS_API_MINOR then return nil end
     return api
 end
 
--- Hooks on Serial Buffer's own functions run in its code paths: an error in the skin is reported
--- once, then the skin stops, and Serial Buffer goes on as if it weren't there.
-local function safe(fn)
+-- Our hooks run inside Serial Buffer's own functions. If one of them errors, report it once and
+-- stop skinning, so Serial Buffer keeps working normally.
+local function guarded(fn)
     return function(...)
         if broken then return end
         local ok, err = pcall(fn, ...)
@@ -50,202 +45,208 @@ local function safe(fn)
     end
 end
 
-local function ink(fs, key)
-    local c = API.Colors()[key]
-    if fs and c then fs:SetTextColor(c[1], c[2], c[3]) end
+-- ---------------------------------------------------------------- text helpers
+
+-- colorName is one of Daylight UI's text colors: "VALUE", "TEXT", "LABEL", "OFF", ...
+local function setColor(fontString, colorName)
+    local c = API.Colors()[colorName]
+    if fontString and c then fontString:SetTextColor(c[1], c[2], c[3]) end
 end
 
-local function accent(fs)
-    if fs then fs:SetTextColor(API.Accent()) end
+local function setAccentColor(fontString)
+    if fontString then fontString:SetTextColor(API.Accent()) end
 end
 
--- The Daylight UI font on a font string, its size kept unless given, then its color.
-local function text(fs, size, key)
-    if not fs then return end
-    Kit.Font(fs, size)
-    if key then ink(fs, key) end
+-- Daylight UI's font (size kept unless given), and optionally a text color.
+local function setFont(fontString, size, colorName)
+    if not fontString then return end
+    Kit.Font(fontString, size)
+    if colorName then setColor(fontString, colorName) end
 end
 
--- ---------------------------------------------------------------- icon buttons
+-- ---------------------------------------------------------------- header icons
 
-local function paintIcon(t)
-    local b = icons[t]
-    if b and b:IsMouseOver() then
-        t:SetVertexColor(API.Accent())
+local function colorIcon(icon)
+    if icon.button:IsMouseOver() then
+        icon:SetVertexColor(API.Accent())
     else
         local c = API.Colors().LABEL
-        t:SetVertexColor(c[1], c[2], c[3])
+        icon:SetVertexColor(c[1], c[2], c[3])
     end
 end
 
--- A header button drawn as one of Daylight UI's icons (a file in its Media folder, used where it
--- is): the game's art hidden, the icon tan at rest and in the accent under the mouse. The button
--- keeps its size, its clicks and its tooltip.
-local function iconButton(b, file, size)
-    Kit.Strip(b)
-    local t = b:CreateTexture(nil, "OVERLAY")
-    t:SetSize(size, size)
-    t:SetPoint("CENTER")
-    t:SetTexture(API.Media(file))
-    icons[t] = b
-    b:HookScript("OnEnter", function() paintIcon(t) end)
-    b:HookScript("OnLeave", function() paintIcon(t) end)
-    paintIcon(t)
-    return t
+-- Replaces a button's art with one of Daylight UI's icons. The button keeps its size, clicks and
+-- tooltip. API.Media points at the file inside Daylight UI's folder; nothing is copied.
+local function useDaylightIcon(button, file, size)
+    Kit.Strip(button)
+    local icon = button:CreateTexture(nil, "OVERLAY")
+    icon:SetSize(size, size)
+    icon:SetPoint("CENTER")
+    icon:SetTexture(API.Media(file))
+    icon.button = button
+    hoverIcons[#hoverIcons + 1] = icon
+    button:HookScript("OnEnter", function() colorIcon(icon) end)
+    button:HookScript("OnLeave", function() colorIcon(icon) end)
+    colorIcon(icon)
+    return icon
 end
 
--- The fold button (D53): a chevron, down while the panel is open, right while it's folded.
--- paintFold sets the game's + / − art again on every toggle, so it's hidden again here.
-local function paintFold()
-    local b = NS.UI.panel and NS.UI.panel.fold
-    if not (b and b.chevron) then return end
-    local art = b:GetNormalTexture()
+-- Serial Buffer puts its + / - art back on every fold, so hide it again and turn the chevron.
+local function updateChevron()
+    local fold = NS.UI.panel and NS.UI.panel.fold
+    if not (fold and fold.chevron) then return end
+    local art = fold:GetNormalTexture()
     if art then art:SetAlpha(0) end
-    b.chevron:SetRotation(NS.db.collapsed and FOLDED or OPEN)
+    fold.chevron:SetRotation(NS.db.collapsed and CHEVRON_FOLDED or CHEVRON_OPEN)
 end
 
 -- ---------------------------------------------------------------- the panel
 
--- "[F]" in white when a key is bound, "key?" dimmed when none is: Header:Refresh paints it gold
--- or gray each time, so this runs after it.
-local function paintKey()
-    local b = NS.Header.key
-    if not b then return end
-    ink(b.text, NS.Header.KeyText() and "VALUE" or "OFF")
+-- The "next buff" key: white when a key is bound, dimmed when not. Header:Refresh colors it
+-- gold or gray each time, so this runs right after it.
+local function colorKeyText()
+    local key = NS.Header.key
+    if key then setColor(key.text, NS.Header.KeyText() and "VALUE" or "OFF") end
 end
 
-local function header(panel)
-    text(panel.title, TITLE_SIZE, "VALUE")
-    text(panel.count)
-    accent(panel.count)   -- how many are left to buff: the one number the panel is there for
-    panel.fold.chevron = iconButton(panel.fold, "ui-chevron.png", CHEVRON)
-    paintFold()
-    iconButton(panel.gear, "ui-options.png", ICON)
-    if panel.report then iconButton(panel.report, "ui-bug.png", ICON) end
-    local H = NS.Header
-    if H.check then
-        Kit.Check(H.check)
-        text(H.check.label, nil, "TEXT")
+local function skinHeader(panel)
+    setFont(panel.title, TITLE_SIZE, "VALUE")
+    setFont(panel.count)
+    setAccentColor(panel.count)   -- buffs left to cast: the number that matters most
+    panel.fold.chevron = useDaylightIcon(panel.fold, "ui-chevron.png", CHEVRON_SIZE)
+    updateChevron()
+    useDaylightIcon(panel.gear, "ui-options.png", ICON_SIZE)
+    if panel.report then useDaylightIcon(panel.report, "ui-bug.png", ICON_SIZE) end
+
+    local header = NS.Header
+    if header.check then   -- "Group only" check box
+        Kit.Check(header.check)
+        setFont(header.check.label, nil, "TEXT")
     end
-    if H.key then text(H.key.text) end
-    paintKey()
+    if header.key then setFont(header.key.text) end
+    colorKeyText()
 end
 
--- The short buffs' line under the header (D44, D45, D47). Only for classes that have one.
-local function tankLine()
-    local T = NS.Tank
-    if not T then return end
-    text(T.label, nil, "LABEL")
-    for _, cb in ipairs(T.checks or {}) do
-        Kit.Check(cb)
-        if cb.icon then cb.icon:SetTexCoord(CROP[1], CROP[2], CROP[3], CROP[4]) end
+-- The "For everyone:" line of short buffs under the header (only some classes have it).
+local function skinShortBuffLine()
+    local line = NS.Tank
+    if not line then return end
+    setFont(line.label, nil, "LABEL")
+    for _, check in ipairs(line.checks or {}) do
+        Kit.Check(check)
+        if check.icon then check.icon:SetTexCoord(unpack(CROP)) end
     end
-    if T.short then text(T.short.text, nil, "LABEL") end
+    if line.short then setFont(line.short.text, nil, "LABEL") end
 end
 
--- The rows are secure buttons: only their font strings and icon change, never the button.
--- fillRow sets the note back to row.noteRGB on every fill, so that becomes Daylight UI's label tan.
-local function rows(UI)
+-- The rows are secure buttons, so only their text and icons are restyled.
+-- Serial Buffer resets each note to row.noteRGB when it fills a row, so that gets the new color.
+local function skinRows()
     local label = API.Colors().LABEL
-    for _, row in ipairs(UI.rows) do
-        text(row.name)
-        text(row.note)
+    for _, row in ipairs(NS.UI.rows) do
+        setFont(row.name)
+        setFont(row.note)
         row.noteRGB = { label[1], label[2], label[3] }
-        row.icon:SetTexCoord(CROP[1], CROP[2], CROP[3], CROP[4])
+        row.icon:SetTexCoord(unpack(CROP))
     end
-    for _, head in ipairs(UI.heads) do text(head, nil, "LABEL") end
+    for _, heading in ipairs(NS.UI.heads) do setFont(heading, nil, "LABEL") end
 end
 
-function Skin.Panel()
-    local UI = NS.UI
-    local panel = UI.panel
-    -- Strips the tooltip backdrop and puts Daylight UI's window shell behind the panel, with the
-    -- accent line along its top. The title isn't one Kit.Window knows, so it isn't moved.
-    Kit.Window(panel)
-    header(panel)
-    tankLine()
-    text(panel.msg, nil, "LABEL")
-    rows(UI)
-    hooksecurefunc(NS.Header, "Refresh", safe(paintKey))
-    hooksecurefunc(UI, "SetCollapsed", safe(paintFold))
-    NS.Header:Refresh()   -- the key's room again, now that the title and count are in the new font
+local function skinPanel()
+    local panel = NS.UI.panel
+    Kit.Window(panel)   -- Daylight UI's window background, with the accent line along the top
+    skinHeader(panel)
+    skinShortBuffLine()
+    setFont(panel.msg, nil, "LABEL")
+    skinRows()
+    hooksecurefunc(NS.Header, "Refresh", guarded(colorKeyText))
+    hooksecurefunc(NS.UI, "SetCollapsed", guarded(updateChevron))
+    NS.Header:Refresh()   -- the new font changes text widths, so let the header re-measure
 end
 
 -- ---------------------------------------------------------------- the bug report window
 
--- The chosen button (Bug, Idea, No GitHub account) stays lit with LockHighlight. Daylight UI's
--- buttons have no highlight art, so the chosen one gets its words in the accent instead.
-local function paintChoice(kind)
-    local f = NS.Report.frame
-    if not f then return end
-    for k, b in pairs(f.buttons) do
-        local fs = b:GetFontString()
-        if k == kind then accent(fs) else ink(fs, "TEXT") end
+-- Serial Buffer marks the chosen button with LockHighlight. Daylight UI's buttons have no
+-- highlight art, so the chosen one gets accent-colored text instead.
+local function highlightChoice(kind)
+    local frame = NS.Report.frame
+    if not frame then return end
+    for k, button in pairs(frame.buttons) do
+        local label = button:GetFontString()
+        if k == kind then setAccentColor(label) else setColor(label, "TEXT") end
     end
-    Skin.choice = kind
+    chosenReport = kind
 end
 
-function Skin.Report(f)
-    Kit.Window(f)   -- its background and the link box's go with the game's art
-    text(f.title, HEAD_SIZE, "VALUE")
-    text(f.hint, nil, "TEXT")
-    Kit.EditBox(f.box)
-    for _, child in ipairs({ f:GetChildren() }) do
+local function skinReportWindow(frame)
+    Kit.Window(frame)
+    setFont(frame.title, WINDOW_TITLE_SIZE, "VALUE")
+    setFont(frame.hint, nil, "TEXT")
+    Kit.EditBox(frame.box)
+    for _, child in ipairs({ frame:GetChildren() }) do
         if child:GetObjectType() == "Button" then Kit.Button(child) end
     end
 end
 
--- ---------------------------------------------------------------- the toasts
+-- ---------------------------------------------------------------- toasts
 
--- The game reuses its toast frames: each one is dressed the first time it shows.
-local toasts = setmetatable({}, { __mode = "k" })
-local function dressToast(f)
-    if toasts[f] then return end
-    toasts[f] = true
-    Kit.Strip(f, { [f.Icon] = true })
-    API.Skin(f, { window = true })
-    text(f.Title, nil, "LABEL")
-    text(f.Text, nil, "TEXT")
+-- The game reuses toast frames, so each one is skinned the first time it shows.
+local skinnedToasts = setmetatable({}, { __mode = "k" })
+
+local function skinToast(toast)
+    if skinnedToasts[toast] then return end
+    skinnedToasts[toast] = true
+    Kit.Strip(toast, { [toast.Icon] = true })   -- keep the icon
+    API.Skin(toast, { window = true })
+    setFont(toast.Title, nil, "LABEL")
+    setFont(toast.Text, nil, "TEXT")
 end
 
 -- ---------------------------------------------------------------- start
 
-function Skin.Apply()
-    Skin.Panel()
-    local R = NS.Report
-    if R then
-        if R.frame then Skin.Report(R.frame) end
-        hooksecurefunc(R, "Build", safe(function() Skin.Report(R.frame) end))
-        hooksecurefunc(R, "Show", safe(function(_, kind) paintChoice(kind) end))
+local function applySkin()
+    skinPanel()
+
+    local report = NS.Report
+    if report then
+        if report.frame then skinReportWindow(report.frame) end   -- already built
+        hooksecurefunc(report, "Build", guarded(function() skinReportWindow(report.frame) end))
+        hooksecurefunc(report, "Show", guarded(function(_, kind) highlightChoice(kind) end))
     end
+
     if NS.Toast and type(_G.AlertFrame_ShowNewAlert) == "function" then
-        hooksecurefunc("AlertFrame_ShowNewAlert", safe(function(f)
-            if type(f) == "table" and NS.Toast.system and f.queue == NS.Toast.system then dressToast(f) end
+        hooksecurefunc("AlertFrame_ShowNewAlert", guarded(function(toast)
+            -- only Serial Buffer's own toasts
+            if type(toast) == "table" and NS.Toast.system and toast.queue == NS.Toast.system then
+                skinToast(toast)
+            end
         end))
     end
 end
 
--- The player changed Daylight UI's accent: repaint what's drawn in it.
-function Skin.Repaint()
+-- The player picked a new accent color in Daylight UI: redo everything drawn in it.
+local function repaint()
     if not (Kit and NS.UI.panel) then return end
-    accent(NS.UI.panel.count)
-    for t in pairs(icons) do paintIcon(t) end
-    if NS.Report and NS.Report.frame then paintChoice(Skin.choice) end
+    setAccentColor(NS.UI.panel.count)
+    for _, icon in ipairs(hoverIcons) do colorIcon(icon) end
+    if NS.Report and NS.Report.frame then highlightChoice(chosenReport) end
 end
 
--- Registered once the panel exists: UI:Build runs on PLAYER_LOGIN, after a fight when the player
--- logs in or reloads in one (Run:Start). Daylight UI then runs the skin out of combat.
+-- Serial Buffer builds its panel at login (after the fight, if you log in during one). Waiting
+-- for UI:Build means the panel always exists when we register. Daylight UI then runs the skin
+-- outside of combat.
 local registered = false
 hooksecurefunc(NS.UI, "Build", function()
     if registered then return end
     registered = true
-    API = daylight()
-    if not API then return end
-    local me = API.For("SerialBuffer")
-    me.RegisterSkin("SerialBuffer", function(kit)
+    API = getDaylightAPI()
+    if not API then return end   -- no Daylight UI, or a version that's too old
+
+    local plugin = API.For("SerialBuffer")
+    plugin.RegisterSkin("SerialBuffer", function(kit)
         if not NS.UI.panel then return false end
         Kit = kit
-        Skin.Apply()
+        applySkin()
     end)
-    me.On("StyleChanged", safe(function() Skin.Repaint() end))
+    plugin.On("StyleChanged", guarded(repaint))
 end)
