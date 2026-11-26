@@ -42,3 +42,5 @@ SerialBuffer_Comm.lua
 # Signaler un bug ou une idee : un lien vers un ticket GitHub (docs/specs/signaler.md, outillage).
 SerialBuffer_Report.lua
 SerialBuffer_Run.lua
+# Optional Daylight UI look (does nothing without Daylight UI). Keep it last: it hooks UI:Build.
+SerialBuffer_Daylight.lua
